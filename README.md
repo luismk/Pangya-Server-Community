@@ -81,6 +81,7 @@ A persistência de dados utiliza **MSSQL** através de pontes de conexão robust
 
 *   **Driver:** Utiliza `odbc32` ou `odbc64` (configurado via System DSN no Windows).
 *   **Configuração Padrão (server.ini / config):**
+
 ```ini
 DBENGINE    = MSSQL
 DBIP        = pangya
@@ -88,8 +89,8 @@ DBNAME      = pangya
 DBUSER      = pangya
 DBPASS      = pangya
 DBPORT      = 1433
-DBLOG       = 0```
-
+DBLOG       = 0
+```
 ### 🖼️ Capturas de Tela
 
    [![Test Stress](https://img.youtube.com/vi/bshhw92QnSQ/0.jpg)](https://www.youtube.com/watch?v=bshhw92QnSQ)
