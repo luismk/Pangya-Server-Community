@@ -5,9 +5,10 @@ Servidor baseado no código de Acrisio (SuperSS Dev) — reconstruído e adaptad
 Este repositório contém o código-fonte da **Versão 1.0** do projeto **Pangya Fun**. Este código representa o alicerce de anos de trabalho em engenharia reversa e desenvolvimento C#, focado na emulação fiel da experiência do servidor japonês.
 
 Toda esta versão foi **DEDICADA AO PROJETO COMMUNITY**, visando fortalecer a comunidade de preservação do Pangya.
-> ⚠️ **Este projeto é fornecido como base de estudo. Você é livre para modificar, adaptar ou utilizar como quiser.**
+> **⚠️ AVISO:**
+>  **Este projeto é fornecido como base de estudo. Você é livre para modificar, adaptar ou utilizar como quiser.**
 
-> **⚠️ AVISO:** Esta versão foi oficialmente descontinuada e movida para este repositório como um arquivo histórico. O projeto atual agora utiliza uma arquitetura moderna (.NET 10, MAUI, Docker).
+> Esta versão foi oficialmente descontinuada e movida para este repositório como um arquivo histórico. O projeto atual agora utiliza uma arquitetura moderna (.NET 10, Docker).
 
 ---
 
