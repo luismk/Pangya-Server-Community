@@ -8,8 +8,8 @@ Choose your language / Escolha seu idioma:
 
 | Language | Options |
 | :--- | :--- |
-| **English** | [Readme in English](README.English.md) |
-| **Português** | [Readme em Português](README.Portugues-BR.md) |
+| **English** | [Readme in English](README-English.md) |
+| **Português** | [Readme em Português](README-Portugues-BR.md) |
 
 ---
 
