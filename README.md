@@ -17,6 +17,4 @@ Choose your language / Escolha seu idioma:
 Stay updated with the project on our official channel:
 👉 [YouTube - @devluismk](https://www.youtube.com/@devluismk)
 
----
-
-### ⚙️ Quick Start Connection / Configuração Rápida:
+--- 
