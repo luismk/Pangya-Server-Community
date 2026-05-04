@@ -13,8 +13,13 @@ Choose your language / Escolha seu idioma:
 
 ---
 
-## 📺 Community & Dev
-Stay updated with the project on our official channel:
-👉 [YouTube - @devluismk](https://www.youtube.com/@devluismk)
+## 📢 Community & Dev
+Stay updated and join our community:
 
---- 
+*   **Discord:** [Retreev Community](https://discord.gg/HwDTssf)
+*   **Server:** [Pangya Fun Community](https://discord.gg/DEwj7DnBHb)
+*   **YouTube:** [@devluismk](https://www.youtube.com/@devluismk)
+
+---
+
+*Dedicated to the Pangya Community Project.*
