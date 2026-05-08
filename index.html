@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PangyaSharp — Pangya Private Server</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0e14;
+    --bg2: #111520;
+    --bg3: #161b28;
+    --accent: #4ade80;
+    --accent2: #22d3ee;
+    --gold: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: rgba(255,255,255,0.07);
+    --card: rgba(255,255,255,0.03);
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ─── GRID LINES ─── */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(74,222,128,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,222,128,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 60px;
+    background: rgba(11,14,20,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    text-decoration: none;
+  }
+
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+
+  .nav-links a {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  .lang-switch {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px;
+  }
+
+  .lang-btn {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.06em;
+  }
+  .lang-btn.active { background: var(--accent); color: #000; font-weight: 700; }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 7rem 2rem 4rem;
+    z-index: 1;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    border: 1px solid rgba(74,222,128,0.3);
+    border-radius: 100px;
+    padding: 5px 14px;
+    margin-bottom: 2rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .hero-title {
+    font-family: var(--font-head);
+    font-size: clamp(3.5rem, 10vw, 8rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    animation: fadeUp 0.6s 0.1s ease both;
+    background: linear-gradient(135deg, #fff 0%, rgba(74,222,128,0.9) 60%, rgba(34,211,238,0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 0.75rem;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-desc {
+    max-width: 560px;
+    font-size: 1.05rem;
+    color: #94a3b8;
+    margin-top: 1.5rem;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--accent);
+    color: #000;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary:hover { background: #86efac; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(74,222,128,0.3); }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: rgba(255,255,255,0.2); background: var(--card); transform: translateY(-2px); }
+
+  /* ─── GLOW ORBS ─── */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+  }
+  .orb-green { width: 500px; height: 500px; background: rgba(74,222,128,0.08); top: 10%; left: -10%; }
+  .orb-cyan  { width: 400px; height: 400px; background: rgba(34,211,238,0.07); bottom: 10%; right: -5%; }
+
+  /* ─── STATS ROW ─── */
+  .stats {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-top: 3rem;
+    animation: fadeUp 0.6s 0.5s ease both;
+  }
+
+  .stat-item {
+    flex: 1;
+    padding: 1.25rem 2rem;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    background: var(--card);
+  }
+  .stat-item:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: var(--font-head);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+
+  /* ─── SECTIONS ─── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 6rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .section-title {
+    font-family: var(--font-head);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+  }
+
+  .section-desc {
+    font-size: 1rem;
+    color: #94a3b8;
+    max-width: 560px;
+    margin-bottom: 3rem;
+  }
+
+  /* ─── SERVER CARDS ─── */
+  .servers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .server-card {
+    background: var(--bg2);
+    padding: 1.75rem;
+    transition: background 0.2s;
+    cursor: default;
+  }
+  .server-card:hover { background: var(--bg3); }
+
+  .server-port {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.6rem;
+  }
+
+  .server-name {
+    font-family: var(--font-head);
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .server-desc {
+    font-size: 0.875rem;
+    color: #64748b;
+    line-height: 1.6;
+  }
+
+  .server-tag {
+    display: inline-block;
+    margin-top: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .tag-internal { background: rgba(251,191,36,0.1); color: var(--gold); border: 1px solid rgba(251,191,36,0.2); }
+  .tag-public   { background: rgba(74,222,128,0.08); color: var(--accent); border: 1px solid rgba(74,222,128,0.2); }
+  .tag-core     { background: rgba(34,211,238,0.08); color: var(--accent2); border: 1px solid rgba(34,211,238,0.2); }
+
+  /* ─── ARCHITECTURE DIAGRAM ─── */
+  .arch-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    line-height: 2;
+    color: #94a3b8;
+    overflow-x: auto;
+  }
+
+  .arch-block .highlight { color: var(--accent); }
+  .arch-block .dim       { color: var(--muted); }
+  .arch-block .cyan      { color: var(--accent2); }
+  .arch-block .gold      { color: var(--gold); }
+
+  /* ─── FEATURE GRID ─── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .feature-card:hover { border-color: rgba(74,222,128,0.25); transform: translateY(-3px); }
+
+  .feature-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .feature-title {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+
+  .feature-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.6;
+  }
+
+  /* ─── ODBC STEPS ─── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .step {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    transition: background 0.2s;
+  }
+  .step:last-child { border-bottom: none; }
+  .step:hover { background: var(--bg3); }
+
+  .step-num {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(74,222,128,0.1);
+    border: 1px solid rgba(74,222,128,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .step-content {}
+  .step-title {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+  }
+  .step-desc { font-size: 0.875rem; color: #64748b; }
+  .step-code {
+    margin-top: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent2);
+    background: rgba(34,211,238,0.06);
+    border: 1px solid rgba(34,211,238,0.15);
+    border-radius: 4px;
+    padding: 6px 10px;
+    display: inline-block;
+  }
+
+  /* ─── CODE BLOCK ─── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.8;
+    overflow-x: auto;
+    color: #94a3b8;
+    margin-top: 1rem;
+  }
+  .code-block .key   { color: var(--accent2); }
+  .code-block .val   { color: var(--accent); }
+  .code-block .cmt   { color: #374151; }
+  .code-block .sec   { color: var(--gold); }
+
+  /* ─── PORT TABLE ─── */
+  .port-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .port-table th {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    padding: 0.75rem 1.25rem;
+    background: var(--bg3);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .port-table td {
+    padding: 0.875rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    color: #94a3b8;
+  }
+  .port-table tr:last-child td { border-bottom: none; }
+  .port-table tr:hover td { background: var(--card); }
+
+  .port-num {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ─── GAMES GRID ─── */
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .game-pill {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.875rem 1.1rem;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .game-pill:hover { border-color: rgba(74,222,128,0.3); }
+  .game-pill::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    box-shadow: 0 0 6px var(--accent);
+  }
+
+  /* ─── COMMUNITY ─── */
+  .community-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .community-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s;
+    color: inherit;
+  }
+  .community-card:hover { border-color: rgba(74,222,128,0.3); transform: translateY(-3px); }
+
+  .community-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .ic-discord { background: rgba(88,101,242,0.15); }
+  .ic-yt      { background: rgba(255,0,0,0.1); }
+
+  .community-name {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .community-handle { font-size: 0.8rem; color: var(--muted); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ─── DIVIDER ─── */
+  .section-divider {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ─── I18N ─── */
+  [data-lang="pt"] { display: none; }
+  body.lang-pt [data-lang="en"] { display: none; }
+  body.lang-pt [data-lang="pt"] { display: revert; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .stats { flex-wrap: wrap; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); flex: 1 1 50%; }
+    .step { flex-direction: column; gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">⛳ PangyaSharp</a>
+  <div class="nav-links">
+    <a href="#architecture" data-lang="en">Architecture</a>
+    <a href="#architecture" data-lang="pt">Arquitetura</a>
+    <a href="#servers" data-lang="en">Servers</a>
+    <a href="#servers" data-lang="pt">Servidores</a>
+    <a href="#setup" data-lang="en">Setup</a>
+    <a href="#setup" data-lang="pt">Configuração</a>
+    <a href="#community" data-lang="en">Community</a>
+    <a href="#community" data-lang="pt">Comunidade</a>
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('pt')">PT</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="orb orb-green"></div>
+  <div class="orb orb-cyan"></div>
+
+  <div class="hero-badge">
+    <span data-lang="en">Pangya JP · Private Server · v1.0</span>
+    <span data-lang="pt">Pangya JP · Servidor Privado · v1.0</span>
+  </div>
+
+  <h1 class="hero-title">PangyaSharp</h1>
+
+  <p class="hero-sub">C# / .NET · MSSQL · ODBC</p>
+
+  <p class="hero-desc" data-lang="en">
+    A full-featured private server implementation for Pangya JP. Five independent TCP servers, shared libraries, and complete game logic rebuilt from scratch.
+  </p>
+  <p class="hero-desc" data-lang="pt">
+    Implementação completa de servidor privado para o Pangya JP. Cinco servidores TCP independentes, bibliotecas compartilhadas e lógica de jogo reconstruída do zero.
+  </p>
+
+  <div class="hero-actions">
+    <a href="https://github.com" class="btn-primary">
+      ⬡ <span data-lang="en">View on GitHub</span><span data-lang="pt">Ver no GitHub</span>
+    </a>
+    <a href="#setup" class="btn-secondary">
+      <span data-lang="en">Quick Setup</span><span data-lang="pt">Configuração Rápida</span> →
+    </a>
+  </div>
+
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-num">5</div>
+      <div class="stat-label" data-lang="en">Servers</div>
+      <div class="stat-label" data-lang="pt">Servidores</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">12</div>
+      <div class="stat-label" data-lang="en">Game Modes</div>
+      <div class="stat-label" data-lang="pt">Modos de Jogo</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">18</div>
+      <div class="stat-label" data-lang="en">Game Systems</div>
+      <div class="stat-label" data-lang="pt">Sistemas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">300+</div>
+      <div class="stat-label" data-lang="en">DB Commands</div>
+      <div class="stat-label" data-lang="pt">Comandos DB</div>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<!-- ARCHITECTURE -->
+<section id="architecture" class="reveal">
+  <p class="section-tag" data-lang="en">// system design</p>
+  <p class="section-tag" data-lang="pt">// arquitetura</p>
+  <h2 class="section-title" data-lang="en">Architecture</h2>
+  <h2 class="section-title" data-lang="pt">Arquitetura</h2>
+  <p class="section-desc" data-lang="en">Five independent TCP servers communicate through an internal AuthServer and share a single MSSQL database via ODBC.</p>
+  <p class="section-desc" data-lang="pt">Cinco servidores TCP independentes se comunicam através de um AuthServer interno e compartilham um único banco MSSQL via ODBC.</p>
+
+  <div class="arch-block">
+<pre><span class="dim">[Pangya JP Client]</span>
+       │
+  <span class="highlight">LoginServer</span> <span class="dim">:10103</span>  <span class="dim">──►</span>  <span data-lang="en">Authenticate users · Generate session key</span><span data-lang="pt">Autentica usuários · Gera chave de sessão</span>
+       │
+  <span class="gold">AuthServer</span>  <span class="dim">:7777</span>   <span class="dim">──►</span>  <span data-lang="en">Internal · Validate session keys between servers</span><span data-lang="pt">Interno · Valida chaves entre servidores</span>
+       │
+  <span class="cyan">GameServer</span>  <span class="dim">:20201</span>  <span class="dim">──►</span>  <span data-lang="en">Core game logic · Rooms · Modes · Inventory</span><span data-lang="pt">Lógica principal · Salas · Modos · Inventário</span>
+       │
+  <span class="highlight">RankingServer</span> <span class="dim">:4774</span>  <span class="dim">──►</span>  <span data-lang="en">Player / Character / Guild rankings</span><span data-lang="pt">Rankings de jogadores e guildas</span>
+       │
+  <span class="highlight">MessengerServer</span> <span class="dim">:30303</span>  <span class="dim">──►</span>  <span data-lang="en">Friends · Online status · Messaging</span><span data-lang="pt">Amigos · Status online · Mensagens</span>
+       │
+  <span class="dim">SQL Server (MSSQL)</span>  <span class="dim">──►</span>  <span data-lang="en">Single shared database via ODBC DSN "pangya"</span><span data-lang="pt">Banco único via ODBC DSN "pangya"</span></pre>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- SERVERS -->
+<section id="servers" class="reveal">
+  <p class="section-tag" data-lang="en">// five servers</p>
+  <p class="section-tag" data-lang="pt">// cinco servidores</p>
+  <h2 class="section-title" data-lang="en">Servers</h2>
+  <h2 class="section-title" data-lang="pt">Servidores</h2>
+  <p class="section-desc" data-lang="en">Each server has a well-defined responsibility. All inherit from the abstract Server class in PangyaAPI.Network.</p>
+  <p class="section-desc" data-lang="pt">Cada servidor tem responsabilidade bem definida. Todos herdam da classe abstrata Server do PangyaAPI.Network.</p>
+
+  <div class="servers-grid">
+    <div class="server-card">
+      <div class="server-port">PORT 7777 · GUID 8888</div>
+      <div class="server-name">AuthServer</div>
+      <div class="server-desc" data-lang="en">Internal server. Validates session keys between all other servers. Game clients never connect to it directly.</div>
+      <div class="server-desc" data-lang="pt">Servidor interno. Valida chaves de sessão entre os demais servidores. O cliente nunca se conecta a ele diretamente.</div>
+      <span class="server-tag tag-internal" data-lang="en">Internal</span>
+      <span class="server-tag tag-internal" data-lang="pt">Interno</span>
+    </div>
+    <div class="server-card">
+      <div class="server-port">PORT 10103 · GUID 10103</div>
+      <div class="server-name">LoginServer</div>
+      <div class="server-desc" data-lang="en">Client entry point. Handles authentication, IP blocking, account creation, and sends the list of available GameServers.</div>
+      <div class="server-desc" data-lang="pt">Ponto de entrada dos clientes. Autentica usuários, verifica IPs bloqueados e envia a lista de GameServers disponíveis.</div>
+      <span class="server-tag tag-public" data-lang="en">Public</span>
+      <span class="server-tag tag-public" data-lang="pt">Público</span>
+    </div>
+    <div class="server-card">
+      <div class="server-port">PORT 20201 · GUID 20201</div>
+      <div class="server-name">GameServer</div>
+      <div class="server-desc" data-lang="en">Core game server. Manages channels, rooms, game modes, inventory, missions, events, guilds, and all gameplay logic.</div>
+      <div class="server-desc" data-lang="pt">Servidor principal. Gerencia canais, salas, modos de jogo, inventário, missões, eventos, guildas e toda a lógica de gameplay.</div>
+      <span class="server-tag tag-core" data-lang="en">Core</span>
+      <span class="server-tag tag-core" data-lang="pt">Principal</span>
+    </div>
+    <div class="server-card">
+      <div class="server-port">PORT 4774 · GUID 4774</div>
+      <div class="server-name">RankingServer</div>
+      <div class="server-desc" data-lang="en">Manages and updates player, character, and guild rankings in real time.</div>
+      <div class="server-desc" data-lang="pt">Gerencia e atualiza rankings de jogadores, personagens e guildas em tempo real.</div>
+      <span class="server-tag tag-public" data-lang="en">Public</span>
+      <span class="server-tag tag-public" data-lang="pt">Público</span>
+    </div>
+    <div class="server-card">
+      <div class="server-port">PORT 30303 · GUID 30303</div>
+      <div class="server-name">MessengerServer</div>
+      <div class="server-desc" data-lang="en">Manages the friend list, online/offline status, and messaging between players.</div>
+      <div class="server-desc" data-lang="pt">Gerencia a lista de amigos, status online/offline e mensagens entre jogadores.</div>
+      <span class="server-tag tag-public" data-lang="en">Public</span>
+      <span class="server-tag tag-public" data-lang="pt">Público</span>
+    </div>
+    <div class="server-card">
+      <div class="server-port">PORT 1433</div>
+      <div class="server-name">SQL Server</div>
+      <div class="server-desc" data-lang="en">Single shared database. All servers connect via ODBC System DSN named "pangya". Supports MSSQL and MySQL.</div>
+      <div class="server-desc" data-lang="pt">Banco de dados único e compartilhado. Todos os servidores conectam via ODBC System DSN chamado "pangya". Suporta MSSQL e MySQL.</div>
+      <span class="server-tag tag-internal" data-lang="en">Database</span>
+      <span class="server-tag tag-internal" data-lang="pt">Banco</span>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- FEATURES -->
+<section class="reveal">
+  <p class="section-tag" data-lang="en">// capabilities</p>
+  <p class="section-tag" data-lang="pt">// funcionalidades</p>
+  <h2 class="section-title" data-lang="en">What's Included</h2>
+  <h2 class="section-title" data-lang="pt">O que está incluído</h2>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🔐</div>
+      <div class="feature-title" data-lang="en">Packet Encryption</div>
+      <div class="feature-title" data-lang="pt">Criptografia de Pacotes</div>
+      <div class="feature-desc" data-lang="en">XOR encryption with public/private key tables (CryptoOracle) and LZO packet compression.</div>
+      <div class="feature-desc" data-lang="pt">Criptografia XOR com tabelas de chave pública/privada (CryptoOracle) e compressão LZO de pacotes.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <div class="feature-title" data-lang="en">Anti-DDoS & Anti-Bot</div>
+      <div class="feature-title" data-lang="pt">Anti-DDoS e Anti-Bot</div>
+      <div class="feature-desc" data-lang="en">IP rate limiting, CIDR-based deny rules, TTL-based bot detection, MAC/IP ban system.</div>
+      <div class="feature-desc" data-lang="pt">Rate limiting por IP, regras CIDR, detecção de bots por TTL, banimento por MAC/IP.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🗃️</div>
+      <div class="feature-title" data-lang="en">Multi-Engine Database</div>
+      <div class="feature-title" data-lang="pt">Banco Multi-Engine</div>
+      <div class="feature-desc" data-lang="en">DbFactory supports MSSQL, MySQL, and PostgreSQL via a unified ODBC abstraction layer.</div>
+      <div class="feature-desc" data-lang="pt">DbFactory suporta MSSQL, MySQL e PostgreSQL via camada de abstração ODBC unificada.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📦</div>
+      <div class="feature-title" data-lang="en">IFF Binary Reader</div>
+      <div class="feature-title" data-lang="pt">Leitor IFF Binário</div>
+      <div class="feature-desc" data-lang="en">Full reader for Pangya JP's proprietary IFF format — characters, clubs, courses, items and more.</div>
+      <div class="feature-desc" data-lang="pt">Leitor completo do formato proprietário IFF do Pangya JP — personagens, tacos, cursos, itens e mais.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-title" data-lang="en">18 Game Systems</div>
+      <div class="feature-title" data-lang="pt">18 Sistemas de Jogo</div>
+      <div class="feature-desc" data-lang="en">Grand Prix, Golden Time, Box System, UCC, Card System, Achievement, Attendance, and many more.</div>
+      <div class="feature-desc" data-lang="pt">Grand Prix, Golden Time, Box System, UCC, Card System, Achievement, Attendance e muito mais.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <div class="feature-title">Discord Webhook</div>
+      <div class="feature-desc" data-lang="en">Optional PangyaAPI.Discord module for real-time server event notifications to Discord channels.</div>
+      <div class="feature-desc" data-lang="pt">Módulo opcional PangyaAPI.Discord para notificações de eventos do servidor em canais Discord.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- SETUP / ODBC -->
+<section id="setup" class="reveal">
+  <p class="section-tag" data-lang="en">// getting started</p>
+  <p class="section-tag" data-lang="pt">// configuração</p>
+  <h2 class="section-title" data-lang="en">ODBC System DSN Setup</h2>
+  <h2 class="section-title" data-lang="pt">Configuração do ODBC System DSN</h2>
+  <p class="section-desc" data-lang="en">All servers connect to SQL Server via an ODBC System DSN named <code style="color:var(--accent);font-family:var(--font-mono)">pangya</code>. Follow these steps before starting any server.</p>
+  <p class="section-desc" data-lang="pt">Todos os servidores conectam ao SQL Server via ODBC System DSN chamado <code style="color:var(--accent);font-family:var(--font-mono)">pangya</code>. Siga os passos antes de iniciar qualquer servidor.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title" data-lang="en">Open ODBC Administrator</div>
+        <div class="step-title" data-lang="pt">Abrir o Administrador ODBC</div>
+        <div class="step-desc" data-lang="en">Press Win+R, type <code class="step-code">odbcad32.exe</code> and press Enter. Use System32 for 64-bit builds or SysWOW64 for 32-bit.</div>
+        <div class="step-desc" data-lang="pt">Pressione Win+R, digite <code class="step-code">odbcad32.exe</code> e pressione Enter. Use System32 para 64-bit ou SysWOW64 para 32-bit.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title" data-lang="en">Create System DSN</div>
+        <div class="step-title" data-lang="pt">Criar System DSN</div>
+        <div class="step-desc" data-lang="en">Go to the <b>System DSN</b> tab → Add → Select <b>ODBC Driver 17 for SQL Server</b> → Finish.</div>
+        <div class="step-desc" data-lang="pt">Vá para a aba <b>DSN de Sistema</b> → Adicionar → Selecione <b>ODBC Driver 17 for SQL Server</b> → Concluir.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title" data-lang="en">Name it "pangya"</div>
+        <div class="step-title" data-lang="pt">Nomeie como "pangya"</div>
+        <div class="step-desc" data-lang="en">Set Name = <code class="step-code">pangya</code>, Server = your SQL Server address (e.g. <code class="step-code">(local)</code>).</div>
+        <div class="step-desc" data-lang="pt">Defina Nome = <code class="step-code">pangya</code>, Servidor = endereço do SQL Server (ex: <code class="step-code">(local)</code>).</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title" data-lang="en">SQL Server Authentication</div>
+        <div class="step-title" data-lang="pt">Autenticação SQL Server</div>
+        <div class="step-desc" data-lang="en">Select SQL Server Auth. Login: <code class="step-code">pangya</code> / Password: <code class="step-code">pangya</code>. Set default database to <code class="step-code">pangya</code>.</div>
+        <div class="step-desc" data-lang="pt">Selecione Autenticação SQL Server. Login: <code class="step-code">pangya</code> / Senha: <code class="step-code">pangya</code>. Banco padrão: <code class="step-code">pangya</code>.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title" data-lang="en">Test → TESTS COMPLETED SUCCESSFULLY!</div>
+        <div class="step-title" data-lang="pt">Testar → TESTS COMPLETED SUCCESSFULLY!</div>
+        <div class="step-desc" data-lang="en">Click "Test Data Source". If it passes, your server.ini is ready to use.</div>
+        <div class="step-desc" data-lang="pt">Clique em "Testar Fonte de Dados". Se passar, o server.ini está pronto para uso.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-block">
+<span class="sec">[NORMAL_DB]</span>
+<span class="key">DBENGINE</span>  =  <span class="val">MSSQL</span>
+<span class="key">DBIP</span>      =  <span class="val">pangya</span>      <span class="cmt">; ← DSN name created above</span>
+<span class="key">DBNAME</span>    =  <span class="val">pangya</span>
+<span class="key">DBUSER</span>    =  <span class="val">pangya</span>
+<span class="key">DBPASS</span>    =  <span class="val">pangya</span>
+<span class="key">DBPORT</span>    =  <span class="val">1433</span>
+<span class="key">DBLOG</span>     =  <span class="val">1</span>
+  </div>
+
+  <div style="margin-top:3rem">
+    <p class="section-tag" data-lang="en">// startup order</p>
+    <p class="section-tag" data-lang="pt">// ordem de inicialização</p>
+    <table class="port-table" style="margin-top:1rem">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th data-lang="en">Server</th>
+          <th data-lang="pt">Servidor</th>
+          <th>Port</th>
+          <th data-lang="en">Role</th>
+          <th data-lang="pt">Função</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>AuthServer</td><td>AuthServer</td><td class="port-num">7777</td><td data-lang="en">Start first — required by all</td><td data-lang="pt">Inicia primeiro — necessário por todos</td></tr>
+        <tr><td>2</td><td>LoginServer</td><td>LoginServer</td><td class="port-num">10103</td><td data-lang="en">Client entry point</td><td data-lang="pt">Entrada dos clientes</td></tr>
+        <tr><td>3</td><td>GameServer</td><td>GameServer</td><td class="port-num">20201</td><td data-lang="en">Core gameplay</td><td data-lang="pt">Lógica principal</td></tr>
+        <tr><td>4</td><td>RankingServer</td><td>RankingServer</td><td class="port-num">4774</td><td data-lang="en">Rankings</td><td data-lang="pt">Rankings</td></tr>
+        <tr><td>5</td><td>MessengerServer</td><td>MessengerServer</td><td class="port-num">30303</td><td data-lang="en">Friends & chat</td><td data-lang="pt">Amigos e chat</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- GAME MODES -->
+<section class="reveal">
+  <p class="section-tag" data-lang="en">// gameplay</p>
+  <p class="section-tag" data-lang="pt">// modos de jogo</p>
+  <h2 class="section-title" data-lang="en">Game Modes</h2>
+  <h2 class="section-title" data-lang="pt">Modos de Jogo</h2>
+  <p class="section-desc" data-lang="en">12 game modes fully implemented in the GameServer.</p>
+  <p class="section-desc" data-lang="pt">12 modos de jogo completamente implementados no GameServer.</p>
+
+  <div class="games-grid">
+    <div class="game-pill">Match / Stroke</div>
+    <div class="game-pill">Practice</div>
+    <div class="game-pill">Grand Prix</div>
+    <div class="game-pill">Grand Zodiac</div>
+    <div class="game-pill">Guild Battle</div>
+    <div class="game-pill">Pang Battle</div>
+    <div class="game-pill">Versus</div>
+    <div class="game-pill">Tourney</div>
+    <div class="game-pill">Approach</div>
+    <div class="game-pill">Chip-In Practice</div>
+    <div class="game-pill">Special Shuffle</div>
+    <div class="game-pill">+ more</div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- COMMUNITY -->
+<section id="community" class="reveal">
+  <p class="section-tag" data-lang="en">// join us</p>
+  <p class="section-tag" data-lang="pt">// comunidade</p>
+  <h2 class="section-title" data-lang="en">Community</h2>
+  <h2 class="section-title" data-lang="pt">Comunidade</h2>
+
+  <div class="community-grid">
+    <a href="https://discord.gg/HwDTssf" class="community-card" target="_blank" rel="noopener">
+      <div class="community-icon ic-discord">🎮</div>
+      <div>
+        <div class="community-name">Retreev Community</div>
+        <div class="community-handle">discord.gg/HwDTssf</div>
+      </div>
+    </a>
+    <a href="https://discord.gg/DEwj7DnBHb" class="community-card" target="_blank" rel="noopener">
+      <div class="community-icon ic-discord">⛳</div>
+      <div>
+        <div class="community-name">Pangya Fun Community</div>
+        <div class="community-handle">discord.gg/DEwj7DnBHb</div>
+      </div>
+    </a>
+    <a href="https://www.youtube.com/@devluismk" class="community-card" target="_blank" rel="noopener">
+      <div class="community-icon ic-yt">▶️</div>
+      <div>
+        <div class="community-name">@devluismk</div>
+        <div class="community-handle">youtube.com/@devluismk</div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span data-lang="en">PangyaSharp — Dedicated to the Pangya Community Project · Legacy Version v1.0</span>
+  <span data-lang="pt">PangyaSharp — Dedicado à Comunidade do Projeto Pangya · Versão Legacy v1.0</span>
+</footer>
+
+<script>
+  // ─── LANGUAGE SWITCH ───
+  function setLang(lang) {
+    document.body.classList.toggle('lang-pt', lang === 'pt');
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang);
+    });
+    localStorage.setItem('pangya-lang', lang);
+  }
+
+  // Restore language preference
+  const saved = localStorage.getItem('pangya-lang');
+  if (saved === 'pt') setLang('pt');
+
+  // ─── SCROLL REVEAL ───
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
