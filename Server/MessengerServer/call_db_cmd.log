@@ -1,0 +1,8 @@
+CmdRegisterServer yes
+CmdServerList yes
+CmdListIpBan yes
+CmdListMacBan yes
+CmdNewAuthServerKey yes
+CmdPlayerInfo yes
+CmdFriendInfo yes
+CmdVerifyNick yes

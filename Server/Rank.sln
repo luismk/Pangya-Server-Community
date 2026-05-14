@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pangya_RankingServer", "RankingServer\Pangya_RankingServer.csproj", "{8038C36D-6513-4AF4-B944-929E04C696C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PangyaAPI.Utilities", "PangyaAPI\PangyaAPI.Utilities\PangyaAPI.Utilities.csproj", "{1E2BE994-1794-47CE-B66B-65F02D42570C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PangyaAPI.SQL", "PangyaAPI\PangyaAPI.SQL\PangyaAPI.SQL.csproj", "{A3FE3DA6-5099-4A65-8734-D43513E23FFB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PangyaAPI.Network", "PangyaAPI\PangyaAPI.Network\PangyaAPI.Network.csproj", "{FE218D80-0679-47E0-BED2-284BBA6FE8AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PangyaAPI.IFF.JP", "PangyaAPI\PangyaAPI.IFF.JP\PangyaAPI.IFF.JP.csproj", "{03210C5A-2661-4BB2-B3B5-C49603E422F3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8038C36D-6513-4AF4-B944-929E04C696C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8038C36D-6513-4AF4-B944-929E04C696C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8038C36D-6513-4AF4-B944-929E04C696C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8038C36D-6513-4AF4-B944-929E04C696C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E2BE994-1794-47CE-B66B-65F02D42570C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E2BE994-1794-47CE-B66B-65F02D42570C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E2BE994-1794-47CE-B66B-65F02D42570C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E2BE994-1794-47CE-B66B-65F02D42570C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3FE3DA6-5099-4A65-8734-D43513E23FFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3FE3DA6-5099-4A65-8734-D43513E23FFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3FE3DA6-5099-4A65-8734-D43513E23FFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3FE3DA6-5099-4A65-8734-D43513E23FFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE218D80-0679-47E0-BED2-284BBA6FE8AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE218D80-0679-47E0-BED2-284BBA6FE8AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE218D80-0679-47E0-BED2-284BBA6FE8AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE218D80-0679-47E0-BED2-284BBA6FE8AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03210C5A-2661-4BB2-B3B5-C49603E422F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03210C5A-2661-4BB2-B3B5-C49603E422F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03210C5A-2661-4BB2-B3B5-C49603E422F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03210C5A-2661-4BB2-B3B5-C49603E422F3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {59DAE0B0-F173-4A99-B9B5-0FC74096151D}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{03210C5A-2661-4BB2-B3B5-C49603E422F3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PangyaAPI.IFF.JP</RootNamespace>
+    <AssemblyName>PangyaAPI.IFF.JP</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Extensions\IFFHandle.cs" />
+    <Compile Include="Extensions\Utils.cs" />
+    <Compile Include="Extensions\ZipFileEx.cs" />
+    <Compile Include="Models\Data\Ability.cs" />
+    <Compile Include="Models\Data\Achievement.cs" />
+    <Compile Include="Models\Data\AddonPart.cs" />
+    <Compile Include="Models\Data\ArtifactManaInfo.cs" />
+    <Compile Include="Models\Data\AuxPart.cs" />
+    <Compile Include="Models\Data\Ball.cs" />
+    <Compile Include="Models\Data\Caddie.cs" />
+    <Compile Include="Models\Data\CaddieItem.cs" />
+    <Compile Include="Models\Data\CaddieVoiceTable.cs" />
+    <Compile Include="Models\Data\CadieMagicBox.cs" />
+    <Compile Include="Models\Data\CadieMagicBoxRandom.cs" />
+    <Compile Include="Models\Data\Card.cs" />
+    <Compile Include="Models\Data\Character.cs" />
+    <Compile Include="Models\Data\CharacterMastery.cs" />
+    <Compile Include="Models\Data\Club.cs" />
+    <Compile Include="Models\Data\ClubSet.cs" />
+    <Compile Include="Models\Data\ClubSetWorkShopLevelUpLimit.cs" />
+    <Compile Include="Models\Data\ClubSetWorkShopLevelUpProb.cs" />
+    <Compile Include="Models\Data\ClubSetWorkShopRankUpExp.cs" />
+    <Compile Include="Models\Data\CounterItem.cs" />
+    <Compile Include="Models\Data\Course.cs" />
+    <Compile Include="Models\Data\CutinInfomation.cs" />
+    <Compile Include="Models\Data\Desc.cs" />
+    <Compile Include="Models\Data\Enchant.cs" />
+    <Compile Include="Models\Data\ErrorCodeInfo.cs" />
+    <Compile Include="Models\Data\Furniture.cs" />
+    <Compile Include="Models\Data\FurnitureAbility.cs" />
+    <Compile Include="Models\Data\GrandPrixAIOptionalData.cs" />
+    <Compile Include="Models\Data\GrandPrixConditionEquip.cs" />
+    <Compile Include="Models\Data\GrandPrixData.cs" />
+    <Compile Include="Models\Data\GrandPrixRankReward.cs" />
+    <Compile Include="Models\Data\GrandPrixSpecialHole.cs" />
+    <Compile Include="Models\Data\HairStyle.cs" />
+    <Compile Include="Models\Data\HoleCupDropItem.cs" />
+    <Compile Include="Models\Data\Item.cs" />
+    <Compile Include="Models\Data\LevelUpPrizeItem.cs" />
+    <Compile Include="Models\Data\Mascot.cs" />
+    <Compile Include="Models\Data\Match.cs" />
+    <Compile Include="Models\Data\MemorialShopCoinItem.cs" />
+    <Compile Include="Models\Data\MemorialShopRareItem.cs" />
+    <Compile Include="Models\Data\MemorialShopRareItem.sff.cs" />
+    <Compile Include="Models\Data\NonVisibleItemTable.cs" />
+    <Compile Include="Models\Data\Part.cs" />
+    <Compile Include="Models\Data\PointShop.cs" />
+    <Compile Include="Models\Data\QuestItem.cs" />
+    <Compile Include="Models\Data\QuestStuff.cs" />
+    <Compile Include="Models\Data\SetEffectTable.cs" />
+    <Compile Include="Models\Data\SetItem.cs" />
+    <Compile Include="Models\Data\ShopLimitItem.cs" />
+    <Compile Include="Models\Data\Skin.cs" />
+    <Compile Include="Models\Data\SpecialPrizeItem.cs" />
+    <Compile Include="Models\Data\SubscriptionItemTable.cs" />
+    <Compile Include="Models\Data\TikiPointTable.cs" />
+    <Compile Include="Models\Data\TikiRecipe.cs" />
+    <Compile Include="Models\Data\TikiSpecialTable.cs" />
+    <Compile Include="Models\Data\TimeLimitItem.cs" />
+    <Compile Include="Models\Data\Title.cs" />
+    <Compile Include="Models\Data\TwinsItemTable.cs" />
+    <Compile Include="Models\Flags\Definitions.cs" />
+    <Compile Include="Models\General\IFFCommon.cs" />
+    <Compile Include="Models\General\IFFHeader.cs" />
+    <Compile Include="Models\General\IFFLevel.cs" />
+    <Compile Include="Models\General\IFFPrice.cs" />
+    <Compile Include="Models\General\IFFShopData.cs" />
+    <Compile Include="Models\General\IFFStats.cs" />
+    <Compile Include="Models\General\IFFTikiShopData.cs" />
+    <Compile Include="Models\General\IFFDate.cs" />
+    <Compile Include="Models\IFFFile.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PangyaAPI.Utilities\PangyaAPI.Utilities.csproj">
+      <Project>{1e2be994-1794-47ce-b66b-65f02d42570c}</Project>
+      <Name>PangyaAPI.Utilities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

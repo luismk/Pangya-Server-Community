@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{FE218D80-0679-47E0-BED2-284BBA6FE8AA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PangyaAPI.Network</RootNamespace>
+    <AssemblyName>PangyaAPI.Network</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="PangyaSession\Client.cs" />
+    <Compile Include="PangyaThread\thread.cs" />
+    <Compile Include="Repository\CmdAddCharacter.cs" />
+    <Compile Include="Repository\CmdAddItemBase.cs" />
+    <Compile Include="Repository\CmdAuthKeyGame .cs" />
+    <Compile Include="Repository\CmdAuthKeyGameInfo.cs" />
+    <Compile Include="Repository\CmdAuthKeyLogin.cs" />
+    <Compile Include="Repository\CmdAuthKeyLoginInfo.cs" />
+    <Compile Include="Repository\CmdAuthServerKey.cs" />
+    <Compile Include="Repository\CmdChatMacroUser.cs" />
+    <Compile Include="Repository\CmdFuncPartsCharacter.cs" />
+    <Compile Include="Repository\CmdInsertBlockIP.cs" />
+    <Compile Include="Repository\CmdInsertBlockMac.cs" />
+    <Compile Include="Repository\CmdKeysOfLogin.cs" />
+    <Compile Include="Repository\CmdListIpBan.cs" />
+    <Compile Include="Repository\CmdListMacBan.cs" />
+    <Compile Include="Repository\CmdLogonCheck.cs" />
+    <Compile Include="Repository\CmdNewAuthServerKey.cs" />
+    <Compile Include="Repository\CmdRateConfigInfo.cs" />
+    <Compile Include="Repository\CmdRegisterLogon.cs" />
+    <Compile Include="Repository\CmdRegisterServer.cs" />
+    <Compile Include="Repository\CmdSaveNick.cs" />
+    <Compile Include="Repository\CmdServerList.cs" />
+    <Compile Include="Repository\CmdUpdateAuthKeyLogin.cs" />
+    <Compile Include="Repository\CmdUpdateAuthServerKey.cs" />
+    <Compile Include="Repository\CmdUpdateCharacterEquiped.cs" />
+    <Compile Include="Repository\CmdUpdateRateConfigInfo.cs" />
+    <Compile Include="Repository\CmdVerifyID.cs" />
+    <Compile Include="Repository\CmdVerifyNick.cs" />
+    <Compile Include="Repository\CmdVerifyPass.cs" />
+    <Compile Include="Cryptor\Cipher.cs" />
+    <Compile Include="Cryptor\CryptoOracle.cs" />
+    <Compile Include="Cryptor\MiniLzo.cs" />
+    <Compile Include="PangyaPacket\PacketBuffer.cs" />
+    <Compile Include="PangyaPacket\Packet.cs" />
+    <Compile Include="PangyaPacket\func_arr.cs" />
+    <Compile Include="PangyaPacket\packet_func_base.cs" />
+    <Compile Include="PangyaServer\ClientType.cs" />
+    <Compile Include="PangyaServer\Server.cs" />
+    <Compile Include="PangyaSession\Session.cs" />
+    <Compile Include="PangyaSession\SessionManager.cs" />
+    <Compile Include="Models\Pangya_St.cs" />
+    <Compile Include="PangyaUnit\unit.cs" />
+    <Compile Include="PangyaUnit\unit_auth_interface.cs" />
+    <Compile Include="PangyaUnit\unit_auth_server_connect.cs" />
+    <Compile Include="PangyaUnit\unit_connect.cs" />
+    <Compile Include="PangyaUtil\ConfigDDos.cs" />
+    <Compile Include="PangyaUtil\ConsoleEx.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PangyaPacket\pangya_packet_handle.cs" />
+    <Compile Include="Repository\PangyaCommandDB.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PangyaAPI.IFF.JP\PangyaAPI.IFF.JP.csproj">
+      <Project>{03210c5a-2661-4bb2-b3b5-c49603e422f3}</Project>
+      <Name>PangyaAPI.IFF.JP</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PangyaAPI.SQL\PangyaAPI.SQL.csproj">
+      <Project>{a3fe3da6-5099-4a65-8734-d43513e23ffb}</Project>
+      <Name>PangyaAPI.SQL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PangyaAPI.Utilities\PangyaAPI.Utilities.csproj">
+      <Project>{1e2be994-1794-47ce-b66b-65f02d42570c}</Project>
+      <Name>PangyaAPI.Utilities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
