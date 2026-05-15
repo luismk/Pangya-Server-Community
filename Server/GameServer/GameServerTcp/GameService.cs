@@ -374,7 +374,7 @@ namespace Pangya_GameServer.GameServiceTcp
             {
                 case 1: // DailyQuest Info
                     {
-                        var m_dqi = ((CmdDailyQuestInfo)_pangya_db).getInfo();  // cmd_dqi.getInfo();
+                        var m_dqi = ((CmdDailyQuestInfo)_pangya_db).getInfo();
 
                         // Atualiza daily quest
                         if (DailyQuestManager.checkCurrentQuest(m_dqi))
@@ -384,15 +384,14 @@ namespace Pangya_GameServer.GameServiceTcp
 
                             Thread.Sleep(100);  // Espera 100 milli segundo
 
-                            snmdb.NormalManagerDB.getInstance().add(1, new CmdDailyQuestInfo(), SQLDBResponse, _arg);
-
+                            snmdb.NormalManagerDB.getInstance().add(2, new CmdDailyQuestInfo(), SQLDBResponse, _arg); 
                         }
                         break;
                     }
                 case 2: // Atualiza DailyQuest Info do server
                     {
                         // Atualiza daily quest
-                        getDailyQuestInfo = ((CmdDailyQuestInfo)_pangya_db).getInfo(); // cmd_dqi.getInfo();
+                        getDailyQuestInfo = ((CmdDailyQuestInfo)_pangya_db).getInfo();
                         break;
                     }
                 case 3: // Atualiza Chat Macro User
