@@ -72,7 +72,7 @@ namespace Pangya_AuthServer.Session
                 if (isConnectedToSend())
                 {
 
-                    var payloadData = _raw ? _buff : Cipher.ServerEncrypt(_buff, m_key, 0);
+                    var payloadData = _raw ? _buff : Cipher.EncryptClient(_buff, m_key, 0);
 
                     if (!m_client.Send(payloadData, payloadData.Length))
                     {

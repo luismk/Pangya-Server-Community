@@ -367,15 +367,7 @@ namespace PangyaAPI.Network.PangyaServer
                     // Evento de heartbeat
                     OnHeartBeat(); 
                     // On Start
-                    OnStart(); 
-
-                    // Start Unit Connect for Try Connection with Auth Server
-                    if (m_unit_connect != null && !m_unit_connect.On())
-                    {
-                        m_unit_connect.m_session.Disconnect(); 
-                        m_unit_connect = new unit_auth_server_connect(this);
-                        m_unit_connect.start();
-                    }
+                    OnStart();  
                 }
                 catch (exception e) // Exceção específica da aplicação
                 {

@@ -1,19 +1,21 @@
-﻿using PangyaAPI.Network.Models;
-using PangyaAPI.Network.PangyaPacket;
-using PangyaAPI.Network.PangyaServer;
-using PangyaAPI.Network.PangyaSession;
-using PangyaAPI.Network.PangyaUtil;
-using PangyaAPI.Network.Repository;
-using PangyaAPI.SQL;
-using PangyaAPI.Utilities;
-using PangyaAPI.Utilities.Log;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
+using PangyaAPI.Network.Repository;
+using PangyaAPI.Network.Cryptor;
+using PangyaAPI.Network.Models;
+using PangyaAPI.Network.PangyaPacket;
+using PangyaAPI.Network.PangyaServer;
+using PangyaAPI.Network.PangyaSession;
+using PangyaAPI.Network.PangyaUtil;
+using PangyaAPI.SQL;
+using PangyaAPI.Utilities;
+using PangyaAPI.Utilities.Log;
 namespace PangyaAPI.Network.PangyaUnit
 {
     /// <summary>
@@ -24,7 +26,10 @@ namespace PangyaAPI.Network.PangyaUnit
         #region Fields
 
 
-        public ServerState m_state; 
+        public ServerState m_state;
+        //DECRYPT FIELDS 
+        private List<string> v_mac_ban_list;
+        private List<IPBan> v_ip_ban_list;
         public SessionManager m_session_manager;
         public ServerInfoEx m_si = new ServerInfoEx();
         private int m_Bot_TTL; // Anti-bot Time-to-live
@@ -74,11 +79,11 @@ namespace PangyaAPI.Network.PangyaUnit
                 m_session_manager = manager;
 
                 m_state = ServerState.Uninitialized;
-
+                 
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[unit::construtor][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.message_pool.getInstance().push(new message("[unit::construtor][Error] " + e.getFullMessageError(), type_msg.CL_ONLY_CONSOLE));
             }
         }
 
@@ -109,7 +114,7 @@ namespace PangyaAPI.Network.PangyaUnit
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[unit::config_init][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.message_pool.getInstance().push(new message("[unit::config_init][Error] " + e.getFullMessageError(), type_msg.CL_ONLY_CONSOLE));
             }
 
             try
@@ -119,7 +124,7 @@ namespace PangyaAPI.Network.PangyaUnit
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[unit::config_init][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.message_pool.getInstance().push(new message("[unit::config_init][Error] " + e.getFullMessageError(), type_msg.CL_ONLY_CONSOLE));
                 m_Bot_TTL = 1000; // Usa o valor padrão do anti bot TTL
             }
         }
@@ -140,7 +145,7 @@ namespace PangyaAPI.Network.PangyaUnit
             try
             {
                 newClient = _server.EndAcceptTcpClient(ar);
-
+                  
                 // Cria thread/Task para processar o cliente
                 _ = accept_completed(newClient);
             }
@@ -164,17 +169,20 @@ namespace PangyaAPI.Network.PangyaUnit
         {
             TcpClient client = (TcpClient)obj;
 
-            // --- ADICIONE ISSO AQUI ---
-            client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
-            // ---------------------------
-
             var _session = m_session_manager.AddSession(
                 this,
                 client,
                 client.Client.RemoteEndPoint as IPEndPoint,
                 (byte)(new Random().Next() % 16)
             );
-             
+
+            _smp.message_pool.getInstance().push(
+                new message(
+                    $"[{GetType().Name}] New Player [IP: {_session.getIP()}, Key: {_session.m_key}]",
+                    type_msg.CL_FILE_LOG_AND_CONSOLE
+                )
+            );
+
             onAcceptCompleted(_session);
 
             _session.last_activity = DateTime.Now;
@@ -183,17 +191,14 @@ namespace PangyaAPI.Network.PangyaUnit
             {
                 while (client.Connected)
                 {
-                    bool success = await recv_client_new(_session);
-                    if (success)
+                    bool result = recv_client_new(_session).Result;
+
+                    if (result == false)
                     {
-                        _session.last_activity = DateTime.Now;
+                        break; // desconecta
                     }
-                    else
-                    {
-                        // Se retornar false, o socket fechou ou houve erro crítico
-                        Debug.WriteLine($"[{GetType().Name}][ErrorSystem] Conexão encerrada pelo servidor remoto.");
-                        break;
-                    }
+
+                    _session.last_activity = DateTime.Now;
                 }
             }
             catch (IOException ioEx)
@@ -211,32 +216,8 @@ namespace PangyaAPI.Network.PangyaUnit
 
             DisconnectSession(_session);
         }
-
-        protected async Task OnTimeout()
-        {
-            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::OnMonitorServers][Info] monitor iniciado com sucesso!", type_msg.CL_ONLY_FILE_LOG));
-
-            while (_isRunning)
-            {
-                await Task.Delay(30000); // Checa a cada 30 segundos
-
-                foreach (var s in m_session_manager.GetAllOnline())
-                {
-                    // Aumente para 90 ou 120 segundos. 
-                    // Isso dá margem para oscilações de rede sem derrubar o server.
-                    if ((DateTime.Now - s.last_activity).TotalSeconds > 90)
-                    {
-                        _smp.message_pool.getInstance().push(new message(
-                            $"[{GetType().Name}::Monitor][TIMEOUT] Server inativo: {s.getNickname()}",
-                            type_msg.CL_FILE_LOG_AND_CONSOLE));
-
-                        DisconnectSession(s);
-                    }
-                }
-            }
-        }
-
-                protected async Task OnMonitor()
+         
+        protected async Task OnMonitor()
         {
             _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::onMonitor][Info] monitor iniciado com sucesso!", type_msg.CL_ONLY_FILE_LOG));
 
@@ -247,7 +228,7 @@ namespace PangyaAPI.Network.PangyaUnit
                     // Verifica e atualiza os arquivos de log caso o dia tenha mudado
                     if (_smp.message_pool.getInstance().check_update_day_log())
                     {
-                        _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::Monitor::UpdateLogFiles][Info] Atualizou os arquivos de Log porque trocou de dia.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::Monitor::UpdateLogFiles][Info] Atualizou os arquivos de Log porque trocou de dia.", type_msg.CL_ONLY_CONSOLE));
                     }
 
                     try
@@ -282,74 +263,81 @@ namespace PangyaAPI.Network.PangyaUnit
                          type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
-                await Task.Delay(2100);
-                //mesmo nao enviando nada, ele atualiza o tempo de conexao...
+                await Task.Delay(2000);
+
                 foreach (var s in m_session_manager.GetAllOnline())
                 {
-                    s.last_activity = DateTime.Now;
+                    if ((DateTime.Now - s.last_activity).TotalSeconds > 30)
+                    {
+                        _smp.message_pool.getInstance().push(new message(
+                        $"[{GetType().Name}::Monitor][TIMEOUT] Server caiu: {s.getNickname()}",
+                        type_msg.CL_FILE_LOG_AND_CONSOLE));
+
+                        DisconnectSession(s);
+                    }
                 }
             }
         }
-
-        public override void dispach_packet_sv_same_thread(Session session, packet _packet)
-        {
-            if (session == null || session.isConnected() == false || _packet == null)
+          
+            public override void dispach_packet_sv_same_thread(Session session, packet _packet)
             {
-                return;//nao esta mais conectado!
-            }
+                if (session == null || session.isConnected() == false || _packet == null)
+                {
+                    return;//nao esta mais conectado!
+                }
 
-            func_arr.func_arr_ex func = null;
+                func_arr.func_arr_ex func = null;
 
-            try
-            {
-                // Obtém a função correspondente ao tipo de pacote
-                func = packet_func_base.funcs_sv.getPacketCall(_packet.getTipo());
-            }
-            catch (exception e)
-            {
-                _smp.message_pool.getInstance().push(new message($"[Server.DispatchpacketSameThread][ErrorSystem] {e.Message}, {e.getStackTrace()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
-                // Desconecta a sessão
-                DisconnectSession(session);
-            }
+                try
+                {
+                    // Obtém a função correspondente ao tipo de pacote
+                    func = packet_func_base.funcs_sv.getPacketCall(_packet.getTipo());
+                }
+                catch (exception e)
+                {
+                    _smp.message_pool.getInstance().push(new message($"[Server.DispatchpacketSameThread][ErrorSystem] {e.Message}, {e.getStackTrace()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    // Desconecta a sessão
+                    DisconnectSession(session);
+                }
 
-            try
-            {
+                try
+                {
                 // Atualiza o tick do cliente
                 session.m_tick = Environment.TickCount;
                 session.last_activity = DateTime.Now;
 
                 var pd = new ParamDispatch
-                {
-                    _session = session,
-                    _packet = _packet
-                };
-
-                if (CheckPacket(session, _packet))
-                {
-                    try
                     {
-                        if (func != null && func.ExecCmd(pd) != 0)
+                        _session = session,
+                        _packet = _packet
+                    };
+
+                    if (CheckPacket(session, _packet))
+                    {
+                        try
                         {
-                            //_smp.message_pool.getInstance().push(new message($"[Server.DispatchpacketSameThread][Error][MY] Ao tratar o pacote. ID: {_packet.getTipo()}(0x{_packet.getTipo():X})," + pd._packet.Log(), type_msg.CL_FILE_LOG_AND_CONSOLE));
-                            //DisconnectSession(session);
+                            if (func != null && func.ExecCmd(pd) != 0)
+                            {
+                                //_smp.message_pool.getInstance().push(new message($"[Server.DispatchpacketSameThread][Error][MY] Ao tratar o pacote. ID: {_packet.getTipo()}(0x{_packet.getTipo():X})," + pd._packet.Log(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                //DisconnectSession(session);
+                            }
+                        }
+
+                        catch (exception e)
+                        {
+                            _smp.message_pool.getInstance().push(new message($"[Server.DispatchpacketSameThread][Error][MY] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+
+                            DisconnectSession(session);
                         }
                     }
+                }
+                catch (exception e)
+                {
+                    _smp.message_pool.getInstance().push(new message($"[Server.DispatchpacketSameThread][Error][MY] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                    catch (exception e)
-                    {
-                        _smp.message_pool.getInstance().push(new message($"[Server.DispatchpacketSameThread][Error][MY] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
-
-                        DisconnectSession(session);
-                    }
+                    DisconnectSession(session);
                 }
             }
-            catch (exception e)
-            {
-                _smp.message_pool.getInstance().push(new message($"[Server.DispatchpacketSameThread][Error][MY] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
-
-                DisconnectSession(session);
-            }
-        }
 
         protected override void dispach_packet_same_thread(Session session, packet _packet)
         {
@@ -419,7 +407,7 @@ namespace PangyaAPI.Network.PangyaUnit
         {
             try
             {
-                _server = new TcpListener(IPAddress.Loopback, m_si.port);
+                _server = new TcpListener(IPAddress.Any, m_si.port);
                 m_state = ServerState.Initialized;
 
                 if (m_state != ServerState.Failure)
@@ -438,8 +426,7 @@ namespace PangyaAPI.Network.PangyaUnit
 
                         // inicia monitor
                         _ = OnMonitor();
-                        // inicia special monitor....
-                        _ = OnTimeout();    
+                         
                     }
                     catch (exception e)
                     {
@@ -460,7 +447,7 @@ namespace PangyaAPI.Network.PangyaUnit
 
         public void Stop()
         {
-            _isRunning = false;
+            _isRunning = false;  
             m_state = ServerState.Failure;
             Console.WriteLine("Server is stopping...");
         }
@@ -476,13 +463,111 @@ namespace PangyaAPI.Network.PangyaUnit
             }
 
             return null;
-        }  
+        }
+
+        protected virtual void init_option_accepted_socket(in Socket _accepted)
+        {
+            bool tcp_nodelay = true;
+
+            // ---------- DESEMPENHO COM OS SOCKOPT -----------  
+            // COM NO_TCPDELAY                 AVG(MEDIA) 0.552
+            // COM SO_SNDBUF 0                AVG(MEDIA) 0.560
+            // COM SO_RCVBUF 0                AVG(MEDIA) 0.570
+            // COM NO_TCPDELAY e SO_SNDBUF 0  AVG(MEDIA) 0.569
+            // COM NO_TCPDELAY e SO_RCVBUF 0  AVG(MEDIA) 0.566
+            // SEM NENHUM SOCKOPT             AVG(MEDIA) 0.569
+            // Não tem muita diferença, vou deixar só o NO_TCPDELAY mesmo
+
+            try
+            {
+                // Ativa TCP_NODELAY (desabilita Nagle)
+                _accepted.NoDelay = tcp_nodelay;
+            }
+            catch (SocketException ex)
+            {
+                throw new Exception("[unit::init_option_accepted_socket][Error] não conseguiu desabilitar tcp delay (nagle algorithm).", ex);
+            }
+
+            try
+            {
+                // KEEPALIVE: habilita + configura tempo
+                byte[] keepAlive = new byte[12];
+                BitConverter.GetBytes((uint)1).CopyTo(keepAlive, 0);     // onoff
+                BitConverter.GetBytes((uint)20000).CopyTo(keepAlive, 4); // keepalivetime (20s)
+                BitConverter.GetBytes((uint)2000).CopyTo(keepAlive, 8);  // keepaliveinterval (2s)
+
+                _accepted.IOControl(IOControlCode.KeepAliveValues, keepAlive, null);
+                 
+            }
+            catch (SocketException ex)
+            {
+                throw new Exception("[unit::init_option_accepted_socket][Error] não conseguiu setar o socket option KEEPALIVE.", ex);
+            }
+        }
+
+        public bool haveBanList(string _ip_address, string _mac_address, bool _check_mac = true)
+        {
+            if (_check_mac)
+            {
+                // Verifica primeiro se o MAC Address foi bloqueado
+
+                // Cliente não enviou um MAC Address válido, bloquea essa conexão que é hacker que mudou o ProjectG
+                if (string.IsNullOrEmpty(_mac_address))
+                    return true;    // Cliente não enviou um MAC Address válido, bloquea essa conexão que é hacker que mudou o ProjectG
+
+                foreach (var el in v_mac_ban_list)
+                {
+                    if (!string.IsNullOrEmpty(el) && string.Compare(el, _mac_address, StringComparison.OrdinalIgnoreCase) == 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            // IP Address inválido, bloquea essa conexão que é Hacker ou Bug
+            if (string.IsNullOrEmpty(_ip_address))
+            {
+                return true;
+            }
+            uint ip = 0;
+            if (IPAddress.TryParse(_ip_address, out IPAddress ipAddress))
+            {
+                byte[] ipBytes = ipAddress.GetAddressBytes();
+                ip = BitConverter.ToUInt32(ipBytes, 0);
+                ip = (uint)IPAddress.NetworkToHostOrder((int)ip);
+            }
+            foreach (IPBan el in v_ip_ban_list)
+            {
+                if (el.type == IPBan._TYPE.IP_BLOCK_NORMAL)
+                {
+                    if ((ip & el.mask) == (el.ip & el.mask))
+                    {
+                        return true;
+                    }
+                }
+                else if (el.type == IPBan._TYPE.IP_BLOCK_RANGE)
+                {
+                    if (el.ip <= ip && ip <= el.mask)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         public void Shutdown(int timeSec)
         {
             Console.WriteLine("Shutting down server...");
             Stop();
         }
-         
+
+        public virtual uint GetUID()
+        {
+            return (uint)m_si.uid;
+        }
+
+
         public virtual List<Session> FindAllGM()
         {
             return m_session_manager.findAllGM();
@@ -513,11 +598,6 @@ namespace PangyaAPI.Network.PangyaUnit
             if (_session == null)
             {
                 Console.WriteLine("[unit::DisconnectSession][Warning] Tentativa de desconectar uma sessão nula.");
-                return false;
-            }
-            
-            if (_session.m_oid == -1)
-            {
                 return false;
             }
 
@@ -558,7 +638,13 @@ namespace PangyaAPI.Network.PangyaUnit
                 default:
                     break;
             }
-        } 
+        }
+
+
+        public virtual void RunCommand(string[] comando)
+        {
+
+        }
 
         public int getBotTTL() => m_Bot_TTL;
         #endregion  

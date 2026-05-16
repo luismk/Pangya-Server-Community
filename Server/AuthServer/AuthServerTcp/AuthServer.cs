@@ -1230,7 +1230,7 @@ namespace Pangya_AuthServer.AuthServerTcp
 
                 if (!ask.checkKey(key))
                 {
-                    throw new exception("[AuthServer::requestAuthenticPlayer][Error] SERVER[UID=" + Convert.ToString(_session.m_pi.uid) + "] key[KEY=" + key + "] is not valid. Key[KEY=" + (ask.key) + ", VALID=" + Convert.ToString((ushort)ask.valid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PACKET_FUNC_AS,
+                    throw new exception("SERVER[UID=" + Convert.ToString(_session.m_pi.uid) + "] key[KEY=" + key + "] is not valid. Key[KEY=" + (ask.key) + ", VALID=" + Convert.ToString((ushort)ask.valid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PACKET_FUNC_AS,
                         350, 0));
                 }
 
@@ -1251,6 +1251,7 @@ namespace Pangya_AuthServer.AuthServerTcp
                 p.WriteInt32(_session.m_oid); // OID
 
                 packet_func.session_send(p, _session, 1);
+                _smp.message_pool.getInstance().push(new message($"[AuthServer::requestAuthenticPlayer][Sucess] SERVER[OID: {_session.m_oid}, UID: {_session.m_pi.uid}, TYPE: {_session.m_pi.tipo}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
@@ -1259,7 +1260,6 @@ namespace Pangya_AuthServer.AuthServerTcp
                 _smp.message_pool.getInstance().push(new message("[AuthServer::requestAuthenticPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[AuthServer::requestAuthenticPlayer][Error] desconectando session[OID=" + Convert.ToString(_session.m_oid) + "], por que mandou alguns dados errado no packet de login. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 DisconnectSession(_session);
             }

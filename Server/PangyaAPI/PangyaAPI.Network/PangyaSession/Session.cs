@@ -487,7 +487,7 @@ namespace PangyaAPI.Network.PangyaSession
 
         public void Disconnect()
         {
-            _Packet_Handle_Base.DisconnectSession(this);
+            _Packet_Handle_Base?.DisconnectSession(this);
         } 
     }
 }

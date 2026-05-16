@@ -1,18 +1,17 @@
-﻿using PangyaAPI.Network.Cryptor;
-using PangyaAPI.Network.Models;
-using PangyaAPI.Network.PangyaPacket;
-using PangyaAPI.Network.PangyaSession;
-using PangyaAPI.Utilities;
-using PangyaAPI.Utilities.Models;
-using PangyaAPI.Utilities.Log;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using PangyaAPI.Network.Cryptor;
+using PangyaAPI.Network.Models;
+using PangyaAPI.Network.PangyaPacket;
+using PangyaAPI.Network.PangyaSession;
+using PangyaAPI.Utilities; 
+using PangyaAPI.Utilities.Log;
+using PangyaAPI.Utilities.Models;
 
 namespace PangyaAPI.Network.PangyaUnit
 {
@@ -59,24 +58,18 @@ namespace PangyaAPI.Network.PangyaUnit
 
         public void Connect(string ip, int port)
         {
-            try
-            {
-                m_pi = new player_info();
-                m_client = new TcpClient(ip, port);
-                m_addr = m_client.Client.RemoteEndPoint as IPEndPoint;
-                setState(true);
-                setConnected(true);
-                this.m_client.NoDelay = true;
-            }
-            catch
-            {
-                setState(false);
-                setConnected(false);
-            }
+            m_pi = new player_info();
+            m_client = new TcpClient(ip, port);
+            m_addr = m_client.Client.RemoteEndPoint as IPEndPoint;
+            setState(true);
+            setConnected(true);
         }
 
         public override bool clear()
-        {  
+        {
+            m_si = null;
+            this._Packet_Handle_Base = null;
+            m_pi = new player_info();
             return base.clear();
         }
 
@@ -138,51 +131,25 @@ namespace PangyaAPI.Network.PangyaUnit
 
     public abstract class unit_connect_base : pangya_packet_handle
     {
-        public func_arr funcs;
-        public func_arr funcs_sv;
-        public UnitPlayer m_session;
-        public STATE m_state;
-        public stUnitCtx m_unit_ctx;
-        public IniHandle m_reader_ini;
-        private AutoResetEvent _eventTryConnect = new AutoResetEvent(false);
-        protected bool _isConnecting = false;
-        private readonly object _syncLock = new object();
-        public int _retryCount = 0;
-
-        public bool isRunning { get; private set; }
-
         public unit_connect_base(ServerInfoEx _si)
         {
-            try
-            {
-                funcs = new func_arr();
-                funcs_sv = new func_arr();
-                m_unit_ctx = new stUnitCtx();
-                // Inicializar Config do arquivo ini \\
-                m_reader_ini = new IniHandle("Server.ini");
-                config_init();
-                // ------------------------------------
-                m_session = new UnitPlayer(this, _si);
-            }
-            catch
-            { 
-            }
+            funcs = new func_arr();
+            funcs_sv = new func_arr();
+            m_unit_ctx = new stUnitCtx();
+            // Inicializar Config do arquivo ini \\
+            m_reader_ini = new IniHandle("Server.ini");
+            config_init();
+            // ------------------------------------
+            m_session = new UnitPlayer(this, _si);
         }
 
         protected void config_init()
         {
-            try
-            {
-                m_unit_ctx.ip = m_reader_ini.ReadString("AUTHSERVER", "IP");
-                m_unit_ctx.port = m_reader_ini.readInt("AUTHSERVER", "PORT");
+            m_unit_ctx.ip = m_reader_ini.ReadString("AUTHSERVER", "IP");
+            m_unit_ctx.port = m_reader_ini.readInt("AUTHSERVER", "PORT");
 
-                // Carregou com sucesso
-                m_unit_ctx.state = true;
-            }
-            catch (Exception)
-            {
-                m_unit_ctx.state = false;
-            }
+            // Carregou com sucesso
+            m_unit_ctx.state = true;
         }
         public enum STATE : byte { UNINITIALIZED, GOOD, GOOD_WITH_WARNING, INITIALIZED, FAILURE }
         public enum ThreadType { WORKER_IO, WORKER_IO_SEND, WORKER_IO_RECV, WORKER_LOGICAL, WORKER_SEND, TT_CONSOLE, TT_ACCEPT, TT_ACCEPTEX, TT_ACCEPTEX_IO, TT_RECV, TT_SEND, TT_JOB, TT_DB_NORMAL, TT_MONITOR, TT_SEND_MSG_TO_LOBBY }
@@ -204,11 +171,8 @@ namespace PangyaAPI.Network.PangyaUnit
 
         public virtual bool isLive()
         {
-            return m_session != null && m_session.m_connected && m_session.m_client != null && m_session.m_client.Connected;
+            return m_session.m_client != null && m_session.m_client.Connected;
         }
-
-        public bool On()
-            => isRunning;
 
         protected abstract void onHeartBeat();
         protected abstract void onConnected();
@@ -216,112 +180,107 @@ namespace PangyaAPI.Network.PangyaUnit
 
         public bool ConnectAndAssoc()
         {
-            lock (_syncLock)
+            if (!m_unit_ctx.state)
             {
-                if (_isConnecting) return false;
-                _isConnecting = true;
+                throw new Exception("[UnitConnectBase::ConnectAndAssoc][Error] A configuração do unit_connect não foi carregada com sucesso.");
             }
 
             try
             {
-                if (!m_unit_ctx.state)
-                    throw new Exception("Configuração não carregada.");
-
-                // Se já existir um cliente, limpa antes de criar novo
-                if (m_session.m_client != null)
-                {
-                    try { m_session.m_client.Close(); } catch { }
-                    m_session.clear();
-                }
+                // Conecta ao IP e Porta fornecidos
                 m_session.Connect(m_unit_ctx.ip, m_unit_ctx.port);
+                //handle player and packets 
+                Task.Run(() => accept_completed());
 
-                // Dispara o loop de leitura em uma Task separada
-               _ = accept_completed();
-
-                _retryCount = 0;
-                onConnected(); // Callback para enviar pacotes de login do server
-                return true;
             }
-            catch (Exception ex)
+            catch
             {
-                _smp.message_pool.getInstance().push(new message($"[AuthClient] Falha na conexão: {ex.Message}", type_msg.CL_ONLY_FILE_LOG));
                 return false;
+                //throw new Exception("[UnitConnectBase::ConnectAndAssoc][Error] Falha ao conectar.", ex);
             }
-            finally
+
+            // On Connected
+            onConnected();
+
+
+            Thread thread = new Thread(() =>
             {
-                _isConnecting = false;
-            }
+                onMonitor();
+            });
+            thread.IsBackground = true;
+            thread.Start(); // Inicia a thread de verificação
+            return true;
         }
 
 
-        protected async Task OnMonitor()
+        private void onMonitor()
         {
+            _smp.message_pool.getInstance().push(new message("[unit_connect::onMonitor][Log] monitor iniciado com sucesso!", type_msg.CL_ONLY_FILE_LOG));
+
             while (true)
             {
                 try
                 {
-                    if (!isLive())
-                    {
-                        isRunning = false;
-                    }
-                    else
-                    {
-                        isRunning = true;
-                        // Se está vivo, executa o Heartbeat (Ping)
-                        onHeartBeat();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _smp.message_pool.getInstance().push(new message($"[Monitor] Erro crítico: {ex.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
-                }
 
-                await Task.Delay(2000); // Verifica a cada 5 segundos
+                    // Evento de heartbeat
+                    if (isLive())
+                        onHeartBeat();
+
+                }
+                catch (exception e) // Exceção específica da aplicação
+                {
+                    _smp.message_pool.getInstance().push(new message(
+                        $"[unit.Monitor][ErrorSystem] {e.GetType().Name}: {e.getFullMessageError()}\nStack Trace: {e.getStackTrace()}",
+                        type_msg.CL_FILE_LOG_AND_CONSOLE));
+                }
+                catch (Exception ex) // Exceções gerais do .NET
+                {
+                    _smp.message_pool.getInstance().push(new message(
+                        $"[unit.Monitor][ErrorSystem] {ex.GetType().Name}: {ex.Message}\nStack Trace: {ex.StackTrace}",
+                        type_msg.CL_FILE_LOG_AND_CONSOLE));
+                }
+                Thread.Sleep(5000);
             }
         }
 
-       
-
-        private async Task accept_completed()
+        private void accept_completed()
         {
-            if (m_session.m_connected)
+            //send key
+            bool raw = true;
+            while (m_session.isConnected())
             {
-                // --- ADICIONE ISSO AQUI ---
-                m_session.m_client.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
-                // ---------------------------
-                bool raw = true; // O primeiro pacote (Key) geralmente é raw no Pangya
-
-                while (m_session.m_client.Connected)
+                try
                 {
-                    try
+                    if (!m_session.isConnected())
                     {
-                        bool success = await recv_client_new(m_session, raw);
-
-                        if (success)
-                        {
-                            if (raw)
-                            {
-                                raw = false;
-                                Debug.WriteLine("[Auth] Primeiro pacote recebido. Criptografia ativada.");
-                            }
-                        }
-                        else
-                        {
-                            // Se retornar false, o socket fechou ou houve erro crítico
-                            Debug.WriteLine("[Auth] Conexão encerrada pelo servidor remoto.");
-                            break;
-                        }
+                        DisconnectSession(m_session);
+                        break;
                     }
-                    catch (Exception ex)
+
+                    if (recv_client_new(m_session, raw).Result)
                     {
-                        _smp.message_pool.getInstance().push(new message("[AuthClient] Erro no Recebimento: " + ex.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        // Processa o pacote recebido
+                        raw = false;//ja leu packet ket
+                    }
+                    else
+                    {
+                        DisconnectSession(m_session);
                         break;
                     }
                 }
-
+                catch (IOException ioEx)
+                {
+                    _smp.message_pool.getInstance().push(new message("[unit_connect::accept_completed][IOError] " + ioEx.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    DisconnectSession(m_session);
+                    break;
+                }
+                catch (exception ex)
+                {
+                    _smp.message_pool.getInstance().push(new message("[unit_connect::accept_completed][ErrorSystem] " + ex.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    DisconnectSession(m_session);
+                    break;
+                }
             }
-            // Se saiu do loop, desconecta e limpa
-            DisconnectSession(m_session);
         }
 
         protected override void dispach_packet_same_thread(Session _session, packet _packet)
@@ -437,20 +396,55 @@ namespace PangyaAPI.Network.PangyaUnit
 
         public override bool DisconnectSession(Session _session)
         {
-            onDisconnect();
-            return _session.clear();
+            return _session.clear();//
         }
+
+        private DateTime _lastReconnectAttempt = DateTime.MinValue;
+        private int _retryCount = 0;
+
+        private System.Threading.Timer _reconnectTimer;
 
         public void start()
         {
             _eventTryConnect.Set();
 
-            // Tenta a primeira conexão
-            ConnectAndAssoc();
+            _reconnectTimer = new System.Threading.Timer(_ =>
+            {
+                if (m_session.m_client.Connected)
+                {
+                    _reconnectTimer?.Dispose(); // já conectou, para o timer
+                    return;
+                }
 
-            // Inicia a Thread de Monitoramento Vitalício
-           _ = OnMonitor(); 
+                int delaySeconds = Math.Min(30, (int)Math.Pow(2, _retryCount));
+
+                if ((DateTime.Now - _lastReconnectAttempt).TotalSeconds >= delaySeconds)
+                {
+                    try
+                    {
+                        ConnectAndAssoc();
+                    }
+                    catch (Exception ex)
+                    {
+                        _retryCount++;
+                        _smp.message_pool.getInstance().push(
+                            new message("[unit_auth_server_connect::start][ReconnectError] " + ex.Message,
+                            type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    }
+
+                    _lastReconnectAttempt = DateTime.Now;
+                }
+
+            }, null, 0, 1000); // roda a cada 1s
         }
+
+        public func_arr funcs;
+        public func_arr funcs_sv;
+        public UnitPlayer m_session;
+        public STATE m_state;
+        public stUnitCtx m_unit_ctx;
+        public IniHandle m_reader_ini;
+        private AutoResetEvent _eventTryConnect = new AutoResetEvent(false);
 
         public class packet_func_as
         {

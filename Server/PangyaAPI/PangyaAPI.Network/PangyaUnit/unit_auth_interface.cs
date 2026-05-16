@@ -11,7 +11,10 @@ namespace PangyaAPI.Network.PangyaUnit
         public virtual void authCmdBroadcastNotice(string _notice) { }
         public virtual void authCmdBroadcastTicker(string _nickname, string _msg) { }
         public virtual void authCmdBroadcastCubeWinRare(string _msg, uint _option) { }
-        public virtual void authCmdDisconnectPlayer(uint _req_server_uid, uint _player_uid, byte _force) { }
+        public virtual void authCmdDisconnectPlayer(uint _req_server_uid,
+            uint _player_uid,
+            byte _force)
+        { }
         public virtual void authCmdConfirmDisconnectPlayer(uint _player_uid) { }
         public virtual void authCmdNewMailArrivedMailBox(uint _player_uid, int _mail_id) { }
         public virtual void authCmdNewRate(uint _tipo, uint _qntd) { }
@@ -38,6 +41,6 @@ namespace PangyaAPI.Network.PangyaUnit
         /// </summary>
         /// <param name="_packet">BinaryWriter</param>
         /// <param name="_send_server_uid_or_type">id do server ou tipo</param>
-        public virtual void sendReplyToOtherServerWithAuthServer(PangyaBinaryWriter _packet, uint _send_server_uid_or_type) { } 
+        public virtual void sendReplyToOtherServerWithAuthServer(PangyaBinaryWriter _packet, uint _send_server_uid_or_type) { }
     }
 }
