@@ -24,7 +24,7 @@ namespace PangyaAPI.Utilities
                 //caso o arquivo não existir, é lançado uma exceção
                 if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + _filename) == false)
                 {
-                    _smp.message_pool.getInstance().push(new message($"[IniLib::Init][Log]: File no Exist: {_filename}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[IniLib::Init][Log]: File no Exist: {_filename}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     throw new exception($"[IniHandle::construtor][ErrorSystem] File no Exist: {_filename}");
                 }
                 else
@@ -86,7 +86,7 @@ namespace PangyaAPI.Utilities
                     }
                 }
             }
-            _smp.message_pool.getInstance().push(new message("[IniLib::GroupPos][Log]: Unable to find Group '" + group + "' in configuration file '" + fn + "'.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[IniLib::GroupPos][Log]: Unable to find Group '" + group + "' in configuration file '" + fn + "'.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             return ret; // Group not found.
         }
 
@@ -138,7 +138,7 @@ namespace PangyaAPI.Utilities
                 int iret = Convert.ToInt32(ret);
                 if (iret < min || iret > max)
                 {
-                    _smp.message_pool.getInstance().push(new message("[IniLib::ReadString][Log]: Invalid value '" + iret.ToString() + "' (Min: " + min.ToString() + " Max: " + max.ToString() + ") for '" + key + "' in configuration file '" + fn + "'. Defaulting value...", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[IniLib::ReadString][Log]: Invalid value '" + iret.ToString() + "' (Min: " + min.ToString() + " Max: " + max.ToString() + ") for '" + key + "' in configuration file '" + fn + "'. Defaulting value...", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     ret = _default;
                 }
             }

@@ -24,7 +24,7 @@ namespace Pangya_LoginServer.Server
         private PlayerManager _playerManager;
         public bool IsUnderMaintenance { get; private set; }
 
-        public LoginService() : base(new PlayerManager(500), new PacketDispatcher<Player, PacketIDClient>(), TypeServer.LoginServer)
+        public LoginService() : base(new PlayerManager(500), new PacketDispatcher<Player, PacketIDClient>(), ServerType.LoginServer)
         { 
             _playerManager = (PlayerManager)SessionsManager;
 
@@ -32,8 +32,8 @@ namespace Pangya_LoginServer.Server
 
             RegisterHandlers();
 
-            if (!sIff.getInstance().isLoad())
-                sIff.getInstance().Init();
+            if (!sIff.Instance.isLoad())
+                sIff.Instance.Init();
         }
 
         private void RegisterHandlers()
@@ -66,7 +66,7 @@ namespace Pangya_LoginServer.Server
 
             if (_command.Count == 0)
             {
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::CheckCommand][Error] Missing parameter", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::CheckCommand][Error] Missing parameter", type_msg.CL_ONLY_CONSOLE));
                 return true;
             }
 
@@ -76,13 +76,13 @@ namespace Pangya_LoginServer.Server
             {
                 var process = Process.GetCurrentProcess();
                 var memoryUsage = process.PrivateMemorySize64 / 1024 / 1024; // MB  
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::CheckCommand][Debug] STATUS[USERS: {Sessions?.Count() ?? 0}, MEMORY: {memoryUsage}, UPTIME: {DateTime.Now - process.StartTime}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::CheckCommand][Debug] STATUS[USERS: {Sessions?.Count() ?? 0}, MEMORY: {memoryUsage}, UPTIME: {DateTime.Now - process.StartTime}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             else if (s.Equals("reload_files", StringComparison.OrdinalIgnoreCase))
             {
                 ReloadFiles();
-                _smp.message_pool.getInstance().push(new message("Login Server files have been reloaded.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("Login Server files have been reloaded.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             else if (s.Equals("open", StringComparison.OrdinalIgnoreCase))
             {
@@ -92,21 +92,21 @@ namespace Pangya_LoginServer.Server
                     if (subCommand.Equals("server", StringComparison.OrdinalIgnoreCase))
                     {
                         setIsUnderMaintenance(true);//faço o servidor parar de rodar ou simplesmente não ira mais receber conexao!
-                        _smp.message_pool.getInstance().push(new message("Server Accept players ~~~.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("Server Accept players ~~~.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else if (subCommand.Equals("gm", StringComparison.OrdinalIgnoreCase))
                     {
                         m_access_flag = true;
-                        _smp.message_pool.getInstance().push(new message("Now only GM and registered IPs can login.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("Now only GM and registered IPs can login.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else if (subCommand.Equals("all", StringComparison.OrdinalIgnoreCase) && _command.Count > 2 && _command.Dequeue().Equals("user", StringComparison.OrdinalIgnoreCase))
                     {
                         m_access_flag = false;
-                        _smp.message_pool.getInstance().push(new message("Now all users can login.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("Now all users can login.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message($"Unknown Command: \"open {subCommand}\"", type_msg.CL_ONLY_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"Unknown Command: \"open {subCommand}\"", type_msg.CL_ONLY_CONSOLE));
                     }
                 }
             }
@@ -118,11 +118,11 @@ namespace Pangya_LoginServer.Server
                     if (subCommand.Equals("server", StringComparison.OrdinalIgnoreCase))
                     {
                         setIsUnderMaintenance(false);//faço o servidor parar de rodar ou simplesmente não ira mais receber conexao!
-                        _smp.message_pool.getInstance().push(new message("Server close players ~~~.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("Server close players ~~~.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message($"Unknown Command: \"open {subCommand}\"", type_msg.CL_ONLY_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"Unknown Command: \"open {subCommand}\"", type_msg.CL_ONLY_CONSOLE));
                     }
                 }
             }
@@ -134,16 +134,16 @@ namespace Pangya_LoginServer.Server
                     switch (sTipo)
                     {
                         case "iff":
-                            sIff.getInstance().reload();
+                            sIff.Instance.reload();
                             return true;
                         default:
-                            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             break;
                     }
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 } 
                 return true;
             } 
@@ -155,20 +155,20 @@ namespace Pangya_LoginServer.Server
             }
             else if (s.Equals("help", StringComparison.OrdinalIgnoreCase) || s == "?")
             {
-                var msg = _smp.message_pool.getInstance();
-                msg.push(new message("======= LOGIN SERVICE - COMMAND LIST =======", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("status                        - Status de memória, uptime e sessões de login.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("clear / cls                   - Limpa o console.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("reload_files                  - Recarrega arquivos de configuração do Login.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("---------------------------------------------------", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("open server                   - Abre o servidor para conexões.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("stop server                   - Coloca o servidor em manutenção.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("open gm                       - Restringe acesso apenas para GMs/IPs registrados.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("open all user                 - Libera o acesso para todos os jogadores.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("---------------------------------------------------", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("create_user [on/off]          - Ativa ou desativa a criação de novas contas.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("reload_system iff             - Recarrega as tabelas IFF no Login Service.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("===================================================", type_msg.CL_ONLY_CONSOLE));
+                var msg = _smp.LogManager.Instance;
+                msg.push(new AppMessage("======= LOGIN SERVICE - COMMAND LIST =======", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("status                        - Status de memória, uptime e sessões de login.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("clear / cls                   - Limpa o console.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("reload_files                  - Recarrega arquivos de configuração do Login.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("---------------------------------------------------", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("open server                   - Abre o servidor para conexões.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("stop server                   - Coloca o servidor em manutenção.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("open gm                       - Restringe acesso apenas para GMs/IPs registrados.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("open all user                 - Libera o acesso para todos os jogadores.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("---------------------------------------------------", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("create_user [on/off]          - Ativa ou desativa a criação de novas contas.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("reload_system iff             - Recarrega as tabelas IFF no Login Service.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("===================================================", type_msg.CL_ONLY_CONSOLE));
 
                 return true;
             }
@@ -181,22 +181,22 @@ namespace Pangya_LoginServer.Server
                     if (subCommand.Equals("on", StringComparison.OrdinalIgnoreCase))
                     {
                         m_create_user_flag = true;
-                        _smp.message_pool.getInstance().push(new message("Create User ON", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("Create User ON", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else if (subCommand.Equals("off", StringComparison.OrdinalIgnoreCase))
                     {
                         m_create_user_flag = false;
-                        _smp.message_pool.getInstance().push(new message("Create User OFF", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("Create User OFF", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message($"Unknown Command: \"create_user {subCommand}\"", type_msg.CL_ONLY_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"Unknown Command: \"create_user {subCommand}\"", type_msg.CL_ONLY_CONSOLE));
                     }
                 }
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::CheckCommand][Error] Command No Exist-> {s}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::CheckCommand][Error] Command No Exist-> {s}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return false;
             }
 
@@ -212,7 +212,7 @@ namespace Pangya_LoginServer.Server
         {
             if (session is not Player player)
             {
-                Console.WriteLine($"[Erro] A sessão conectada não é do tipo Player! Tipo real: {session.GetType().Name}");
+                Console.WriteLine($"[Erro] A sessão conectada não é do Type Player! Tipo real: {session.GetType().Name}");
                 return;
             }
 
@@ -220,9 +220,9 @@ namespace Pangya_LoginServer.Server
             {
                 var packet = new Packet(0x00);
                 packet.WriteInt32(player._ParseKey);
-                packet.WriteInt32(m_si.uid);
+                packet.WriteInt32(m_si.UID);
                 player.Send(packet, true);
-                _smp.message_pool.getInstance().push(new message($"[LoginService::OnClientConnected][Sucess] PLAYER[IP: {player.GetIP()}, OID: {player.ConnectionID}", 0));
+                _smp.LogManager.Instance.push(new AppMessage($"[LoginService::OnClientConnected][Sucess] PLAYER[IP: {player.GetIP()}, OID: {player.ConnectionID}", 0));
             }
             catch (Exception e)
             {
@@ -237,7 +237,7 @@ namespace Pangya_LoginServer.Server
 
             Player p = (Player)session;
 
-            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::OnClientDisconnected][Warning] PLAYER[ID: {p.UserInfo?.id} UID: {p.UserInfo?.uid}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::OnClientDisconnected][Warning] PLAYER[ID: {p.UserInfo?.Login} UID: {p.UserInfo?.UID}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
 
         protected override bool CheckPacket(IAppSession session, Packet packet)
@@ -248,7 +248,7 @@ namespace Pangya_LoginServer.Server
 
             var type = (PacketIDClient)packet.Type;
 
-            // 1. Connection-level packets are always allowed
+            // 1. Connection-Level packets are always allowed
             if (type == PacketIDClient.CLIENT_REQ_LOGIN || type == PacketIDClient.CLIENT_REQ_RECONNECT)
             {
                 return true;
@@ -283,7 +283,7 @@ namespace Pangya_LoginServer.Server
 
         protected override void OnStart()
         {
-            Console.Title = $"Login Service - P: {m_si.curr_user}, Auth: {(m_unit_connect != null && m_unit_connect.isLive()? "ON": "OFF")}";
+            Console.Title = $"Login Service - P: {m_si.CurrentUsers}, Auth: {(m_unit_connect != null && m_unit_connect.isLive()? "ON": "OFF")}";
         }
 
 
@@ -291,7 +291,7 @@ namespace Pangya_LoginServer.Server
         {
             base.LoadConfig();
             // Server Tipo
-            m_si.tipo = 0/*Login Server*/; 
+            m_si.Type = 0/*Login Server*/; 
             using (var m_reader_ini = ServerConfig.GetLoadConfigIni(ServerType))
             {
                 m_access_flag = m_reader_ini.readInt("OPTION", "ACCESSFLAG") == 1;
@@ -312,7 +312,7 @@ namespace Pangya_LoginServer.Server
         {
             LoadConfig();
 
-            sIff.getInstance().reload();
+            sIff.Instance.reload();
         }
 
         public override void authCmdShutdown(int _time_sec)
@@ -346,8 +346,8 @@ namespace Pangya_LoginServer.Server
                 {
 
                     // Log
-                    _smp.message_pool.getInstance().push(new message("[LoginServer::authCmdDisconnectPlayer][log] Comando do Auth Server, Server[UID: " + (_req_server_uid)
-                            + "] pediu para desconectar o Player[UID: " + (s.UserInfo.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginServer::authCmdDisconnectPlayer][log] Comando do Auth Server, Server[UID: " + (_req_server_uid)
+                            + "] pediu para desconectar o Player[UID: " + (s.UserInfo.UID) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // Deconecta o Player
                     OnClientDisconnected(s);
@@ -357,14 +357,14 @@ namespace Pangya_LoginServer.Server
 
                 }
                 else
-                    _smp.message_pool.getInstance().push(new message("[LoginServer::authCmdDisconnectPlayer][WARNING] Comando do Auth Server, Server[UID: " + (_req_server_uid)
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginServer::authCmdDisconnectPlayer][WARNING] Comando do Auth Server, Server[UID: " + (_req_server_uid)
                             + "] pediu para desconectar o Player[UID: " + (_player_uid) + "], mas nao encontrou ele no server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[LoginServer::authCmdDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[LoginServer::authCmdDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -391,7 +391,7 @@ namespace Pangya_LoginServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[LoginServer::authCmdConfirmDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[LoginServer::authCmdConfirmDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -429,14 +429,14 @@ namespace Pangya_LoginServer.Server
 
                 }
                 else
-                    _smp.message_pool.getInstance().push(new message("[LoginServer::authCmdConfirmSendInfoPlayerOnline][WARNING] Player[UID: " + (_aspi.uid)
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginServer::authCmdConfirmSendInfoPlayerOnline][WARNING] Player[UID: " + (_aspi.uid)
                             + "] retorno do confirma login com Auth Server do Server[UID: " + (_req_server_uid) + "], mas o palyer nao esta mais conectado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[LoginServer::authCmdConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[LoginServer::authCmdConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 

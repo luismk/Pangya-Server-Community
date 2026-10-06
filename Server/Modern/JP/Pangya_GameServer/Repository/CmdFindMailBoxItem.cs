@@ -85,7 +85,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_consulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_typeid));
 
-            checkResponse(r, "nao conseguiu encontrar o item[TYPEID=" + Convert.ToString(m_typeid) + "] no Mail Box do PLAYER[UID=" + Convert.ToString(m_uid) + "].");
+            checkResponse(r, "nao conseguiu encontrar o item[TYPEID=" + Convert.ToString(m_typeid) + "] no Mail Box do Normal[UID=" + Convert.ToString(m_uid) + "].");
 
             return r;
         }

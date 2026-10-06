@@ -18,7 +18,7 @@ using System.Net.Sockets;
 public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where T : class, IAppSession where TId : struct, Enum 
 {
     #region FIELDS
-    public TypeServer ServerType { get; set; }
+    public ServerType ServerType { get; set; }
 
     private TcpListener _listener;
     private CancellationTokenSource _cts;
@@ -46,7 +46,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
     #endregion
 
     #region CONSTRUTOR
-    protected AppServerBase(AppSessionManager<T> sessionManager, PacketDispatcher<T, TId> dispatcher, TypeServer typeServer)
+    protected AppServerBase(AppSessionManager<T> sessionManager, PacketDispatcher<T, TId> dispatcher, ServerType typeServer)
     {
         ServerType = typeServer;
         SessionsManager = sessionManager;
@@ -66,12 +66,12 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
 
             _cts = new CancellationTokenSource();
 
-            _listener = new TcpListener(IPAddress.Parse(m_si.ip), m_si.port);
+            _listener = new TcpListener(IPAddress.Parse(m_si.IpAddress), m_si.Port);
             _listener.Start();
-            // Passa m_si.max_user como limite de conexões simultâneas
-            _acceptLoop = new AcceptLoop(_listener, HandleClient, m_si.max_user > 0 ? m_si.max_user : 500);
+            // Passa m_si.MaxUsers como limite de conexões simultâneas
+            _acceptLoop = new AcceptLoop(_listener, HandleClient, m_si.MaxUsers > 0 ? m_si.MaxUsers : 500);
 
-            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::Start][Sucess] Running[Port: {m_si.port}, MaxUsers: {m_si.max_user}, Timeouts: {Timeouts}]",
+            _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::Start][Sucess] Running[Port: {m_si.Port}, MaxUsers: {m_si.MaxUsers}, Timeouts: {Timeouts}]",
                 type_msg.CL_ONLY_CONSOLE));
 
             IsRunning = true;
@@ -92,7 +92,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
 
     public uint getUID()
     {
-        return (uint)m_si.uid;
+        return (uint)m_si.UID;
     }
 
     public void Stop()
@@ -131,7 +131,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
 
         if (SessionsManager.IsFull())
         {
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                       $"[HandleClient] Protocol Limited by MaxUsers.",
                       type_msg.CL_FILE_LOG_AND_CONSOLE));
             client.Close();
@@ -169,8 +169,8 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
 
                 try
                 {
-                    // Usa o token ligado ao handshake enquanto não for feito,
-                    // e o token principal após o handshake
+                    // Usa o ShopToken ligado ao handshake enquanto não for feito,
+                    // e o ShopToken principal após o handshake
                     var activeToken = handshakeCts.IsCancellationRequested
                         ? _cts.Token
                         : linkedCts.Token;
@@ -180,7 +180,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
                 catch (OperationCanceledException) when (handshakeCts.IsCancellationRequested && !_cts.IsCancellationRequested)
                 {
                     // Handshake timeout — cliente conectou mas não enviou nada
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[Timeout::Handshake] {session.GetIP()} (OID {session.ConnectionID}) " +
                         $"não enviou handshake em {Timeouts.HandshakeSeconds}s. Kickando.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
@@ -199,7 +199,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
                 if (packets == null && !(session.GetCapability() == 4 || session.GetCapability() == 128))
                 {
                     session.SetReason(CloseReason.PacketProtocolError);
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[Security] Protocol Violation de {session.GetIP()}. Encerrando.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                     break;
@@ -209,7 +209,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
                 {
                     if (!CheckPacket(session, packet) && !(session.GetCapability() == 4 || session.GetCapability() == 128))
                     {
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[Security] Packet nao autorizado (ID: {(TId)(object)packet.Type}) de {session.GetIP()}.",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
                         session.SetReason(CloseReason.PacketProtocolNoAuthorized);
@@ -222,7 +222,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
         }
         catch (Exception ex)
         {
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                 $"[ServerBase::HandleClient][Error] {ex.Message}",
                 type_msg.CL_ONLY_CONSOLE));
         }
@@ -250,7 +250,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
         }
         catch (Exception ex)
         {
-            _smp.message_pool.getInstance().push(new message($"[ServerBase::DisconnectInternal][Error]  (OID: {session?.ConnectionID}): {ex.Message}", type_msg.CL_ONLY_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[ServerBase::DisconnectInternal][Error]  (OID: {session?.ConnectionID}): {ex.Message}", type_msg.CL_ONLY_CONSOLE));
         }
     }
 
@@ -283,7 +283,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
                 }
                 catch (TimeoutException)
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[{GetType().Name}::MonitorLoop][Warn] OnMonitor() demorou mais de {MonitorTimeout.TotalSeconds}s — possível lentidão no DB.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
@@ -321,7 +321,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
                      
                     if (s.IsHandshakeExpired(Timeouts.HandshakeSeconds))
                     {
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[Timeout::Handshake] Monitor kickou {s.GetIP()} " +
                             $"(OID {s.ConnectionID}) — sem handshake em {s.SecondsConnectedWithoutHandshake:F0}s.",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
@@ -333,7 +333,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
                     // Verifica Idle Timeout
                     if (s.IsIdle(Timeouts.IdleSeconds))
                     {
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[Timeout::Idle] Kickando {s.GetNickname()} ({s.GetIP()}) " +
                             $"(OID {s.ConnectionID} UID {s.GetUID()}) — " +
                             $"sem pacote há {s.SecondsSinceLastPacket:F0}s.",
@@ -451,7 +451,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
             // UPDATE ON Auth Server - Error reply
             m_unit_connect.SendInfoPlayerOnline(_req_server_uid, new AuthServerPlayerInfo(_player_uid));
 
-            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::authCmdInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::authCmdInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -465,12 +465,12 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
 
             try
             {
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] falta fazer ", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] falta fazer ", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
 
@@ -478,7 +478,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -492,19 +492,19 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
             try
             {
 
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::authCmdSendReplyToOtherServer][ErrorSystem] falta fazer ", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::authCmdSendReplyToOtherServer][ErrorSystem] falta fazer ", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::authCmdSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -520,7 +520,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::sendCommandToOtherServerWithAuthServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::sendCommandToOtherServerWithAuthServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -536,7 +536,7 @@ public abstract class AppServerBase<T, TId> : UnitAuthCommand, IAppServer where 
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::sendReplyToOtherServerWithAuthServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::sendReplyToOtherServerWithAuthServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 

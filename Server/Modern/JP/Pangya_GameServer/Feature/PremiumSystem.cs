@@ -47,7 +47,7 @@ namespace Pangya_GameServer.Feature
                         ticket = ItemManager._ownerItem(_session.Inventory.uid, _session.Inventory.PremiumTicket._typeid);
                         if (ticket.id <= 0)
                         {
-                            _smp.message_pool.getInstance().push(new message("[PremiumSystem::CheckEndTimeTicket][Error] player[UID=" + _session.Inventory.uid + "] nao tem o item Ticket Premium. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::CheckEndTimeTicket][Error] player[UID=" + _session.Inventory.uid + "] nao tem o item Ticket Premium. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             return;
                         }
                         _session.Inventory.WarehouseItems.Add(ticket.id, ticket);
@@ -67,7 +67,7 @@ namespace Pangya_GameServer.Feature
                     if (ItemManager.removeItem(item, _session) <= 0)
                         throw new Exception("[PremiumSystem::CheckEndTimeTicket][Error] player[UID=" + _session.Inventory.uid + "] tentou excluir ticket premium.");
 
-                    _smp.message_pool.getInstance().push(new message("[PremiumSystem::CheckEndTimeTicket][Log] Player[UID=" + _session.Inventory.uid + "].\tExcluiu ticket premium do player.", type_msg.CL_ONLY_FILE_LOG));
+                    _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::CheckEndTimeTicket][Log] Player[UID=" + _session.Inventory.uid + "].\tExcluiu ticket premium do player.", type_msg.CL_ONLY_FILE_LOG));
 
 
                     _session.Send(Handle_PACKET_RESPONSE.pacote26D(_session.Inventory.PremiumTicket.unix_end_date));
@@ -77,7 +77,7 @@ namespace Pangya_GameServer.Feature
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[PremiumSystem::CheckEndTimeTicket][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::CheckEndTimeTicket][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -91,10 +91,10 @@ namespace Pangya_GameServer.Feature
                 _session.Inventory.PremiumTicket.unix_end_date = (int)_ticket.end_date_unix_local;
                 _session.Inventory.PremiumTicket.unix_sec_date = (int)(_ticket.end_date_unix_local - UtilTime.GetLocalTimeAsUnix());
 
-                _smp.message_pool.getInstance().push(new message("[PremiumSystem::addPremiumUser][Log][UID=" + _session.Inventory.uid + "] eh um Premium User por (" + _time + ") Dias", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::addPremiumUser][Log][UID=" + _session.Inventory.uid + "] eh um Premium User por (" + _time + ") Dias", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 List<stItem> add_itens = new List<stItem>();
-                _session.UserInfo.UserCapabilities.premium_user = true;
+                _session.UserInfo.UserCapabilities.UserPremium = true;
 
                 var new_ball = addPremiumBall(_session);
                 if (new_ball._typeid != 0) add_itens.Add(new_ball);
@@ -109,7 +109,7 @@ namespace Pangya_GameServer.Feature
                 }
 
                 var p = new Packet(0x9A);
-                p.WriteInt32(_session.UserInfo.UserCapabilities.ulCapability);
+                p.WriteInt32(_session.UserInfo.UserCapabilities.Value);
                 _session.Send(p);
 
                 if (add_itens.Count > 0)
@@ -133,7 +133,7 @@ namespace Pangya_GameServer.Feature
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[PremiumSystem::addPremiumUser][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::addPremiumUser][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -143,9 +143,9 @@ namespace Pangya_GameServer.Feature
             try
             { 
                 removePremiumBall(_session);
-                _session.UserInfo.UserCapabilities.premium_user = false;
+                _session.UserInfo.UserCapabilities.UserPremium = false;
 
-                _session.Send(Handle_PACKET_RESPONSE.pacote09A(_session.UserInfo.UserCapabilities.ulCapability));
+                _session.Send(Handle_PACKET_RESPONSE.pacote09A(_session.UserInfo.UserCapabilities.Value));
 
                 // UPDATE ON GAME - Mostra a mensagem que acabou o tempo do ticket premium
 
@@ -153,13 +153,13 @@ namespace Pangya_GameServer.Feature
 
                 _session.Inventory.PremiumTicket.clear();
 
-                _smp.message_pool.getInstance().push(new message("[PremiumSystem::removePremiumUser][Log] player[UID=" + _session.Inventory.uid + "] removeu o Premium User...", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::removePremiumUser][Log] player[UID=" + _session.Inventory.uid + "] removeu o Premium User...", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 using (var p = new Packet(0x40))   // Msg to Chat of player
                 {
                     p.WriteByte(7);  // Notice
 
-                    p.WriteString(_session.UserInfo.nickname);
+                    p.WriteString(_session.UserInfo.NickName);
                     p.WriteString("voce nao e mais premium.");
 
                     _session.Send(p);
@@ -168,7 +168,7 @@ namespace Pangya_GameServer.Feature
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[PremiumSystem::removePremiumUser][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::removePremiumUser][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -201,7 +201,7 @@ namespace Pangya_GameServer.Feature
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[PremiumSystem::addPremiumBall][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::addPremiumBall][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             return item;
         }
@@ -242,7 +242,7 @@ namespace Pangya_GameServer.Feature
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[PremiumSystem::addPremiumClubSet][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::addPremiumClubSet][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             return item;
         }
@@ -264,7 +264,7 @@ namespace Pangya_GameServer.Feature
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[PremiumSystem::addPremiumMascot][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::addPremiumMascot][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             return item;
         }
@@ -286,7 +286,7 @@ namespace Pangya_GameServer.Feature
                    MailManager.SendMessageWithItem(0, _session.Inventory.uid, "Premium System - Gift Box", item);
                 }
             }
-            catch (Exception e) { _smp.message_pool.getInstance().push(new message("[PremiumSystem::addPremiumBox][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
+            catch (Exception e) { _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::addPremiumBox][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
         }
 
         public stItem addPremiumTitle(Player _session, uint _time)
@@ -303,7 +303,7 @@ namespace Pangya_GameServer.Feature
                 item.type = 2; item.id = new_wi.id; item._typeid = new_wi._typeid; item.flag_time = (byte)new_wi.type;
                 item.qntd = 1; item.STDA_C_ITEM_QNTD = (short)item.qntd;
             }
-            catch (Exception e) { _smp.message_pool.getInstance().push(new message("[PremiumSystem::addPremiumTitle][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
+            catch (Exception e) { _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::addPremiumTitle][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
             return item;
         }
 
@@ -332,7 +332,7 @@ namespace Pangya_GameServer.Feature
                     _session.Send(p);
                 }
             }
-            catch (Exception e) { _smp.message_pool.getInstance().push(new message("[PremiumSystem::removePremiumBall][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
+            catch (Exception e) { _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::removePremiumBall][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
         }
 
         public void removePremiumTitle(Player _session)
@@ -360,7 +360,7 @@ namespace Pangya_GameServer.Feature
                     _session.Send(p);
                 }
             }
-            catch (Exception e) { _smp.message_pool.getInstance().push(new message("[PremiumSystem::removePremiumTitle][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
+            catch (Exception e) { _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::removePremiumTitle][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
         }
 
         public void updatePremiumUser(Player _session)
@@ -369,11 +369,11 @@ namespace Pangya_GameServer.Feature
             try
             {
                 List<stItem> add_itens = new List<stItem>();
-                _session.UserInfo.UserCapabilities.premium_user = true;
+                _session.UserInfo.UserCapabilities.UserPremium = true;
                 var new_ball = addPremiumBall(_session);
                 if (new_ball._typeid != 0u) add_itens.Add(new_ball);
 
-                _session.Send(Handle_PACKET_RESPONSE.pacote09A(_session.UserInfo.UserCapabilities.ulCapability));
+                _session.Send(Handle_PACKET_RESPONSE.pacote09A(_session.UserInfo.UserCapabilities.Value));
 
                 if (add_itens.Count > 0)
                 {
@@ -392,7 +392,7 @@ namespace Pangya_GameServer.Feature
                     _session.Send(p);
                 }
             }
-            catch (Exception e) { _smp.message_pool.getInstance().push(new message("[PremiumSystem::updatePremiumUser][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
+            catch (Exception e) { _smp.LogManager.Instance.push(new AppMessage("[PremiumSystem::updatePremiumUser][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)); }
         }
 
         // --- Getters e Verificadores ---

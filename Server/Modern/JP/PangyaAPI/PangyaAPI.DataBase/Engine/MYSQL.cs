@@ -31,7 +31,7 @@ namespace PangyaAPI.DataBase.Engine
             catch (OdbcException ex)
             { 
                 m_connected = false;
-                _smp.message_pool.getInstance().push(new message($"[mysql::Connect][Error] {ex.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[mysql::Connect][Error] {ex.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -303,16 +303,16 @@ namespace PangyaAPI.DataBase.Engine
 
         private void logSchema(string type, OdbcError err, string sql)
         {
-            _smp.message_pool.getInstance().push(
-                new message(
+            _smp.LogManager.Instance.push(
+                new AppMessage(
                     $"[mysql::{type}][ErrorCode: {err.SQLState}/{err.NativeError}, {err.Message}]",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
 
         private void logError(string where, string msg, string sql)
         {
-            _smp.message_pool.getInstance().push(
-                new message(
+            _smp.LogManager.Instance.push(
+                new AppMessage(
                     $"[mysql::{where}][Error] {msg} | SQL: {sql}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
         }

@@ -108,11 +108,11 @@ namespace Pangya_GameServer.Repository
                 wi.ucc.trade = (sbyte)IFNULL<uint>(_result.data[42]);
                 wi.ucc.status = (byte)IFNULL<uint>(_result.data[44]);
 
-                if (sIff.getInstance().getItemGroupIdentify(wi._typeid) == IFF_GROUP.PART)
+                if (sIff.Instance.getItemGroupIdentify(wi._typeid) == IFF_GROUP.PART)
                 {
                     SetPartsItemCount();
                 }
-                else if (sIff.getInstance().getItemGroupIdentify(wi._typeid) == IFF_GROUP.CLUBSET)
+                else if (sIff.Instance.getItemGroupIdentify(wi._typeid) == IFF_GROUP.CLUBSET)
                 {
                     SetClubsetItemCount();
                 }
@@ -128,14 +128,14 @@ namespace Pangya_GameServer.Repository
                     if (!found)
                     {
                         v_wi[wi.id] = wi;
-                        _smp.message_pool.getInstance().push(new message(
-                            $"[CmdWarehouseItemInfo::lineResult][Warning] PLAYER[UID={m_uid}] adicionou WarehouseItem[TYPEID={wi._typeid}, ID={wi.id}], com mesmo id e typeid diferente de outro WarehouseItemEx que tem no multimap",
+                        _smp.LogManager.Instance.push(new AppMessage(
+                            $"[CmdWarehouseItemInfo::lineResult][Warning] Normal[UID={m_uid}] adicionou WarehouseItem[TYPEID={wi._typeid}, ID={wi.id}], com mesmo Login e typeid diferente de outro WarehouseItemEx que tem no multimap",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message(
-                            $"[CmdWarehouseItemInfo::lineResult][Warning] PLAYER[UID={m_uid}] tentou adicionar no multimap um WarehouseItem[TYPEID={wi._typeid}, ID={wi.id}] com o mesmo ID e TYPEID, DUPLICATA",
+                        _smp.LogManager.Instance.push(new AppMessage(
+                            $"[CmdWarehouseItemInfo::lineResult][Warning] Normal[UID={m_uid}] tentou adicionar no multimap um WarehouseItem[TYPEID={wi._typeid}, ID={wi.id}] com o mesmo ID e TYPEID, DUPLICATA",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }

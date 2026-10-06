@@ -31,7 +31,7 @@ namespace Pangya_GameServer.Handles
             {
                 CmdCouponGacha cmd_cg = new CmdCouponGacha(Player.Inventory.uid); // Waiter
 
-                NormalManagerDB.getInstance().add(0, cmd_cg, null, null);
+                NormalManagerDB.Instance.add(0, cmd_cg, null, null);
 
                 if (cmd_cg.getException().getCodeError() != 0)
                 {
@@ -68,7 +68,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestUpdateGachaCoupon][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestUpdateGachaCoupon][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Error envia o dizendo que deu erro no sistema
                 p.init_plain(0x44);

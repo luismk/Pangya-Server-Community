@@ -70,7 +70,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_ib.index) + ", " + Convert.ToString(m_ib._typeid) + ", " + Convert.ToString(m_ib.tipo) + ", " + makeText(_formatDate(m_ib.end_date.ConvertTime())));
 
-            checkResponse(r, "nao conseguiu atualizar o tempo do item buff[INDEX=" + Convert.ToString(m_ib.index) + ", TYPEID=" + Convert.ToString(m_ib._typeid) + ", TIPO=" + Convert.ToString(m_ib.tipo) + ", DATE{REG_DT: " + _formatDate(m_ib.use_date.ConvertTime()) + ", END_DT: " + _formatDate(m_ib.end_date.ConvertTime()) + "}] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o tempo do item buff[INDEX=" + Convert.ToString(m_ib.index) + ", TYPEID=" + Convert.ToString(m_ib._typeid) + ", TIPO=" + Convert.ToString(m_ib.tipo) + ", DATE{REG_DT: " + _formatDate(m_ib.use_date.ConvertTime()) + ", END_DT: " + _formatDate(m_ib.end_date.ConvertTime()) + "}] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

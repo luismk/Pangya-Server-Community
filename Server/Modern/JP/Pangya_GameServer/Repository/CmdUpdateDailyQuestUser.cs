@@ -84,7 +84,7 @@ namespace Pangya_GameServer.Repository
                 r = consulta($"INSERT INTO pangya.pangya_daily_quest_player(UID, LAST_QUEST_ACCEPT, TODAY_QUEST) VALUES({m_uid}, NULL, NULL)");
             }
 
-            checkResponse(r, $"nao conseguiu {m_type} o DailyQuest[ACCEPT_DT=" + accept_dt + ", TODAY_DT=" + today_dt + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, $"nao conseguiu {m_type} o DailyQuest[ACCEPT_DT=" + accept_dt + ", TODAY_DT=" + today_dt + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

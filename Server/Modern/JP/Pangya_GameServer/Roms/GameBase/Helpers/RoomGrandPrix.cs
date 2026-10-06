@@ -1,7 +1,7 @@
 ﻿using Pangya_GameServer.Channels;
 using Pangya_GameServer.Engine;
 using Pangya_GameServer.Flags;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Server;
 using Pangya_GameServer.Session;
@@ -31,7 +31,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
         {
         }
         #region CONSTRUTOR
-        public RoomGrandPrix(Channel _channel_owner, RoomInfo _ri, GrandPrixData _gp) : base(_channel_owner, _ri)
+        public RoomGrandPrix(Channel _channel_owner, GameRoomInfoModel _ri, GrandPrixData _gp) : base(_channel_owner, _ri)
         {
             this.m_gp = _gp;
             this.m_count_down = null; 
@@ -45,7 +45,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
             // Verifica se � Grand Prix Normal e cria um temporizador para come�ar a sala
             // Rookie Grand Prix n�o tem tempo para come�ar o player come�a na hora que ele d� play por que � uma inst�ncia
-            if (!(sIff.getInstance().getGrandPrixAbaType(m_gp.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.getInstance().isGrandPrixNormal(m_gp.ID)))
+            if (!(sIff.Instance.getGrandPrixAbaType(m_gp.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.Instance.isGrandPrixNormal(m_gp.ID)))
             {
                 // "Zera" a data colocando valores válidos
                 m_now.Year = 2000;
@@ -98,14 +98,14 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
             try
             {   
-                if (sIff.getInstance().getGrandPrixAbaType(m_gp.ID) == GrandPrixData.GP_ABA.ROOKIE && !sIff.getInstance().isGrandPrixNormal(m_gp.ID))
+                if (sIff.Instance.getGrandPrixAbaType(m_gp.ID) == GrandPrixData.GP_ABA.ROOKIE && !sIff.Instance.isGrandPrixNormal(m_gp.ID))
                 {
-                    throw new exception("[RoomGrandPrix::requestStartGame][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "], mas a sala nao é uma Grand Prix Rookie(Tuto). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
+                    throw new exception("[RoomGrandPrix::requestStartGame][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "], mas a sala nao é uma Grand Prix Rookie(Tuto). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
                         1, 0x5900201));
                 }
 
                 // Diferente de Grand Prix ROOKIE(TUTO), manda para o requestStartGame da class room, para tratar esse requisi��o
-                if (sIff.getInstance().getGrandPrixAbaType(m_gp.ID) != GrandPrixData.GP_ABA.ROOKIE)
+                if (sIff.Instance.getGrandPrixAbaType(m_gp.ID) != GrandPrixData.GP_ABA.ROOKIE)
                 {
                     ret = base.RequestStartGame(_session, _packet);
                 }
@@ -114,30 +114,30 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                     // Verifica se todos est�o prontos se n�o da erro
                     if (!IsAllReady())
                     {
-                        throw new exception("[RoomGrandPrix::requestStartGame][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + ", MASTER=" + Convert.ToString(RoomInfo.master) + "], mas nem todos jogadores estao prontos. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
+                        throw new exception("[RoomGrandPrix::requestStartGame][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + ", MASTER=" + Convert.ToString(RoomInfo.OwnerUID) + "], mas nem todos jogadores estao prontos. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
                             8, 0x5900202));
                     }
 
-                    // random course if random course
+                    // random CourseIndex if random CourseIndex
                     if (RoomInfo.GetMap() >= 0x7Fu)
                     {
 
                         // Special Shuffle Course
-                        if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE && RoomInfo.GetModo() == ROOM_INFO_MODO.M_SHUFFLE_COURSE)
+                        if (RoomInfo.GetRoomType() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE && RoomInfo.GetHoleType() == RoomHoleType.M_SHUFFLE_COURSE)
                         {
 
-                            RoomInfo.course = (ROOM_INFO_COURSE)(0x80 | 17);
+                            RoomInfo.CourseIndex = (RoomCourseFlags)(0x80 | 17);
 
                         }
                         else
-                        { // Random normal
+                        { // Random Normal
 
                             LotterySystem lottery = new LotterySystem();
 
-                            foreach (var el in sIff.getInstance().getCourse())
+                            foreach (var el in sIff.Instance.getCourse())
                             {
 
-                                var course_id = sIff.getInstance().getItemIdentify(el.ID);
+                                var course_id = sIff.Instance.getItemIdentify(el.ID);
 
                                 if (course_id != 17 && course_id != 0x40)
                                 {
@@ -149,7 +149,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
                             if (lc != null)
                             {
-                                RoomInfo.course = (ROOM_INFO_COURSE)(0x80u | Convert.ToByte(lc.Value));
+                                RoomInfo.CourseIndex = (RoomCourseFlags)(0x80u | Convert.ToByte(lc.Value));
                             }
                         }
                     }
@@ -158,7 +158,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                 if (!MakeGameRoom(m_gp))
                     SendBroadCast(Handle_PACKET_RESPONSE.pacote049(null, TGAME_CREATE_RESULT.CREATE_GAME_CREATE_FAILED));
                 // Update Room State
-                RoomInfo.state = 0; // IN GAME
+                RoomInfo.StateRoom = 0; // IN GAME
 
                 p.init_plain(0x230);
 
@@ -170,7 +170,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
                 p.init_plain(0x77);
 
-                p.WriteUInt32((uint)GameServer.getInstance().getInfo().rate.pang); // Rate Pang
+                p.WriteUInt32((uint)GameServer.Instance.getInfo().Rate.Pang); // Rate Pang
 
                 SendBroadCast(p);
 
@@ -184,7 +184,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Room::RequestStartGame] [Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Room::RequestStartGame] [Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 				_session.Send(Handle_PACKET_RESPONSE.pacote049(this, TGAME_CREATE_RESULT.CREATE_GAME_CREATE_FAILED2));
 				ret = false; // Error ao inicializar o Jogo
             }
@@ -202,46 +202,46 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             try
             {
 
-                if (sIff.getInstance().getGrandPrixAbaType(m_gp.ID) == GrandPrixData.GP_ABA.ROOKIE && !sIff.getInstance().isGrandPrixNormal(m_gp.ID))
+                if (sIff.Instance.getGrandPrixAbaType(m_gp.ID) == GrandPrixData.GP_ABA.ROOKIE && !sIff.Instance.isGrandPrixNormal(m_gp.ID))
                 {
-                    throw new exception("[RoomGrandPrix::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "], mas a sala nao é uma Grand Prix Rookie(Tuto). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
+                    throw new exception("[RoomGrandPrix::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "], mas a sala nao é uma Grand Prix Rookie(Tuto). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
                         1, 0x5900201));
                 }
 
                 // Verifica se j� tem um jogo inicializado e lan�a error se tiver, para o cliente receber uma resposta
                 if (CurrentGame != null)
                 {
-                    throw new exception("[RoomGrandPrix::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "], mas ja tem um jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
+                    throw new exception("[RoomGrandPrix::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "], mas ja tem um jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
                         7, 0x5900202));
                 }
 
                 // Verifica se todos est�o prontos se n�o da erro
                 if (!IsAllReady())
                 {
-                    throw new exception("[RoomGrandPrix::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + ", MASTER=" + Convert.ToString(RoomInfo.master) + "], mas nem todos jogadores estao prontos. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
+                    throw new exception("[RoomGrandPrix::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + ", MASTER=" + Convert.ToString(RoomInfo.OwnerUID) + "], mas nem todos jogadores estao prontos. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_GRAND_PRIX,
                         8, 0x5900202));
                 }
 
-                // random course if random course
+                // random CourseIndex if random CourseIndex
                 if (RoomInfo.GetMap() >= 0x7Fu)
                 {
 
                     // Special Shuffle Course
-                    if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE && RoomInfo.GetModo() == ROOM_INFO_MODO.M_SHUFFLE_COURSE)
+                    if (RoomInfo.GetRoomType() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE && RoomInfo.GetHoleType() == RoomHoleType.M_SHUFFLE_COURSE)
                     {
 
-                        RoomInfo.course = (ROOM_INFO_COURSE)(0x80 | 17);
+                        RoomInfo.CourseIndex = (RoomCourseFlags)(0x80 | 17);
 
                     }
                     else
-                    { // Random normal
+                    { // Random Normal
 
                         LotterySystem lottery = new LotterySystem();
 
-                        foreach (var el in sIff.getInstance().getCourse())
+                        foreach (var el in sIff.Instance.getCourse())
                         {
 
-                            var course_id = sIff.getInstance().getItemIdentify(el.ID);
+                            var course_id = sIff.Instance.getItemIdentify(el.ID);
 
                             if (course_id != 17 && course_id != 0x40)
                             {
@@ -253,7 +253,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
                         if (lc != null)
                         {
-                            RoomInfo.course = (ROOM_INFO_COURSE)(0x80u | Convert.ToByte(lc.Value));
+                            RoomInfo.CourseIndex = (RoomCourseFlags)(0x80u | Convert.ToByte(lc.Value));
                         }
                     }
                 }
@@ -263,7 +263,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
 
                 // Update Room State
-                RoomInfo.state = 0; // IN GAME
+                RoomInfo.StateRoom = 0; // IN GAME
 
                 // Mandar para ficar igual ao original
                 p.init_plain(0x253); 
@@ -277,7 +277,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                 p.init_plain(0x231);
                 SendBroadCast(p);
 
-                var rate_pang = GameServer.getInstance().getInfo().rate.pang;
+                var rate_pang = GameServer.Instance.getInfo().Rate.Pang;
 
                 p.init_plain(0x77);
 
@@ -289,7 +289,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[RoomGrandPrix::startGame][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomGrandPrix::startGame][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 ret = false; // Error ao inicializar o Jogo
             }
@@ -300,9 +300,9 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
         // Init Instance vector and lock, para não dá erro no destrutor por que vai destruir ele primeiro do que a instance da classe
         public static void initFirstInstance()
         { 
-            if (m_cs_instancia.getInstance().m_state && m_instancias.getInstance().Count == 0)
+            if (m_cs_instancia.Instance.m_state && m_instancias.Instance.Count == 0)
             {
-                 _smp.message_pool.getInstance().push(new message("[RoomGrandPrix::initFirstInstance][Sucess] Created", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                 _smp.LogManager.Instance.push(new AppMessage("[RoomGrandPrix::initFirstInstance][Sucess] Created", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -327,7 +327,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[RoomGrandPrix::_count_down_to_start][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomGrandPrix::_count_down_to_start][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return 0;
@@ -345,11 +345,11 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                 {
                     if (m_count_down != null)
                     {
-                        GameServer.getInstance().DeleteTimer(m_count_down);
+                        GameServer.Instance.DeleteTimer(m_count_down);
                     }
 
                     if (Players.Count() >= 1 && GameStart())
-                        GameServer.getInstance().sendUpdateRoomInfo(this, 3); // Update Room Info
+                        GameServer.Instance.sendUpdateRoomInfo(this, 3); // Update Room Info
                     else
                         ret = 1; // Destroi a sala
                 }
@@ -434,10 +434,10 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                         m_count_down.getState() == PangyaSyncTimer.TIMER_STATE.FINISH)
                     {
                         if (m_count_down != null)
-                            GameServer.getInstance().DeleteTimer(m_count_down);
+                            GameServer.Instance.DeleteTimer(m_count_down);
 
                         // Cria o timer com intervalo calculado e a lista de intervalos (pode ajustar aqui)
-                        m_count_down = GameServer.getInstance().MakeTimer(wait, new List<long> { interval }, () =>
+                        m_count_down = GameServer.Instance.MakeTimer(wait, new List<long> { interval }, () =>
                         {
                             CountDownStart(this, _sec_to_start);
 
@@ -447,7 +447,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RoomGrandZodiacEvent::count_down_to_start][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomGrandZodiacEvent::count_down_to_start][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -457,11 +457,11 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
         private static void Add(RoomGrandPrix _rgp)
         {
 
-            m_cs_instancia.getInstance().@lock();
+            m_cs_instancia.Instance.@lock();
 
-            m_instancias.getInstance().Add(new RoomGrandPrixInstanciaCtx(_rgp, RoomGrandPrixInstanciaCtx.eSTATE.GOOD));
+            m_instancias.Instance.Add(new RoomGrandPrixInstanciaCtx(_rgp, RoomGrandPrixInstanciaCtx.eSTATE.GOOD));
 
-            m_cs_instancia.getInstance().unlock();
+            m_cs_instancia.Instance.unlock();
         }
          
         private static int getRoom(RoomGrandPrix _rgp)
@@ -469,10 +469,10 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
             int index = -1;
 
-            for (var i = 0; i < m_instancias.getInstance().Count(); ++i)
+            for (var i = 0; i < m_instancias.Instance.Count(); ++i)
             {
 
-                if (m_instancias.getInstance()[i].m_rgp == _rgp)
+                if (m_instancias.Instance[i].m_rgp == _rgp)
                 {
 
                     index = (int)i;
@@ -489,16 +489,16 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
             bool valid = false;
 
-            m_cs_instancia.getInstance().@lock();
+            m_cs_instancia.Instance.@lock();
 
             var index = getRoom(_rgp);
 
             if (index >= 0)
             {
-                valid = (m_instancias.getInstance()[index].m_state == RoomGrandPrixInstanciaCtx.eSTATE.GOOD);
+                valid = (m_instancias.Instance[index].m_state == RoomGrandPrixInstanciaCtx.eSTATE.GOOD);
             }
 
-            m_cs_instancia.getInstance().unlock();
+            m_cs_instancia.Instance.unlock();
 
             return valid;
         }

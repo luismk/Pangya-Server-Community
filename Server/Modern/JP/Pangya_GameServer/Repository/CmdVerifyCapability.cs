@@ -9,7 +9,7 @@ namespace Pangya_GameServer.Repository
     public class CmdVerifyCapability : Pangya_DB
     {
         private uint m_uid;
-        private uCapability m_cap; 
+        private PlayerCapability m_cap; 
 
         public CmdVerifyCapability(uint uid)
         {
@@ -23,13 +23,13 @@ namespace Pangya_GameServer.Repository
             try
             {
                 int db_uid = _result.GetInt32(0);
-                m_cap = new uCapability(_result.GetInt32(1));
+                m_cap = new PlayerCapability(_result.GetInt32(1));
 
                 if (db_uid != m_uid)
                     throw new Exception($"[CmdVerifyCapability][Error] UID não bate. Req: {m_uid}, DB: {db_uid}");
 
-                if (4 != m_cap.ulCapability)
-                    throw new Exception($"[CmdVerifyCapability][Error] Capacidade não bate. Req: {m_cap.ulCapability}, DB: {4}"); 
+                if (4 != m_cap.Value)
+                    throw new Exception($"[CmdVerifyCapability][Error] Capacidade não bate. Req: {m_cap.Value}, DB: {4}"); 
             }
             catch (Exception ex)
             {
@@ -39,14 +39,14 @@ namespace Pangya_GameServer.Repository
 
         protected override Response prepareConsulta()
         {
-            var r = consulta($"SELECT uid, capability FROM pangya.account WHERE uid = {m_uid}");
-            checkResponse(r, $"Não conseguiu verificar capability do UID: {m_uid}");
+            var r = consulta($"SELECT UID, Capability FROM pangya.account WHERE UID = {m_uid}");
+            checkResponse(r, $"Não conseguiu verificar Capability do UID: {m_uid}");
             return r;
         }
 
         public bool IsValid()
         {
-            return m_cap.game_master;
+            return m_cap.IsGameMaster;
         } 
     }
 }

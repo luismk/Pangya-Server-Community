@@ -28,7 +28,7 @@ namespace Pangya_GameServer.Feature
         {
             CmdApproachMissions cmd_am = new CmdApproachMissions(true); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_am, null, null);
 
             if (cmd_am.getException().getCodeError() != 0)
@@ -41,7 +41,7 @@ namespace Pangya_GameServer.Feature
 
             //#ifdef _DEBUG
             if (m_mad.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[ApproachMissionSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ApproachMissionSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // Carregado com sucesso
             m_load = true;
@@ -94,7 +94,7 @@ namespace Pangya_GameServer.Feature
 
                 var index = RandomNumbers.Next() % m_mad.Count();
 
-                _smp.message_pool.getInstance().push(new message("[ApproachMissionSystem::drawMission][Log] Mission[Number=" + Convert.ToString(m_mad[index].numero) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ApproachMissionSystem::drawMission][Log] Mission[Number=" + Convert.ToString(m_mad[index].numero) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (m_mad[index].flag.players < _num_players)
                 {
@@ -133,7 +133,7 @@ namespace Pangya_GameServer.Feature
                             break;
                         case 10:
                             {
-                                var characters = sIff.getInstance().getCharacter();
+                                var characters = sIff.Instance.getCharacter();
 
                                 var choice = RandomNumbers.Next() % characters.Count();
 
@@ -171,14 +171,14 @@ namespace Pangya_GameServer.Feature
 
             if (_arg == null)
             {
-                _smp.message_pool.getInstance().push(new message("[ApproachMissionSystem::SQLDBResponse][Warning] _arg is nullptr com msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ApproachMissionSystem::SQLDBResponse][Warning] _arg is nullptr com msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
-            // Por Hora s  sai, depois fa o outro tipo de tratamento se precisar
+            // Por Hora s  sai, depois fa o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[ApproachMissionSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ApproachMissionSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 

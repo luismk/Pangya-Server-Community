@@ -1,6 +1,6 @@
 ﻿using Pangya_GameServer.Channels;
 using Pangya_GameServer.Flags;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.Roms;
 using Pangya_GameServer.Roms.GameBase.Helpers;
 using Pangya_GameServer.Session;
@@ -33,39 +33,39 @@ namespace Pangya_GameServer.Manager
         }
 
        
-        public Room? MakeRoom(Channel _channel_owner, RoomInfo _ri, Player _session, int _option = 0)
+        public Room? MakeRoom(Channel _channel_owner, GameRoomInfoModel _ri, Player _session, int _option = 0)
         {
             Room? r = null;
 
             try
             {
 
-                if (_session != null && _session.UserInfo.Member.sala_numero != -1)
+                if (_session != null && _session.UserInfo.Member.RoomID != -1)
                 {
-                    throw new exception("[RoomManager::makeRoom][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] sala[NUMERO=" + Convert.ToString(_session.UserInfo.Member.sala_numero) + "], ja esta em outra sala, nao pode criar outra. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_MANAGER,
+                    throw new exception("[RoomManager::makeRoom][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] sala[NUMERO=" + Convert.ToString(_session.UserInfo.Member.RoomID) + "], ja esta em outra sala, nao pode criar outra. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_MANAGER,
                         120, 0));
                 }
 
-                _ri.numero = getNewIndex();
+                _ri.RoomID = getNewIndex();
                 _ri.roomId = Guid.NewGuid();
                 if (_option == 0 && _session != null)
                 {
-                    _ri.master = (int)_session.UserInfo.uid;
+                    _ri.OwnerUID = (int)_session.UserInfo.UID;
                 }
                 else if (_option == 1) // Room Sem Master Grand Prix ou Grand Zodiac Event Time
                 {
-                    _ri.master = -2;
+                    _ri.OwnerUID = -2;
                 }
-                else // Room sem master
+                else // Room sem Master
                 {
-                    _ri.master = -1;
+                    _ri.OwnerUID = -1;
                 }
 
                 r = new Room(_channel_owner, _ri);
 
                 if (r == null)
                 {
-                    throw new exception("[RoomManager::makeRoom][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou criar a sala[TIPO=" + Convert.ToString((ushort)_ri.tipo) + "], mas nao conseguiu criar o objeto da classe room. Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_MANAGER,
+                    throw new exception("[RoomManager::makeRoom][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou criar a sala[TIPO=" + Convert.ToString((ushort)_ri.RealRoomType) + "], mas nao conseguiu criar o objeto da classe room. Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_MANAGER,
                         130, 0));
                 }
 
@@ -99,45 +99,45 @@ namespace Pangya_GameServer.Manager
                     r = null;
                 }
 
-                _smp.message_pool.getInstance().push(new message("[RoomManager::makeRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomManager::makeRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return r;
         }
          
-        public RoomGrandPrix? MakeRoomGrandPrix(Channel _channel_owner, RoomInfo _ri, Player _session, GrandPrixData _gp, int _option = 0)
+        public RoomGrandPrix? MakeRoomGrandPrix(Channel _channel_owner, GameRoomInfoModel _ri, Player _session, GrandPrixData _gp, int _option = 0)
         {
             RoomGrandPrix? r = null;
 
             try
             {
 
-                if (_session != null && _session.UserInfo.Member.sala_numero != -1)
+                if (_session != null && _session.UserInfo.Member.RoomID != -1)
                 {
-                    throw new exception("[RoomManager::makeRoom][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] sala[NUMERO=" + Convert.ToString(_session.UserInfo.Member.sala_numero) + "], ja esta em outra sala, nao pode criar outra. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_MANAGER,
+                    throw new exception("[RoomManager::makeRoom][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] sala[NUMERO=" + Convert.ToString(_session.UserInfo.Member.RoomID) + "], ja esta em outra sala, nao pode criar outra. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_MANAGER,
                         120, 0));
                 }
 
-                _ri.numero = getNewIndex();
+                _ri.RoomID = getNewIndex();
                 _ri.roomId = Guid.NewGuid();
                 if (_option == 0 && _session != null)
                 {
-                    _ri.master = (int)_session.UserInfo.uid;
+                    _ri.OwnerUID = (int)_session.UserInfo.UID;
                 }
                 else if (_option == 1) // Room Sem Master Grand Prix ou Grand Zodiac Event Time
                 {
-                    _ri.master = -2;
+                    _ri.OwnerUID = -2;
                 }
-                else // Room sem master
+                else // Room sem Master
                 {
-                    _ri.master = -1;
+                    _ri.OwnerUID = -1;
                 }
 
                 r = new RoomGrandPrix(_channel_owner, _ri, _gp);
 
                 if (r == null)
                 {
-                    throw new exception("[RoomManager::makeRoom][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou criar a sala[TIPO=" + Convert.ToString((ushort)_ri.tipo) + "], mas nao conseguiu criar o objeto da classe room. Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_MANAGER,
+                    throw new exception("[RoomManager::makeRoom][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou criar a sala[TIPO=" + Convert.ToString((ushort)_ri.RealRoomType) + "], mas nao conseguiu criar o objeto da classe room. Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_MANAGER,
                         130, 0));
                 }
 
@@ -171,7 +171,7 @@ namespace Pangya_GameServer.Manager
                     r = null;
                 }
 
-                _smp.message_pool.getInstance().push(new message("[RoomManager::makeRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomManager::makeRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return r;
@@ -197,8 +197,8 @@ namespace Pangya_GameServer.Manager
                     {
 
                         // 2. Log antes de limpar os dados
-                        _smp.message_pool.getInstance().push(new message(
-                            $"[RoomManager::DestroyRoom][Sucess] DESTROYD[RID: {_room.GetRoomId()}, NAME: {_room.GetInfo().name}]",
+                        _smp.LogManager.Instance.push(new AppMessage(
+                            $"[RoomManager::DestroyRoom][Sucess] DESTROYD[RID: {_room.GetRoomId()}, NAME: {_room.GetInfo().Name}]",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         // 3. Marcar como destruindo para as threads de rede pararem de processar pacotes nela
@@ -222,7 +222,7 @@ namespace Pangya_GameServer.Manager
                 }
                 catch (Exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         "[RoomManager::destroyRoom][ErrorSystem] " + e.Message,
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
@@ -230,14 +230,14 @@ namespace Pangya_GameServer.Manager
         }
 
         // Opt sem sala practice, se não todas as salas
-        public List<RoomInfo> getRoomsInfo(bool _without_practice_room = true)
+        public List<GameRoomInfoModel> getRoomsInfo(bool _without_practice_room = true)
         {
 
-            List<RoomInfo> v_ri = new List<RoomInfo>();
+            List<GameRoomInfoModel> v_ri = new List<GameRoomInfoModel>();
 
             for (var i = 0; i < v_rooms.Count; ++i)
             {
-                if (v_rooms[i] != null && (!_without_practice_room || (v_rooms[i].GetTipo() != ROOM_INFO_TYPE.PRACTICE && v_rooms[i].GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)))
+                if (v_rooms[i] != null && (!_without_practice_room || (v_rooms[i].GetTipo() != RoomTypeFlags.PRACTICE && v_rooms[i].GetTipo() != RoomTypeFlags.GRAND_ZODIAC_PRACTICE)))
                 {
                     v_ri.Add(v_rooms[i].GetInfo());
                 }
@@ -270,7 +270,7 @@ namespace Pangya_GameServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RoomManager::unlockRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomManager::unlockRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -295,7 +295,7 @@ namespace Pangya_GameServer.Manager
             }
             catch (exception e)
             { 
-                _smp.message_pool.getInstance().push(new message("[RoomManager::findRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomManager::findRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return null;
@@ -340,7 +340,7 @@ namespace Pangya_GameServer.Manager
 
                     r = null;
                 }
-                _smp.message_pool.getInstance().push(new message("[RoomManager::findRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomManager::findRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
 
@@ -391,7 +391,7 @@ namespace Pangya_GameServer.Manager
 
                     r = null;
                 }
-                _smp.message_pool.getInstance().push(new message("[RoomManager::findRoomGrandPrix][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomManager::findRoomGrandPrix][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
 

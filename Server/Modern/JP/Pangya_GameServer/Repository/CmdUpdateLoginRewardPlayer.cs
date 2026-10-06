@@ -44,20 +44,20 @@ namespace Pangya_GameServer.Repository
 
             if (m_ps.id == 0Ul)
             {
-                throw new exception("[CmdUpdateLoginRewardPlayer::prepareConsulta][Error] m_ps.id is invalid(" + Convert.ToString(m_ps.id) + ")", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdUpdateLoginRewardPlayer::prepareConsulta][Error] m_ps.Login is invalid(" + Convert.ToString(m_ps.id) + ")", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
             if (m_ps.uid == 0u)
             {
-                throw new exception("[CmdUpdateLoginRewardPlayer::prepareConsulta][Error] m_ps.uid is invalid(" + Convert.ToString(m_ps.uid) + ")", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdUpdateLoginRewardPlayer::prepareConsulta][Error] m_ps.UID is invalid(" + Convert.ToString(m_ps.uid) + ")", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_ps.id) + ", " + Convert.ToString(m_ps.uid) + ", " + Convert.ToString(m_ps.count_days) + ", " + Convert.ToString(m_ps.count_seq) + ", " + (m_ps.is_clear ? "1" : "0") + ", " + makeText(_formatDate(m_ps.update_date.ConvertTime())));
 
-            checkResponse(r, "nao conseguiu atualizar o PLAYER[" + m_ps.toString() + "]");
+            checkResponse(r, "nao conseguiu atualizar o Normal[" + m_ps.toString() + "]");
 
             return r;
         }

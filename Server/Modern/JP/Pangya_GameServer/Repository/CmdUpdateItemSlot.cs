@@ -65,6 +65,6 @@ namespace Pangya_GameServer.Repository
         private uint m_uid = new uint();
         private uint[] m_slot = new uint[10];
 
-        private string[] m_szConsulta = { "UPDATE pangya.pangya_user_equip SET item_slot_1 = ", ", item_slot_2 = ", ", item_slot_3 = ", ", item_slot_4 = ", ", item_slot_5 = ", ", item_slot_6 = ", ", item_slot_7 = ", ", item_slot_8 = ", ", item_slot_9 = ", ", item_slot_10 = ", " WHERE uid = " };
+        private string[] m_szConsulta = { "UPDATE pangya.pangya_user_equip SET item_slot_1 = ", ", item_slot_2 = ", ", item_slot_3 = ", ", item_slot_4 = ", ", item_slot_5 = ", ", item_slot_6 = ", ", item_slot_7 = ", ", item_slot_8 = ", ", item_slot_9 = ", ", item_slot_10 = ", " WHERE UID = " };
     }
 }

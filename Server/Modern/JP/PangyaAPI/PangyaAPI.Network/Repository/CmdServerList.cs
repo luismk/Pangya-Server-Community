@@ -38,21 +38,21 @@ namespace PangyaAPI.Network.Repository
                 ServerInfo si = new ServerInfo();
 
                 if (!string.IsNullOrEmpty(_result.data[0].ToString()))
-                    si.nome = (_result.data[0].ToString());
-                si.uid = int.Parse(_result.data[1].ToString());
+                    si.Name = (_result.data[0].ToString());
+                si.UID = int.Parse(_result.data[1].ToString());
                 if (!string.IsNullOrEmpty(_result.data[2].ToString()))
-                    si.ip = _result.data[2].ToString();
-                si.port = int.Parse(_result.data[3].ToString());
-                si.max_user = int.Parse(_result.data[4].ToString());
-                si.curr_user = int.Parse(_result.data[5].ToString());
-                si.propriedade = new Property(uint.Parse(_result.data[6].ToString()));
-                si.angelic_wings_num = int.Parse(_result.data[7].ToString());
-                si.event_flag = new EventFlag(ushort.Parse(_result.data[8].ToString()));
-                si.event_map = short.Parse(_result.data[9].ToString());
-                si.img_no = short.Parse(_result.data[10].ToString());
-                si.app_rate = short.Parse(_result.data[11].ToString());
-                si.scratch_rate = short.Parse(_result.data[12].ToString());    // Estava o rate_scratchy mas realoquei ele para o ServerInfoEx::Rate
-                if (!v_server_list.Any(c => c.uid == si.uid))
+                    si.IpAddress = _result.data[2].ToString();
+                si.Port = int.Parse(_result.data[3].ToString());
+                si.MaxUsers = int.Parse(_result.data[4].ToString());
+                si.CurrentUsers = int.Parse(_result.data[5].ToString());
+                si.Property = new ServerProperty(uint.Parse(_result.data[6].ToString()));
+                si.AngelicWingsCount = int.Parse(_result.data[7].ToString());
+                si.EventFlag = new EventFlag(ushort.Parse(_result.data[8].ToString()));
+                si.MapEvent = short.Parse(_result.data[9].ToString());
+                si.ServerIcon = short.Parse(_result.data[10].ToString());
+                si.AppRate = short.Parse(_result.data[11].ToString());
+                si.ScratchRate = short.Parse(_result.data[12].ToString());    // Estava o rate_scratchy mas realoquei ele para o ServerInfoEx::Rate
+                if (!v_server_list.Any(c => c.UID == si.UID))
                     v_server_list.Add(si);
             }
             catch (Exception ex)

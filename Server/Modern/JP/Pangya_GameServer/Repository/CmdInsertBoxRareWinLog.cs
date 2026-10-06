@@ -86,7 +86,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_box_typeid) + ", " + Convert.ToString(m_ctx_bi._typeid) + ", " + Convert.ToString(m_ctx_bi.qntd) + ", " + Convert.ToString((ushort)m_ctx_bi.raridade));
 
-            checkResponse(r, "nao conseguiu inserir o box[TYPEID=" + Convert.ToString(m_box_typeid) + "] rare[TYPEID=" + Convert.ToString(m_ctx_bi._typeid) + ", QNTD=" + Convert.ToString(m_ctx_bi.qntd) + ", RARIDADE=" + Convert.ToString((ushort)m_ctx_bi.raridade) + "] win log para o PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu inserir o box[TYPEID=" + Convert.ToString(m_box_typeid) + "] rare[TYPEID=" + Convert.ToString(m_ctx_bi._typeid) + ", QNTD=" + Convert.ToString(m_ctx_bi.qntd) + ", RARIDADE=" + Convert.ToString((ushort)m_ctx_bi.raridade) + "] win log para o Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

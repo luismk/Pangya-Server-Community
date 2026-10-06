@@ -55,7 +55,7 @@ namespace Pangya_GameServer.Repository
 
             var r = _update(m_szConsulta[0] + Convert.ToString(m_pang) + m_szConsulta[1] + Convert.ToString(m_uid));
 
-            checkResponse(r, "nao conseguiu atualizar o pang[value=" + Convert.ToString(m_pang) + "] do Dolfini Locker do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o Pang[value=" + Convert.ToString(m_pang) + "] do Dolfini Locker do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }
@@ -64,6 +64,6 @@ namespace Pangya_GameServer.Repository
         private uint m_uid = new uint();
         private ulong m_pang = new ulong();
 
-        private string[] m_szConsulta = { "UPDATE pangya.pangya_dolfini_locker SET pang = ", " WHERE UID = " };
+        private string[] m_szConsulta = { "UPDATE pangya.pangya_dolfini_locker SET Pang = ", " WHERE UID = " };
     }
 }

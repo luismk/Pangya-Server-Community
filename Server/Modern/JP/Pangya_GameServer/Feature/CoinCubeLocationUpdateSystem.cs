@@ -32,7 +32,7 @@ namespace Pangya_GameServer.Manager
         private long m_update_location_time = 0; // Atualiza os spawn de coin e cube que foram gerados no tempo determinado
 
         private MAP_COURSE_COIN_CUBE Course_coin_cube = new MAP_COURSE_COIN_CUBE(); // Esse � o que ele est� gerando das tacadas dos jogadores
-        private MAP_COURSE_COIN_CUBE Course_coin_cube_current = new MAP_COURSE_COIN_CUBE(); // Esse � o atual que ele est� spawnando no course
+        private MAP_COURSE_COIN_CUBE Course_coin_cube_current = new MAP_COURSE_COIN_CUBE(); // Esse � o atual que ele est� spawnando no CourseIndex
 
         public CoinCubeLocationUpdateSystem()
         {
@@ -67,7 +67,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::~CoinCubeLocationUpdateSystem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSystem::~CoinCubeLocationUpdateSystem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -105,15 +105,15 @@ namespace Pangya_GameServer.Manager
 
             byte course_id = 0;
 
-            foreach (var el in sIff.getInstance().getCourse())
+            foreach (var el in sIff.Instance.getCourse())
             {
 
-                course_id = (byte)sIff.getInstance().getItemIdentify(el.ID);
+                course_id = (byte)sIff.Instance.getItemIdentify(el.ID);
 
 
                 CmdCoinCubeLocationInfo cmd_ccli = new CmdCoinCubeLocationInfo(course_id);
 
-                NormalManagerDB.getInstance().add(0,
+                NormalManagerDB.Instance.add(0,
                       cmd_ccli, null, null);
 
                 if (cmd_ccli.getException().getCodeError() != 0)
@@ -144,7 +144,7 @@ namespace Pangya_GameServer.Manager
 
             // Log
             if (Course_coin_cube_current.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // Carregado com sucesso
             m_load = true;
@@ -177,7 +177,7 @@ namespace Pangya_GameServer.Manager
         protected void calculeShotCube(CalculeCoinCubeUpdateOrder _cccuo)
         {
             // Wiz City n�o calcula
-            if ((_cccuo.course & 0x7Fu) != 19/*RoomInfo.eCOURSE.WIZ_CITY*/)
+            if ((_cccuo.course & 0x7Fu) != 19/*GameRoomInfoModel.eCOURSE.WIZ_CITY*/)
             {
 
                 QuadTree3D qt = new QuadTree3D();
@@ -208,7 +208,7 @@ namespace Pangya_GameServer.Manager
                     club_index -= 2;
                 }
 
-                Club3D club = new Club3D(sAllClubInfo3D.getInstance().m_clubs[club_index], calculeTypeDistance(distance));
+                Club3D club = new Club3D(sAllClubInfo3D.getInstance.m_clubs[club_index], calculeTypeDistance(distance));
 
                 // N�o Calcula Putt
                 if (club.m_club_info.m_type == eCLUB_TYPE.PT)
@@ -228,14 +228,14 @@ namespace Pangya_GameServer.Manager
                     qt.ballProcess(STEP_TIME); // S� vai at� o max height
 
                 } 
-                _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::calculeShotCube][Log] Power(" + Convert.ToString(_cccuo.shot_data_for_cube.power_club) + "y) Cube Location[X=" + Convert.ToString(ball.m_position.m_x) + ", Y=" + Convert.ToString(ball.m_position.m_y) + ", Z=" + Convert.ToString(ball.m_position.m_z) + "]", type_msg.CL_FILE_LOG_TEST_AND_CONSOLE));
+                _smp.message_pool.getInstance.push(new message("[CoinCubeLocationUpdateSystem::calculeShotCube][Log] Power(" + Convert.ToString(_cccuo.shot_data_for_cube.power_club) + "y) Cube Location[X=" + Convert.ToString(ball.m_position.m_x) + ", Y=" + Convert.ToString(ball.m_position.m_y) + ", Z=" + Convert.ToString(ball.m_position.m_z) + "]", type_msg.CL_FILE_LOG_TEST_AND_CONSOLE));
 
                 
 #else
 
                 //var distance = (float)_last_position.diffXZ(_pin) * DIVIDE_SCALE_PANGYA;
 
-                //Club3D club = new Club3D(sAllClubInfo3D.getInstance().m_clubs[_pgi.shot_data.club], calculeTypeDistance(distance));
+                //Club3D club = new Club3D(sAllClubInfo3D.Instance.m_clubs[_pgi.shot_data.club], calculeTypeDistance(distance));
 
                 //// N�o Calcula Putt
                 //if(club.m_club_info.m_type == eCLUB_TYPE.PT)
@@ -252,9 +252,9 @@ namespace Pangya_GameServer.Manager
                 //var extra_power = _pi.getExtraPower();
 
                 //options3D options = new options3D(_pgi.shot_data.special_shot,
-                //	new Vector3D(_last_position.x,
-                //		_last_position.y,
-                //		_last_position.z),
+                //	new Vector3D(_last_position.X,
+                //		_last_position.Y,
+                //		_last_position.Z),
                 //	extra_power,
                 //	(_pgi.shot_sync.state_shot.shot.stShot.power_shot ? ePOWER_SHOT_FACTORY.ONE_POWER_SHOT : (_pgi.shot_sync.state_shot.shot.stShot.double_power_shot ? ePOWER_SHOT_FACTORY.TWO_POWER_SHOT : ePOWER_SHOT_FACTORY.NO_POWER_SHOT)),
                 //	distance,
@@ -328,7 +328,7 @@ namespace Pangya_GameServer.Manager
             // 3. Lógica de Negócio: Verificar proximidade
             float maxRange = 5.0f * SCALE_PANGYA;
 
-            // Procuramos um cubo do mesmo tipo que esteja perto o suficiente
+            // Procuramos um cubo do mesmo Type que esteja perto o suficiente
             var existingCube = cubeList.FirstOrDefault(c =>
                 c.tipo == _cube.tipo &&
                 CalculateDistance(c.location, _cube.location) <= maxRange
@@ -336,7 +336,7 @@ namespace Pangya_GameServer.Manager
 
             if (existingCube != null)
             {
-                // Se achou um perto, apenas aumenta o rate (spawn rate)
+                // Se achou um perto, apenas aumenta o Rate (spawn Rate)
                 existingCube.rate++;
             }
             else
@@ -377,7 +377,7 @@ namespace Pangya_GameServer.Manager
             {
 
                 // Wiz City n�o atualiza nada
-                if ((el_course.Key & 0x7Fu) == (byte)ROOM_INFO_COURSE.WIZ_CITY)
+                if ((el_course.Key & 0x7Fu) == (byte)RoomCourseFlags.WIZ_CITY)
                 {
                     continue;
                 }
@@ -386,13 +386,13 @@ namespace Pangya_GameServer.Manager
                 if (!Course_coin_cube_current.TryGetValue((byte)(el_course.Key & 0x7Fu), out it_c))
                     continue;
 
-                map_ctx = MapSystem.getInstance().getMap((byte)(el_course.Key & 0x7Fu));
+                map_ctx = MapSystem.Instance.getMap((byte)(el_course.Key & 0x7Fu));
 
                 if (map_ctx == null)
                 {
 
                     // Log
-                    _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSyatem::update_spawn_location][Warning] nao encontrou o Course[ID=" + Convert.ToString((ushort)el_course.Key) + "] no singleton de Course(sMap).", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSyatem::update_spawn_location][Warning] nao encontrou o Course[ID=" + Convert.ToString((ushort)el_course.Key) + "] no singleton de Course(sMap).", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // Continua
                     continue;
@@ -405,7 +405,7 @@ namespace Pangya_GameServer.Manager
                     {
 
                         // Log
-                        _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::update_spawn_location][Warning] hole[NUMERO=" + Convert.ToString((ushort)el_hole.Key) + "] invalido no Course[ID=" + Convert.ToString((ushort)el_course.Key) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSystem::update_spawn_location][Warning] hole[NUMERO=" + Convert.ToString((ushort)el_hole.Key) + "] invalido no Course[ID=" + Convert.ToString((ushort)el_course.Key) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         // Continua
                         continue;
@@ -443,7 +443,7 @@ namespace Pangya_GameServer.Manager
                         continue;
                     }
 
-                    // Sort cubes por rate
+                    // Sort cubes por Rate
                     it_h.Sort(sort_per_rate);
                     el_hole.Value.Sort(sort_per_rate);
 
@@ -454,7 +454,7 @@ namespace Pangya_GameServer.Manager
                         lc.y = el_cube.location.y;
                         lc.z = el_cube.location.z;
 
-                        // Atualiza o rate da mesma location - no que j� est�o sendo atualizados
+                        // Atualiza o Rate da mesma LocationInfo - no que j� est�o sendo atualizados
                         var it_upt_cc = v_coin_cube_update.Find(_el =>
                       (_el.course_id & 0x7Fu) == (el_course.Key & 0x7Fu) &&
                       _el.hole_number == el_hole.Key &&
@@ -473,7 +473,7 @@ namespace Pangya_GameServer.Manager
                             continue;
                         }
 
-                        // Atualiza o rate da mesma location
+                        // Atualiza o Rate da mesma LocationInfo
                         var it_upt = it_h.Find(_el =>
                         _el.tipo == el_cube.tipo &&
                         Math.Abs(lc.diff(_el.location)) <= 5 * SCALE_PANGYA
@@ -495,7 +495,7 @@ namespace Pangya_GameServer.Manager
                         }
 
 
-                        // Verifica se o rate passou do outro que est� nos atualizados e substitui
+                        // Verifica se o Rate passou do outro que est� nos atualizados e substitui
                         it_upt_cc = v_coin_cube_update.Find(_el =>
                          (_el.course_id & 0x7Fu) == (el_course.Key & 0x7Fu) &&
                          _el.hole_number == el_hole.Key &&
@@ -517,7 +517,7 @@ namespace Pangya_GameServer.Manager
                             continue;
                         }
 
-                        // Verifica se o rate passou do outro e substitui
+                        // Verifica se o Rate passou do outro e substitui
                         it_upt = it_h.Find(_el =>
                        _el.tipo == el_cube.tipo &&
                        _el.rate < el_cube.rate
@@ -526,7 +526,7 @@ namespace Pangya_GameServer.Manager
                         if (it_upt != null)
                         {
 
-                            // Atualiza a location do Cube/Coin
+                            // Atualiza a LocationInfo do Cube/Coin
                             el_cube.id = it_upt.id;
 
                             v_coin_cube_update.Add(new CoinCubeUpdate(CoinCubeUpdate.eTYPE.UPDATE, (byte)(el_course.Key & 0x7Fu), el_hole.Key, el_cube));
@@ -556,27 +556,27 @@ namespace Pangya_GameServer.Manager
 
                     cmd_uccl.setInfo(el);
 
-                    NormalManagerDB.getInstance().add(0,
+                    NormalManagerDB.Instance.add(0,
                           cmd_uccl, null, null);
 
                     if (cmd_uccl.getException().getCodeError() != 0)
                     {
-                        _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::update_spawn_location][Error] " + cmd_uccl.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSystem::update_spawn_location][Error] " + cmd_uccl.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
             }
 
-            // Atualizou o Spwan location da coin e do cube
+            // Atualizou o Spwan LocationInfo da coin e do cube
             m_update_location_time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             // Atualiza os current e esse
             load();
 
             // Atualiza o sistema de cube e coin
-           sCubeCoinSystem.getInstance().load();
+           sCubeCoinSystem.Instance.load();
 
             // Log
-            _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::update_spawn_location][Log] Adicionou " + Convert.ToString(count_new_add_all) + " e Atualizou " + Convert.ToString(v_coin_cube_update.Count - count_new_add_all) + " spawn(s) location da coin e cube com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSystem::update_spawn_location][Log] Adicionou " + Convert.ToString(count_new_add_all) + " e Atualizou " + Convert.ToString(v_coin_cube_update.Count - count_new_add_all) + " spawn(s) LocationInfo da coin e cube com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
         }
 
@@ -609,7 +609,7 @@ namespace Pangya_GameServer.Manager
 
                 CalculeCoinCubeUpdateOrder pedido = new CalculeCoinCubeUpdateOrder();
 
-                // _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::translateOrder][Log] translateOrder iniciado com sucesso!", 0));
+                // _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSystem::translateOrder][Log] translateOrder iniciado com sucesso!", 0));
 
                 while (Interlocked.CompareExchange(ref m_continue_translate,
                     1, 1) == 1)
@@ -617,7 +617,7 @@ namespace Pangya_GameServer.Manager
                     try
                     {
 
-                        // Verifica se j� est� na hora de atualizar os spawn location da coin e do cube
+                        // Verifica se j� est� na hora de atualizar os spawn LocationInfo da coin e do cube
                         if (m_update_location_time == 0)
                         {
                             m_update_location_time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -635,11 +635,11 @@ namespace Pangya_GameServer.Manager
                             switch (pedido.type)
                             {
                                 case CalculeCoinCubeUpdateOrder.eTYPE.COIN:
-                                    // Calcule coin location
+                                    // Calcule coin LocationInfo
                                     calculeShotCoin(pedido);
                                     break;
                                 case CalculeCoinCubeUpdateOrder.eTYPE.CUBE:
-                                    // Calcule cube location
+                                    // Calcule cube LocationInfo
                                     calculeShotCube(pedido);
                                     break;
                             }
@@ -657,7 +657,7 @@ namespace Pangya_GameServer.Manager
 
                         if (ExceptionError.STDA_ERROR_DECODE(e.getCodeError()) != 2)
                         {
-                            _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::translateOrder][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSystem::translateOrder][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                 }
@@ -665,14 +665,14 @@ namespace Pangya_GameServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::translateOrder][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSystem::translateOrder][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[CoinCubeLocationUpdateSystem::translateOrder][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[CoinCubeLocationUpdateSystem::translateOrder][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
-            _smp.message_pool.getInstance().push(new message("Saindo de translateOrder()...", 0));
+            _smp.LogManager.Instance.push(new AppMessage("Saindo de translateOrder()...", 0));
         }
 
         public CalculeCoinCubeUpdateOrder GetFirst(int timeoutMilliseconds)

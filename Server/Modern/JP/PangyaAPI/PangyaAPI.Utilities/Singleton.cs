@@ -4,19 +4,20 @@ namespace PangyaAPI.Utilities
     public class Singleton<_ST> where _ST : class
     {
         public static _ST myInstance = null;
+         
 
-        public static _ST getInstance()
+        public static _ST Instance
         {
-            try
+            get
             {
                 if (myInstance == null)
                     myInstance = (_ST)Activator.CreateInstance(typeof(_ST));
 
                 return myInstance;
             }
-            catch (Exception e)
-            { 
-                throw e;
+            set
+            {
+                myInstance = value;
             }
         }
 

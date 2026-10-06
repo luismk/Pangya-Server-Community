@@ -64,7 +64,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_ctx_psb.ctx_psi._typeid) + ", " + Convert.ToString(m_ctx_psb.qntd) + ", " + Convert.ToString((int)m_ctx_psb.color) + ", " + Convert.ToString(m_ctx_psb.ctx_psi.probabilidade));
 
-            checkResponse(r, "nao conseguiu adicionar o Log de Rare Win[TYPEID=" + Convert.ToString(m_ctx_psb.ctx_psi._typeid) + ", QNTD=" + Convert.ToString(m_ctx_psb.qntd) + ", COLOR=" + Convert.ToString(m_ctx_psb.color) + ", PROBABILIDADE=" + Convert.ToString(m_ctx_psb.ctx_psi.probabilidade) + "] do Papel Shop para o PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu adicionar o Log de Rare Win[TYPEID=" + Convert.ToString(m_ctx_psb.ctx_psi._typeid) + ", QNTD=" + Convert.ToString(m_ctx_psb.qntd) + ", COLOR=" + Convert.ToString(m_ctx_psb.color) + ", PROBABILIDADE=" + Convert.ToString(m_ctx_psb.ctx_psi.probabilidade) + "] do Papel Shop para o Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

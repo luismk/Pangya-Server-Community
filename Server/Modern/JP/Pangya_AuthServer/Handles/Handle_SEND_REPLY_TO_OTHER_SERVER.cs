@@ -31,11 +31,11 @@ namespace Pangya_AuthServer.Handles
                 }
 
                 // Log de operação
-                Console.WriteLine($"[Relay] Server {Player.UserInfo.uid} enviando Resposta ID {commandId} para o Server {targetServerUid}");
+                Console.WriteLine($"[Relay] Server {Player.UserInfo.UID} enviando Resposta ID {commandId} para o Server {targetServerUid}");
 
                 // 3. Localizar o servidor de destino
                 // Usando o seu player_manager que agora deve estar acessível
-                var targetSession = AuthServer.getInstance().FindPlayer(targetServerUid);
+                var targetSession = AuthServer.Instance.FindPlayer(targetServerUid);
 
                 if (targetSession == null)
                 {
@@ -47,7 +47,7 @@ namespace Pangya_AuthServer.Handles
                 using (var response = new Packet(0x0E))
                 {
                     // Quem enviou originalmente
-                    response.WriteUInt32(Player.UserInfo.uid);
+                    response.WriteUInt32(Player.UserInfo.UID);
 
                     // ID do Comando
                     response.WriteUInt16(commandId);

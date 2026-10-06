@@ -20,9 +20,9 @@ namespace Pangya_GameServer.Feature.GM
             try
             {
                 // 1. Verificação de Restrição de Item
-                if (session.UserInfo.UserCapabilities.block_give_item_gm)
+                if (session.UserInfo.UserCapabilities.IsGameMasterBlockItemGive)
                 {
-                    throw new exception($"[GM::GoldenBell] Player[UID={session.UserInfo.uid}] tentou ativar Golden Bell, mas possui restrição de itens.",
+                    throw new exception($"[GM::GoldenBell] Player[UID={session.UserInfo.UID}] tentou ativar Golden Bell, mas possui restrição de itens.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 9, 0x5700100));
                 }
 
@@ -31,7 +31,7 @@ namespace Pangya_GameServer.Feature.GM
                 // 2. Validação de Contexto (Canal)
                 if (channel == null)
                 {
-                    throw new exception($"[GM::GoldenBell] Player[UID={session.UserInfo.uid}] não está em um canal para executar o broadcast.",
+                    throw new exception($"[GM::GoldenBell] Player[UID={session.UserInfo.UID}] não está em um canal para executar o broadcast.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 8, 0x5700100));
                 }
 
@@ -40,7 +40,7 @@ namespace Pangya_GameServer.Feature.GM
 
                 if (room == null)
                 {
-                    throw new exception($"[GM::GoldenBell] Sala {session.UserInfo.Member.sala_numero} do player [UID={session.UserInfo.uid}] não foi encontrada.",
+                    throw new exception($"[GM::GoldenBell] Sala {session.UserInfo.Member.RoomID} do player [UID={session.UserInfo.UID}] não foi encontrada.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0x5700100));
                 }
 
@@ -55,7 +55,7 @@ namespace Pangya_GameServer.Feature.GM
                     ValidateGoldenBellRequest(session, itemTypeId, itemQuantity);
 
                     // 3. Busca Informações do Item no IFF
-                    var itemInfo = sIff.getInstance().findCommomItem(itemTypeId);
+                    var itemInfo = sIff.Instance.findCommomItem(itemTypeId);
                     if (itemInfo == null)
                     {
                         throw new exception($"[Room::GoldenBell] Item ID {itemTypeId} não existe no IFF do servidor.",
@@ -79,20 +79,20 @@ namespace Pangya_GameServer.Feature.GM
                     } 
 
                     // Log de Sucesso (Console + File)
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[GM::GoldenBell][Success] {session.UserInfo.nickname} ativou o evento na Sala {room.GetRoomId()} (Canal: {channel.getName()})",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[GM::GoldenBell][Success] {session.UserInfo.NickName} ativou o evento na Sala {room.GetRoomId()} (Canal: {channel.getName()})",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[GM::GoldenBell][Warning] {session.UserInfo.nickname} tentou ativar Golden Bell fora de uma sala.",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[GM::GoldenBell][Warning] {session.UserInfo.NickName} tentou ativar Golden Bell fora de uma sala.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[GoldenBellCommand][Error] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -106,13 +106,13 @@ namespace Pangya_GameServer.Feature.GM
         {
             if (typeId == 0)
             {
-                throw new exception($"[Room::GoldenBell] UID {session.UserInfo.uid} tentou enviar ItemID 0 (Inválido).",
+                throw new exception($"[Room::GoldenBell] UID {session.UserInfo.UID} tentou enviar ItemID 0 (Inválido).",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 3, 0x5700100));
             }
 
             if (quantity > 20000)
             {
-                throw new exception($"[Room::GoldenBell] UID {session.UserInfo.uid} tentou enviar quantidade excessiva ({quantity}).",
+                throw new exception($"[Room::GoldenBell] UID {session.UserInfo.UID} tentou enviar quantidade excessiva ({quantity}).",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 4, 0x5700100));
             }
         }
@@ -125,15 +125,15 @@ namespace Pangya_GameServer.Feature.GM
             // Verificação de Integridade Pós-Inicialização
             if (item._typeid == 0 || item.qntd != buyItem.qntd)
             {
-                throw new exception($"[Room::GoldenBell] Falha ao inicializar item para UID {target.UserInfo.uid}.",
+                throw new exception($"[Room::GoldenBell] Falha ao inicializar item para UID {target.UserInfo.UID}.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 5, 0));
             }
 
             // Envio para o MailBox (Persistência no DB)
-            if (MailManager.SendMessageWithItem(0, target.UserInfo.uid, messageText, item) <= 0)
+            if (MailManager.SendMessageWithItem(0, target.UserInfo.UID, messageText, item) <= 0)
             {
-                _smp.message_pool.getInstance().push(new message(
-                    $"[Room::GoldenBell][Fail] Não foi possível entregar item para UID {target.UserInfo.uid}.",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[Room::GoldenBell][Fail] Não foi possível entregar item para UID {target.UserInfo.UID}.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }

@@ -31,29 +31,29 @@ namespace Pangya_GameServer.Handles
                 uint _typeid = Packet.ReadUInt32();
                 uint qntd = Packet.ReadUInt32();
 
-                if (sIff.getInstance().getItemGroupIdentify(_typeid) != IFF_GROUP.ITEM)
+                if (sIff.Instance.getItemGroupIdentify(_typeid) != IFF_GROUP.ITEM)
                 {
-                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou excluir um item[TYPEID=" + (_typeid) + "] que nao pode ser excluido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou excluir um item[TYPEID=" + (_typeid) + "] que nao pode ser excluido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         703, 0x5200704));
                 }
 
-                var iff_item = sIff.getInstance().findItem(_typeid);
+                var iff_item = sIff.Instance.findItem(_typeid);
 
                 if (iff_item == null)
                 {
-                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou excluir um item[TYPEID=" + (_typeid) + "] que nao pode ser excluido, por que ele nao tem no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou excluir um item[TYPEID=" + (_typeid) + "] que nao pode ser excluido, por que ele nao tem no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         704, 0x5200705));
                 }
 
-                if (sIff.getInstance().IsItemEquipable(_typeid) && iff_item.Shop.flag_shop.IsCash)
+                if (sIff.Instance.IsItemEquipable(_typeid) && iff_item.Shop.flag_shop.IsCash)
                 {
-                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou excluir um item[TYPEID=" + (_typeid) + "] que nao pode ser excluido, por que ele é um item equipavel de cash(cookie). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou excluir um item[TYPEID=" + (_typeid) + "] que nao pode ser excluido, por que ele é um item equipavel de cash(cookie). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         705, 0x5200706));
                 }
 
-                if (!sIff.getInstance().IsItemEquipable(_typeid) && !(iff_item.Shop.flag_shop.IsGift && iff_item.Stats.getSlot[0] > 0))
+                if (!sIff.Instance.IsItemEquipable(_typeid) && !(iff_item.Shop.flag_shop.IsGift && iff_item.Stats.getSlot[0] > 0))
                 {
-                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou excluir um item[TYPEID=" + (_typeid) + "] que nao pode ser excluido, por que ele é um passive item que nao tem a condicao(giftable) e a quantidade no C[0] para deletar esse item. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou excluir um item[TYPEID=" + (_typeid) + "] que nao pode ser excluido, por que ele é um passive item que nao tem a condicao(giftable) e a quantidade no C[0] para deletar esse item. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         706, 0x5200707));
                 }
 
@@ -61,13 +61,13 @@ namespace Pangya_GameServer.Handles
 
                 if (pWi == null)
                 {
-                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou excluir item[TYPEID=" + (_typeid) + "] que ele nao possui. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou excluir item[TYPEID=" + (_typeid) + "] que ele nao possui. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         700, 0x5200701));
                 }
 
                 if (pWi.STDA_C_ITEM_QNTD < (short)qntd)
                 {
-                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou excluir item[TYPEID=" + (_typeid) + "] mas ele nao tem quantidade suficiente[have_qntd=" + (pWi.STDA_C_ITEM_QNTD) + ", req_qntd=" + (qntd) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou excluir item[TYPEID=" + (_typeid) + "] mas ele nao tem quantidade suficiente[have_qntd=" + (pWi.STDA_C_ITEM_QNTD) + ", req_qntd=" + (qntd) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         701, 0x5200702));
                 }
 
@@ -82,11 +82,11 @@ namespace Pangya_GameServer.Handles
                 // Atualiza ON Server AND Banco de dados
                 if (ItemManager.removeItem(item, Player) <= 0)
                 {
-                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] nao conseguiu excluir item[TYPEID=" + (_typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestDeleteActiveItem][Error] Normal [UID=" + Player.UserInfo.UID + "] nao conseguiu excluir item[TYPEID=" + (_typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         702, 0x5200703));
                 }
 
-                _smp.message_pool.getInstance().push(new message("[DeleteActiveItem][Sucess] PLAYER [UID=" + Player.UserInfo.uid + "] excluiu/(Atualizou qntd) item[TYPEID=" + (pWi._typeid) + ", QNTD=" + (qntd) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DeleteActiveItem][Sucess] Normal [UID=" + Player.UserInfo.UID + "] excluiu/(Atualizou qntd) item[TYPEID=" + (pWi._typeid) + ", QNTD=" + (qntd) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Atualiza ON Jogo
                 p.init_plain(0xC5);
@@ -102,7 +102,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestDeleteActiveItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestDeleteActiveItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xC5);
 

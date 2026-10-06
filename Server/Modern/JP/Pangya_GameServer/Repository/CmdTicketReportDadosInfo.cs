@@ -106,13 +106,13 @@ namespace Pangya_GameServer.Repository
 
                 if (m_trsi.id < 0)
                 {
-                    throw new exception("[CmdTicketReportDadosInfo::lineResult][Error] m_trsi[request_id=" + Convert.ToString(m_ticket_report_id) + ", return_id=" + Convert.ToString(m_trsi.id) + "] is wrong not match.", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
+                    throw new exception("[CmdTicketReportDadosInfo::lineResult][Error] m_trsi[request_id=" + Convert.ToString(m_ticket_report_id) + ", return_id=" + Convert.ToString(m_trsi.id) + "] is wrong not Match.", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                         3, 0));
                 }
             }
             catch (exception ex)
             {
-                _smp.message_pool.getInstance().push(new message("[CmdTicketReportDadosInfo::lineResult][Error] " + ex.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[CmdTicketReportDadosInfo::lineResult][Error] " + ex.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
         }

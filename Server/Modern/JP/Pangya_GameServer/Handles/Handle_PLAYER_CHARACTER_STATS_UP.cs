@@ -25,9 +25,9 @@ namespace Pangya_GameServer.Handles
 
             try
             {
-                if (Player.UserInfo.block_flag.m_flag.char_mastery)
+                if (Player.UserInfo.BlockFlag.Flag.CharacterMastery)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar Stats do character, mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar Stats do character, mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         9, 0x790001));
                 }
 
@@ -39,15 +39,15 @@ namespace Pangya_GameServer.Handles
 
                 if (pCi == null || pCi._typeid != ci._typeid)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar stat[value=" + (stat) + "] do Character[TYPEID=" + (ci._typeid) + ", ID=" + (ci.id) + "] que ele nao possui. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar stat[value=" + (stat) + "] do Character[TYPEID=" + (ci._typeid) + ", ID=" + (ci.id) + "] que ele nao possui. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         500, 0x5200501));
                 }
 
-                var character = sIff.getInstance().findCharacter(pCi._typeid);
+                var character = sIff.Instance.findCharacter(pCi._typeid);
 
                 if (character == null)
                 {
-                    throw new exception("[Lobby::RequestChracterStatsUp][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar stat[value=" + (stat) + "] do Character[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas ele nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestChracterStatsUp][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar stat[value=" + (stat) + "] do Character[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas ele nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         504, 0x5200505));
                 }
 
@@ -63,7 +63,7 @@ namespace Pangya_GameServer.Handles
                     || value_auxpart == -1
                     || value_set_effect_table == -1)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] PLAYER [UID=" + Player.UserInfo.uid + "], stat[value=" + (stat) + "] is invalid. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] Normal [UID=" + Player.UserInfo.UID + "], stat[value=" + (stat) + "] is invalid. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         501, 0x5200502));
                 }
 
@@ -79,23 +79,23 @@ namespace Pangya_GameServer.Handles
                 // Slot de Card Equiped
                 value += (sbyte)value_card;
 
-                // Level + POWER, cada level da +1 de POWER
+                // Level + POWER, cada Level da +1 de POWER
                 if (stat == (uint)CharacterInfo.Stats.S_POWER)
                 {
-                    value += (sbyte)((Player.UserInfo.Member.level - 1) / 5);
+                    value += (sbyte)((Player.UserInfo.Member.GameLevel - 1) / 5);
                 }
 
-                var mastery = sIff.getInstance().findCharacterMastery(pCi._typeid);
+                var mastery = sIff.Instance.findCharacterMastery(pCi._typeid);
 
                 if (mastery.Count == 0)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar stat[value=" + (stat) + "] do Character[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao tem o Character Mastery no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar stat[value=" + (stat) + "] do Character[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao tem o Character Mastery no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         505, 0x5200506));
                 }
 
                 if (mastery.Count < pCi.mastery)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar stat[value=" + (stat) + "] do Character[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas o CharacterMastery[value=" + (pCi.mastery) + ", List_size=" + (mastery.Count) + "] do Player e invalido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar stat[value=" + (stat) + "] do Character[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas o CharacterMastery[value=" + (pCi.mastery) + ", List_size=" + (mastery.Count) + "] do Player e invalido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         506, 0x5200507));
                 }
 
@@ -116,17 +116,17 @@ namespace Pangya_GameServer.Handles
                 // 3. A validação correta: 
                 if (pCi.pcl[stat] > limiteRealDeUpgrade)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] PLAYER [UID=" + Player.UserInfo.uid + "] atingiu o limite de slots para o stat " + stat,
+                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] Normal [UID=" + Player.UserInfo.UID + "] atingiu o limite de slots para o stat " + stat,
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 502, 0x5200503));
                 }
 
-                uint enchant_typeid = ((Convert.ToUInt32(sIff.getInstance().ENCHANT) << 26) | (stat << 20)) + pCi.pcl[stat];
+                uint enchant_typeid = ((Convert.ToUInt32(sIff.Instance.ENCHANT) << 26) | (stat << 20)) + pCi.pcl[stat];
 
-                var enchant = sIff.getInstance().findEnchant(enchant_typeid);
+                var enchant = sIff.Instance.findEnchant(enchant_typeid);
 
                 if (enchant == null)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar stats[stats=" + (stat) + "] do Character[ID=" + (ci.id) + "], mas nao encontrou o enchant[TYPEID=" + (enchant_typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsUp][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar stats[stats=" + (stat) + "] do Character[ID=" + (ci.id) + "], mas nao encontrou o enchant[TYPEID=" + (enchant_typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         503, 0x5200504));
                 }
 
@@ -135,7 +135,7 @@ namespace Pangya_GameServer.Handles
                 pCi.pcl[stat]++;
 
                 // CmdUpdateCharacterPCL
-                NormalManagerDB.getInstance().add(7, new CmdUpdateCharacterPCL(Player.UserInfo.uid, pCi), null, this);
+                NormalManagerDB.Instance.add(7, new CmdUpdateCharacterPCL(Player.UserInfo.UID, pCi), null, this);
 
                 // Atualiza Pang(s) no Jogo
                 p.init_plain(0xC8);
@@ -154,7 +154,7 @@ namespace Pangya_GameServer.Handles
                 p.WriteByte(0xC9);
                 p.WriteUInt32(pCi._typeid);
                 p.WriteInt32(pCi.id);
-                p.WriteUInt32(0); // Flag Time
+                p.WriteUInt32(0); // ServerFlag Time
                 p.WriteUInt32(0); // qntd ant
                 p.WriteUInt32(0); // qntd dep
                 p.WriteUInt32(0); // qntd
@@ -188,7 +188,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestCharacterStatsUp][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestCharacterStatsUp][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x26F);
 

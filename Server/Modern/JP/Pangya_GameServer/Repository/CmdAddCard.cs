@@ -78,7 +78,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_ci._typeid) + ", " + Convert.ToString(m_ci.qntd) + ", " + Convert.ToString((ushort)m_ci.type));
 
-            checkResponse(r, "nao conseguiu adicionar o card[TYPEID=" + Convert.ToString(m_ci._typeid) + "] para o PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu adicionar o card[TYPEID=" + Convert.ToString(m_ci._typeid) + "] para o Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

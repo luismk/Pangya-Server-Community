@@ -23,7 +23,7 @@ namespace Pangya_GameServer.Handles
                     .Where(item => item.IsUCC())
                     .Where(item =>
                     {
-                        var iff = sIff.getInstance().findPart(item._typeid);
+                        var iff = sIff.Instance.findPart(item._typeid);
                         return iff != null && (iff.type_item == PART_TYPE.UCC_DRAW_ONLY || iff.type_item == PART_TYPE.UCC_COPY_ONLY);
                     })
                     .ToList();
@@ -58,7 +58,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_LOAD_UCC][Error] {e.Message}", type_msg.CL_ONLY_FILE_LOG));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_LOAD_UCC][Error] {e.Message}", type_msg.CL_ONLY_FILE_LOG));
                 SendEmptyUccLoad(Player);
             }
 

@@ -137,43 +137,43 @@ namespace Pangya_GameServer.Feature.Personal
 
         public void pushItem(PersonalShopItem _psi)
         {
-            // Verifica aqui se esse item por ser colocar no shop
+            // Verifica aqui se esse item por ser colocar no ShopRoom
 
             if (_psi.item._typeid == 0)
             {
-                throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um invalid item no Personal Shop dele. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um invalid item no Personal Shop dele. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                     7, 0));
             }
 
-            var @base = sIff.getInstance().findCommomItem(_psi.item._typeid);
+            var @base = sIff.Instance.findCommomItem(_psi.item._typeid);
 
             if (@base == null)
             {
-                throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um item[TYPEID=" + Convert.ToString(_psi.item._typeid) + "] que nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um item[TYPEID=" + Convert.ToString(_psi.item._typeid) + "] que nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                     8, 0));
             }
 
             if (!@base.Shop.flag_shop.can_send_mail_and_personal_shop)
             {
-                throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um item[TYPEID=" + Convert.ToString(_psi.item._typeid) + "] que nao pode ser vendido no Personal Shop. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um item[TYPEID=" + Convert.ToString(_psi.item._typeid) + "] que nao pode ser vendido no Personal Shop. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                     9, 0));
             }
 
             // Verifica o pre�o do item
             if (_psi.item.pang < ITEM_MIN_PRICE || _psi.item.pang > ITEM_MAX_PRICE)
             {
-                throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um item[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", Price=" + Convert.ToString(_psi.item.pang) + "] que o preco esta fora do limite[MIN=" + Convert.ToString(ITEM_MIN_PRICE) + ", MAX=" + Convert.ToString(ITEM_MAX_PRICE) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 24, 0));
+                throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um item[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", Price=" + Convert.ToString(_psi.item.pang) + "] que o preco esta fora do limite[MIN=" + Convert.ToString(ITEM_MIN_PRICE) + ", MAX=" + Convert.ToString(ITEM_MAX_PRICE) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 24, 0));
             }
 
             // Card pre�o controle
-            if (sIff.getInstance().getItemGroupIdentify(_psi.item._typeid) == IFF_GROUP.CARD)
+            if (sIff.Instance.getItemGroupIdentify(_psi.item._typeid) == IFF_GROUP.CARD)
             {
 
-                var card = sIff.getInstance().findCard(_psi.item._typeid);
+                var card = sIff.Instance.findCard(_psi.item._typeid);
 
                 if (card == null)
                 {
-                    throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + "] que nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                    throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + "] que nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                         21, 0));
                 }
 
@@ -182,33 +182,33 @@ namespace Pangya_GameServer.Feature.Personal
                     case 0: // Normal
                         if (_psi.item.pang > CARD_NORMAL_LIMIT_PRICE)
                         {
-                            throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=Normal, Price=" + Convert.ToString(_psi.item.pang) + "] que o preco passa do limite(" + Convert.ToString(CARD_NORMAL_LIMIT_PRICE) + "). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                            throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=Normal, Price=" + Convert.ToString(_psi.item.pang) + "] que o preco passa do limite(" + Convert.ToString(CARD_NORMAL_LIMIT_PRICE) + "). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                                 23, 0));
                         }
                         break;
                     case 1: // Rare
                         if (_psi.item.pang > CARD_RARE_LIMIT_PRICE)
                         {
-                            throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=Rare, Price=" + Convert.ToString(_psi.item.pang) + "] que o preco passa do limite(" + Convert.ToString(CARD_RARE_LIMIT_PRICE) + "). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                            throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=Rare, Price=" + Convert.ToString(_psi.item.pang) + "] que o preco passa do limite(" + Convert.ToString(CARD_RARE_LIMIT_PRICE) + "). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                                 23, 0));
                         }
                         break;
                     case 2: // Super Rare
                         if (_psi.item.pang > CARD_SUPER_RARE_LIMIT_PRICE)
                         {
-                            throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=Super Rare, Price=" + Convert.ToString(_psi.item.pang) + "] que o preco passa do limite(" + Convert.ToString(CARD_SUPER_RARE_LIMIT_PRICE) + "). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                            throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=Super Rare, Price=" + Convert.ToString(_psi.item.pang) + "] que o preco passa do limite(" + Convert.ToString(CARD_SUPER_RARE_LIMIT_PRICE) + "). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                                 23, 0));
                         }
                         break;
                     case 3: // Secret
                         if (_psi.item.pang > CARD_SECRET_LIMIT_PRICE)
                         {
-                            throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=Secret, Price=" + Convert.ToString(_psi.item.pang) + "] que o preco passa do limite(" + Convert.ToString(CARD_SECRET_LIMIT_PRICE) + "). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                            throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=Secret, Price=" + Convert.ToString(_psi.item.pang) + "] que o preco passa do limite(" + Convert.ToString(CARD_SECRET_LIMIT_PRICE) + "). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                                 23, 0));
                         }
                         break;
                     default: // Unknown Type
-                        throw new exception("[PersonalShop::pushItem][Error] PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=" + Convert.ToString((ushort)card.Rarity) + "] que o tipo é desconhecido. (N,R,SR e SC) Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 22, 0));
+                        throw new exception("[PersonalShop::pushItem][Error] Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "] tentou colocar um card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", TYPE=" + Convert.ToString((ushort)card.Rarity) + "] que o Type é desconhecido. (N,R,SR e SC) Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 22, 0));
                 }
             }
 
@@ -243,7 +243,7 @@ namespace Pangya_GameServer.Feature.Personal
 
             if (v_item.Count() == 0)
             {
-                throw new exception("[PersonalShop::putItemOnPacket][Error] size vector item shop is zero", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                throw new exception("[PersonalShop::putItemOnPacket][Error] size vector item ShopRoom is zero", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                     2, 0));
             }
 
@@ -320,7 +320,7 @@ namespace Pangya_GameServer.Feature.Personal
 
             foreach (var el in v_open_shop_visit)
             {
-                if (el.UserInfo.uid == _uid)
+                if (el.UserInfo.UID == _uid)
                 {
                     client = el;
                     break;
@@ -337,7 +337,7 @@ namespace Pangya_GameServer.Feature.Personal
 
             for (var i = 0; i < v_open_shop_visit.Count(); ++i)
             {
-                if (v_open_shop_visit[i].UserInfo.uid == _uid)
+                if (v_open_shop_visit[i].UserInfo.UID == _uid)
                 {
                     index = (int)i;
                     break;
@@ -353,21 +353,21 @@ namespace Pangya_GameServer.Feature.Personal
 
             if (m_state != STATE.OPEN)
             {
-                throw new exception("[PersonalShop::addClient][Error] client[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou entrar no shop do PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "], mas ele nao esta aberto no momento. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                throw new exception("[PersonalShop::addClient][Error] client[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou entrar no ShopRoom do Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "], mas ele nao esta aberto no momento. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                     25, 0));
             }
 
-            var client = findClientByUID(_session.UserInfo.uid);
+            var client = findClientByUID(_session.UserInfo.UID);
 
             if (client != null)
             {
-                throw new exception("[PersonalShop::addClient][Error] client[UID=" + Convert.ToString(_session.UserInfo.uid) + "] ja existe no Personal Shop do PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                throw new exception("[PersonalShop::addClient][Error] client[UID=" + Convert.ToString(_session.UserInfo.UID) + "] ja existe no Personal Shop do Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                     4, 0));
             }
 
             if (v_open_shop_visit.Count() >= LIMIT_VISIT_ON_SAME_TIME)
             {
-                throw new exception("[PersonalShop::addClient][Error] client[UID=" + Convert.ToString(_session.UserInfo.uid) + "] nao pode entrar no shop por que ja chegou ao limit de clientes ao mesmo tempo no Personal Shop do PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                throw new exception("[PersonalShop::addClient][Error] client[UID=" + Convert.ToString(_session.UserInfo.UID) + "] nao pode entrar no ShopRoom por que ja chegou ao limit de clientes ao mesmo tempo no Personal Shop do Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                     6, 0));
             }
 
@@ -380,15 +380,15 @@ namespace Pangya_GameServer.Feature.Personal
         public void deleteClient(Player _session)
         {
 
-            var client = findClientIndexByUID(_session.UserInfo.uid);
+            var client = findClientIndexByUID(_session.UserInfo.UID);
 
             if (client == -1)
             {
-                throw new exception("[PersonalShop::deleteClient][Error] client[UID=" + Convert.ToString(_session.UserInfo.uid) + "] nao existe no vector de clientes do Personal Shop do PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
+                throw new exception("[PersonalShop::deleteClient][Error] client[UID=" + Convert.ToString(_session.UserInfo.UID) + "] nao existe no vector de clientes do Personal Shop do Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP,
                     5, 0));
             }
 
-            if (v_open_shop_visit[client].UserInfo.uid == _session.UserInfo.uid)
+            if (v_open_shop_visit[client].UserInfo.UID == _session.UserInfo.UID)
             {
                 v_open_shop_visit.RemoveAt(client);
             }
@@ -396,7 +396,7 @@ namespace Pangya_GameServer.Feature.Personal
             {
                 for (int ii = 0; ii < v_open_shop_visit.Count; ii++)
                 {
-                    if (v_open_shop_visit[ii].UserInfo.uid == _session.UserInfo.uid)
+                    if (v_open_shop_visit[ii].UserInfo.UID == _session.UserInfo.UID)
                     {
                         v_open_shop_visit.RemoveAt(ii);
                         break; // Para evitar problemas de indexação após a remoção
@@ -407,29 +407,29 @@ namespace Pangya_GameServer.Feature.Personal
         /// <summary>
         /// 100%
         /// </summary>
-        /// <param name="_session">cliente</param>
-        /// <param name="_psi">dados recebidos pelo cliente</param>
+        /// <param Name="_session">cliente</param>
+        /// <param Name="_psi">dados recebidos pelo cliente</param>
         /// <exception cref="exception">retorna um erro em caso</exception>
         public void buyItem(Player _session, PersonalShopItem _psi)
         {
             // 1. SEGURANÇA: Verifica se o comprador não é o próprio dono (Anti-Exploit de Achievements/Pangs)
-            if (_session.UserInfo.uid == m_owner.UserInfo.uid)
+            if (_session.UserInfo.UID == m_owner.UserInfo.UID)
             {
-                throw new exception("[PersonalShop::buyItem][HACK] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou comprar de si mesmo no próprio Shop. Hacker detectado.",
+                throw new exception("[PersonalShop::buyItem][HACK] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou comprar de si mesmo no próprio Shop. Hacker detectado.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 50, 0));
             }
 
             // 2. ESTADO DO SHOP: Verifica se a loja ainda está aberta
             if (m_state != STATE.OPEN)
             {
-                throw new exception("[PersonalShop::buyItem][Error] client[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou comprar no shop do PLAYER[UID=" + Convert.ToString(m_owner.UserInfo.uid) + "], mas a loja foi fechada. Hacker ou Bug.",
+                throw new exception("[PersonalShop::buyItem][Error] client[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou comprar no ShopRoom do Normal[UID=" + Convert.ToString(m_owner.UserInfo.UID) + "], mas a loja foi fechada. Hacker ou Bug.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 25, 0));
             }
 
             // 3. EXISTÊNCIA DO CLIENTE: Verifica se o comprador está visualizando a loja
-            if (findClientByUID(_session.UserInfo.uid) == null)
+            if (findClientByUID(_session.UserInfo.UID) == null)
             {
-                throw new exception("[PersonalShop::buyItem][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou comprar sem estar na lista de visualização da loja.",
+                throw new exception("[PersonalShop::buyItem][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou comprar sem estar na lista de visualização da loja.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 10, 0));
             }
 
@@ -438,7 +438,7 @@ namespace Pangya_GameServer.Feature.Personal
             var item_real_vendedor = findItemById(_psi.item.id);
             if (item_real_vendedor == null)
             {
-                throw new exception("[PersonalShop::buyItem][HACK] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou comprar um Item ID[" + _psi.item.id + "] que não existe nesta loja.",
+                throw new exception("[PersonalShop::buyItem][HACK] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou comprar um Item ID[" + _psi.item.id + "] que não existe nesta loja.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 11, 0));
             }
 
@@ -453,12 +453,12 @@ namespace Pangya_GameServer.Feature.Personal
 
             if (_psi.item.qntd > psi_owner.item.qntd)
             {
-                throw new exception("[PersonalShop::buyItem][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou comprar QNTD[" + _psi.item.qntd + "], mas o estoque é apenas [" + psi_owner.item.qntd + "].",
+                throw new exception("[PersonalShop::buyItem][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou comprar QNTD[" + _psi.item.qntd + "], mas o estoque é apenas [" + psi_owner.item.qntd + "].",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 26, 1));
             }
 
             // 6. VALIDAÇÃO DO IFF: Verifica se o item ainda é válido no servidor
-            var @base = sIff.getInstance().findCommomItem(psi_owner.item._typeid);
+            var @base = sIff.Instance.findCommomItem(psi_owner.item._typeid);
             if (@base == null || psi_owner.item._typeid == 0)
             {
                 throw new exception("[PersonalShop::buyItem][Error] Item TYPEID[" + psi_owner.item._typeid + "] inválido ou não existe no IFF.",
@@ -483,7 +483,7 @@ namespace Pangya_GameServer.Feature.Personal
             }
 
             // 10. REQUISITO DE NÍVEL
-            if (!@base.Level.GoodLevel((byte)_session.UserInfo.level))
+            if (!@base.Level.GoodLevel((byte)_session.UserInfo.Level))
             {
                 throw new exception("[PersonalShop::buyItem][Error] Level insuficiente para este item.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 16, 0));
@@ -517,7 +517,7 @@ namespace Pangya_GameServer.Feature.Personal
 
                 // --- ATUALIZAÇÃO DE PACOTES (0xEC / 0xED) ---
                 var p = new Packet();
-                IFF_GROUP group = sIff.getInstance().getItemGroupIdentify(_psi.item._typeid);
+                IFF_GROUP group = sIff.Instance.getItemGroupIdentify(_psi.item._typeid);
 
                 // Lógica de pacotes para Cartões ou Itens Normais
                 if (group == IFF_GROUP.CARD)
@@ -577,8 +577,8 @@ namespace Pangya_GameServer.Feature.Personal
 
                 // Notifica todos na loja que o item foi vendido
                 p.init_plain(0xED);
-                p.WriteString(m_owner.UserInfo.nickname);
-                p.WriteUInt32(m_owner.UserInfo.uid);
+                p.WriteString(m_owner.UserInfo.NickName);
+                p.WriteUInt32(m_owner.UserInfo.UID);
                 p.WriteBytes(_psi.ToArray());
                 p.WriteInt32(v_item.Count() == 0 ? 3 : 1);
                 shop_broadcast(p, _session, 1);
@@ -659,7 +659,7 @@ namespace Pangya_GameServer.Feature.Personal
         protected ulong m_pang_sale = new ulong(); // pangs em caixa
 
         protected List<PersonalShopItem> v_item = new List<PersonalShopItem>(); // Itens da Loja   
-        protected List<Player> v_open_shop_visit = new List<Player>(); // Os visitantes que est�o com o shop aberto
+        protected List<Player> v_open_shop_visit = new List<Player>(); // Os visitantes que est�o com o ShopRoom aberto
         private readonly object _lockObj = new object();
     }
 }

@@ -53,7 +53,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_cei.index < 0)
             {
-                throw new exception("[CmdEquipCard::lineResult][Error] m_cei[index=" + Convert.ToString(m_cei.index) + "] is invalid, nao conseguiu equipar o card[TYPEID=" + Convert.ToString(m_cei._typeid) + "] para o PLAYER[UID=" + Convert.ToString(m_uid) + "]", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdEquipCard::lineResult][Error] m_cei[index=" + Convert.ToString(m_cei.index) + "] is invalid, nao conseguiu equipar o card[TYPEID=" + Convert.ToString(m_cei._typeid) + "] para o Normal[UID=" + Convert.ToString(m_uid) + "]", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                     3, 0));
             }
 
@@ -79,7 +79,7 @@ namespace Pangya_GameServer.Repository
 
             var r = procedure(m_szConsulta, Convert.ToString(m_uid) + ", " + Convert.ToString(m_cei._typeid) + ", " + Convert.ToString(m_cei.parts_id) + ", " + Convert.ToString(m_cei.parts_typeid) + ", " + Convert.ToString(m_cei.efeito) + ", " + Convert.ToString(m_cei.efeito_qntd) + ", " + Convert.ToString(m_cei.slot) + ", " + Convert.ToString(m_cei.tipo) + ", " + Convert.ToString(m_tempo));
 
-            checkResponse(r, "nao conseguiu equipar o Card[TYPEID=" + Convert.ToString(m_cei._typeid) + "] no Character[TYPEID=" + Convert.ToString(m_cei.parts_typeid) + ", ID=" + Convert.ToString(m_cei.parts_id) + "] para o PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu equipar o Card[TYPEID=" + Convert.ToString(m_cei._typeid) + "] no Character[TYPEID=" + Convert.ToString(m_cei.parts_typeid) + ", ID=" + Convert.ToString(m_cei.parts_id) + "] para o Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

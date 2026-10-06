@@ -23,23 +23,23 @@ namespace Pangya_GameServer.Roms
 
             if (IsFull())
             {
-                throw new exception("[room::enter] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar na a sala[NUMERO=" + RoomInfo.numero + "], mas a sala ja esta cheia.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::enter] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou entrar na a sala[NUMERO=" + RoomInfo.RoomID + "], mas a sala ja esta cheia.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     2, 0));
             }
 
-            if (session.UserInfo.Member.sala_numero != -1)
+            if (session.UserInfo.Member.RoomID != -1)
             {
-                throw new exception("[room::enter] [Error] PLAYER[UID=" + session.UserInfo.uid + "] sala[NUMERO=" + RoomInfo.numero + "], ja esta em outra sala[NUMERO=" + Convert.ToString(session.UserInfo.Member.sala_numero) + "], nao pode entrar em outra. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::enter] [Error] Normal[UID=" + session.UserInfo.UID + "] sala[NUMERO=" + RoomInfo.RoomID + "], ja esta em outra sala[NUMERO=" + Convert.ToString(session.UserInfo.Member.RoomID) + "], nao pode entrar em outra. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     120, 0));
             }
 
-            if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.GUILD_BATTLE
-                && RoomInfo.guilds.guild_1_uid != 0
-                && RoomInfo.guilds.guild_2_uid != 0
-                && RoomInfo.guilds.guild_1_uid != session.UserInfo.Guild.uid
-                && RoomInfo.guilds.guild_2_uid != session.UserInfo.Guild.uid)
+            if (RoomInfo.GetRoomType() == RoomTypeFlags.GUILD_BATTLE
+                && RoomInfo.GuildBattle.guild_1_uid != 0
+                && RoomInfo.GuildBattle.guild_2_uid != 0
+                && RoomInfo.GuildBattle.guild_1_uid != session.UserInfo.Guild.uid
+                && RoomInfo.GuildBattle.guild_2_uid != session.UserInfo.Guild.uid)
             {
-                throw new exception("[room::enter] [Error] PLAYER[UID=" + session.UserInfo.uid + "] sala[NUMERO=" + RoomInfo.numero + "], ja tem duas guild e o Player que quer entrar nao é de nenhum delas. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::enter] [Error] Normal[UID=" + session.UserInfo.UID + "] sala[NUMERO=" + RoomInfo.RoomID + "], ja tem duas Guild e o Player que quer entrar nao é de nenhum delas. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     11000, 0));
             }
 
@@ -47,56 +47,56 @@ namespace Pangya_GameServer.Roms
             {
                 AddPlayer(session, false);
                  
-                RoomInfo.num_player = (byte)Players.Count;
+                RoomInfo.CurrentUsers = (byte)Players.Count;
 
                 // Update Trofel
-                if (RoomInfo.trofel > 0)
+                if (RoomInfo.TrophyID > 0)
                 {
                     UpdateTrofel();
                 }
 
                 // Acabou de criar a sala
-                if (RoomInfo.master == session.UserInfo.uid && RoomInfo.tipo != (byte)ROOM_INFO_TYPE.GRAND_PRIX)
+                if (RoomInfo.OwnerUID == session.UserInfo.UID && RoomInfo.RealRoomType != (byte)RoomTypeFlags.GRAND_PRIX)
                 {
                     // Update Trofel
-                    if (session.UserInfo.UserCapabilities.game_master)
+                    if (session.UserInfo.UserCapabilities.IsGameMaster)
                     { // GM
 
-                        if ((RoomInfo.max_player > 30 && RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY) || (RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT && RoomInfo.tipo <= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_ADV))
+                        if ((RoomInfo.MaxUsers > 30 && RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY) || (RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT && RoomInfo.RealRoomType <= (byte)RoomTypeFlags.GRAND_ZODIAC_ADV))
                         {
 
-                            RoomInfo.flag_gm = 1;
+                            RoomInfo.IsGameMaster = 1;
 
-                            RoomInfo.state_flag = 0x100;
+                            RoomInfo.SpecialFlag = 0x100;
 
-                            RoomInfo.trofel = TROFEL_GM_EVENT_TYPEID;
+                            RoomInfo.TrophyID = TROFEL_GM_EVENT_TYPEID;
 
                         }
-                        else if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY || RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT)
+                        else if (RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY || RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT)
                         {
                             UpdateTrofel();
                         }
 
                     }
-                    else if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY || RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT)
+                    else if (RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY || RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT)
                     {
                         UpdateTrofel();
                     }
 
                 }
-                else if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.GRAND_PRIX)
+                else if (RoomInfo.GetRoomType() == RoomTypeFlags.GRAND_PRIX)
                 {
                     UpdateTrofel();
                 }
 
                 // Update Master
-                // Só trocar o master da sala se não tiver nenhum jogo inicializado
+                // Só trocar o Master da sala se não tiver nenhum jogo inicializado
                 if (CurrentGame == null
                     && Players.Count > 0
-                    && session.UserInfo.UserCapabilities.game_master
-                    && RoomInfo.state_flag != 0x100
-                    && RoomInfo.tipo != (byte)ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE
-                    && RoomInfo.tipo != (byte)ROOM_INFO_TYPE.GRAND_PRIX)
+                    && session.UserInfo.UserCapabilities.IsGameMaster
+                    && RoomInfo.SpecialFlag != 0x100
+                    && RoomInfo.RealRoomType != (byte)RoomTypeFlags.SPECIAL_SHUFFLE_COURSE
+                    && RoomInfo.RealRoomType != (byte)RoomTypeFlags.GRAND_PRIX)
                 {
                     UpdateMaster(session);
                 }
@@ -106,7 +106,7 @@ namespace Pangya_GameServer.Roms
                 {
                     CurrentGame.AddPlayer(session);
 
-                    if (RoomInfo.trofel > 0)
+                    if (RoomInfo.TrophyID > 0)
                     {
                         UpdateTrofel();
                     }
@@ -120,25 +120,25 @@ namespace Pangya_GameServer.Roms
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[room::enter][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[room::enter][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
-                if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.GUILD_BATTLE)
+                if (RoomInfo.GetRoomType() == RoomTypeFlags.GUILD_BATTLE)
                 {
                     UpdateGuild(session);
                 } 
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[room::enter][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::enter][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
         private void UpdateTrofel()
         {
 
-            if (Players.Count() > 0 && (RoomInfo.trofel != TROFEL_GM_EVENT_TYPEID || RoomInfo.max_player <= 30) && (RoomInfo.time_30s > 0 && RoomInfo.tipo != (byte)ROOM_INFO_TYPE.GUILD_BATTLE)
-                && RoomInfo.master != -2 || (RoomInfo.GetTipo() == ROOM_INFO_TYPE.GRAND_PRIX && RoomInfo.grand_prix.dados_typeid > 0))
+            if (Players.Count() > 0 && (RoomInfo.TrophyID != TROFEL_GM_EVENT_TYPEID || RoomInfo.MaxUsers <= 30) && (RoomInfo.TimeMin > 0 && RoomInfo.RealRoomType != (byte)RoomTypeFlags.GUILD_BATTLE)
+                && RoomInfo.OwnerUID != -2 || (RoomInfo.GetRoomType() == RoomTypeFlags.GRAND_PRIX && RoomInfo.grand_prix.dados_typeid > 0))
             {
 
                 if (CurrentGame != null)
@@ -151,32 +151,32 @@ namespace Pangya_GameServer.Roms
                     foreach (var el in Players)
                     {
                         if (el != null)
-                            soma += (uint)((el.UserInfo.level > 60) ? 60 : (el.UserInfo.level > 0 ? el.UserInfo.level - 1 : 0));
+                            soma += (uint)((el.UserInfo.Level > 60) ? 60 : (el.UserInfo.Level > 0 ? el.UserInfo.Level - 1 : 0));
 
                     }
                     var new_trofel = STDA_MAKE_TROFEL(soma, Players.Count());
 
-                    if (new_trofel > 0 && new_trofel != RoomInfo.trofel)
+                    if (new_trofel > 0 && new_trofel != RoomInfo.TrophyID)
                     {
 
                         // Check se o trofeu anterior era o GM e se o novo não é mais, aí tira a type de GM da sala
-                        if (RoomInfo.trofel == TROFEL_GM_EVENT_TYPEID && new_trofel != TROFEL_GM_EVENT_TYPEID)
-                            RoomInfo.flag_gm = 0;
+                        if (RoomInfo.TrophyID == TROFEL_GM_EVENT_TYPEID && new_trofel != TROFEL_GM_EVENT_TYPEID)
+                            RoomInfo.IsGameMaster = 0;
 
-                        if (RoomInfo.trofel > 0)
+                        if (RoomInfo.TrophyID > 0)
                         {
 
-                            RoomInfo.trofel = new_trofel;
+                            RoomInfo.TrophyID = new_trofel;
 
                             var p = new Packet(0x97);
 
-                            p.WriteUInt32(RoomInfo.trofel);
+                            p.WriteUInt32(RoomInfo.TrophyID);
 
                             SendBroadCast(p);
 
                         }
                         else
-                            RoomInfo.trofel = new_trofel;
+                            RoomInfo.TrophyID = new_trofel;
                     }
                 }
             }
@@ -198,14 +198,14 @@ namespace Pangya_GameServer.Roms
 
                         session.SetRoom(null);//sai 
                                                //aqui eo contrario.
-                        bool isRoomEmpty = Players.Count == 0 &&(RoomInfo.master != -2 || (IsDropRoom() && (RoomInfo.GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_INT || RoomInfo.GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_ADV)));
+                        bool isRoomEmpty = Players.Count == 0 &&(RoomInfo.OwnerUID != -2 || (IsDropRoom() && (RoomInfo.GetRoomType() != RoomTypeFlags.GRAND_ZODIAC_INT || RoomInfo.GetRoomType() != RoomTypeFlags.GRAND_ZODIAC_ADV)));
 
                         return isRoomEmpty ? 1 : 0;//deve ser o contrario, significa que vamos destruir a sala...
                     }
 
                     if (option != 0 && option != 1 && option != 0x800 && option != 10)
                     {
-                        AddPlayerKicked(session.UserInfo.uid);
+                        AddPlayerKicked(session.UserInfo.UID);
                     }
 
                     // Verifica se ele está em um jogo e tira ele
@@ -221,56 +221,56 @@ namespace Pangya_GameServer.Roms
                     }
                     catch (Exception e)
                     {
-                        _smp.message_pool.getInstance().push(new message("[room::leave][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[room::leave][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
                     RemovePlayer(session); 
 
-                    if ((RoomInfo.num_player - 1) > 0 || Players.Count == 0)
+                    if ((RoomInfo.CurrentUsers - 1) > 0 || Players.Count == 0)
                     {
-                        --RoomInfo.num_player;
+                        --RoomInfo.CurrentUsers;
                     }
 
                     // Sai do Team se for Match
-                    if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.MATCH)
+                    if (RoomInfo.GetRoomType() == RoomTypeFlags.MATCH)
                     {
                         if (Teams.Count < 2)
                         {
-                            throw new Exception($"[room::leave][Error] player[UID={session.UserInfo.uid}] tentou sair da sala[NUMERO={RoomInfo.numero}], mas a sala nao tem 2 times.");
+                            throw new Exception($"[room::leave][Error] player[UID={session.UserInfo.UID}] tentou sair da sala[NUMERO={RoomInfo.RoomID}], mas a sala nao tem 2 times.");
                         }
 
                         var pPri = GetPlayerInfo(session);
                         if (pPri == null) throw new Exception("[room::leave][Error] player info não encontrado.");
 
-                        Teams[pPri.state_flag.team].deletePlayer(session, option);
+                        Teams[pPri.State.Team].deletePlayer(session, option);
                     }
-                    else if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.GUILD_BATTLE)
+                    else if (RoomInfo.GetRoomType() == RoomTypeFlags.GUILD_BATTLE)
                     {
                         var pPri = GetPlayerInfo(session);
                         if (pPri == null) throw new Exception("[room::leave][Error] player info não encontrado.");
 
                         var guild = GuildManager.findGuildByPlayer(session);
-                        if (guild == null) throw new Exception("[room::leave][Error] player não está em nenhuma guild da sala.");
+                        if (guild == null) throw new Exception("[room::leave][Error] player não está em nenhuma Guild da sala.");
 
                         guild.deletePlayer(session);
-                        Teams[pPri.state_flag.team].deletePlayer(session, option);
+                        Teams[pPri.State.Team].deletePlayer(session, option);
 
                         // Limpa flags
-                        pPri.state_flag.team = 0;
+                        pPri.State.Team = 0;
 
                         if (guild.numPlayers() == 0)
                         {
                             if (guild.getTeam() == Guild.eTEAM.RED)
                             {
-                                RoomInfo.guilds.guild_1_uid = 0;
-                                RoomInfo.guilds.guild_1_index_mark = 0;
-                                RoomInfo.guilds.guild_1_mark = ""; 
+                                RoomInfo.GuildBattle.guild_1_uid = 0;
+                                RoomInfo.GuildBattle.guild_1_index_mark = 0;
+                                RoomInfo.GuildBattle.guild_1_mark = ""; 
                             }
                             else
                             {
-                                RoomInfo.guilds.guild_2_uid = 0;
-                                RoomInfo.guilds.guild_2_index_mark = 0;
-                                RoomInfo.guilds.guild_2_mark = ""; 
+                                RoomInfo.GuildBattle.guild_2_uid = 0;
+                                RoomInfo.GuildBattle.guild_2_index_mark = 0;
+                                RoomInfo.GuildBattle.guild_2_mark = ""; 
                             }
                             GuildManager.deleteGuild(guild);
                         }
@@ -302,7 +302,7 @@ namespace Pangya_GameServer.Roms
                         session.Send(p); 
                     }
 
-                    if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+                    if (RoomInfo.GetRoomType() == RoomTypeFlags.LOUNGE)
                     {
                         session.UserInfo.PostureRoom = 0;
                         session.UserInfo.LoungeState = 0;
@@ -315,8 +315,8 @@ namespace Pangya_GameServer.Roms
                     }
 
                     // Verificação de Master/GM para deletar a sala
-                    if ((CurrentGame == null && RoomInfo.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE && session.UserInfo.uid == RoomInfo.master)
-                        || (session.UserInfo.UserCapabilities.game_master && RoomInfo.master == session.UserInfo.uid && RoomInfo.GetTipo() != ROOM_INFO_TYPE.LOUNGE && RoomInfo.trofel == TROFEL_GM_EVENT_TYPEID))
+                    if ((CurrentGame == null && RoomInfo.GetRoomType() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE && session.UserInfo.UID == RoomInfo.OwnerUID)
+                        || (session.UserInfo.UserCapabilities.IsGameMaster && RoomInfo.OwnerUID == session.UserInfo.UID && RoomInfo.GetRoomType() != RoomTypeFlags.LOUNGE && RoomInfo.TrophyID == TROFEL_GM_EVENT_TYPEID))
                     {
                         return 0x801; // deleta todos da sala
                     }
@@ -327,12 +327,12 @@ namespace Pangya_GameServer.Roms
                 }
                 catch (Exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[room::leave][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[room::leave][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 // Retorno final baseado na lógica original
 
-                bool condition = Players.Count > 0 || (RoomInfo.master == -2 && (!IsDropRoom() || (RoomInfo.GetTipo() >= ROOM_INFO_TYPE.GRAND_ZODIAC_INT && RoomInfo.GetTipo() <= ROOM_INFO_TYPE.GRAND_ZODIAC_ADV)));
+                bool condition = Players.Count > 0 || (RoomInfo.OwnerUID == -2 && (!IsDropRoom() || (RoomInfo.GetRoomType() >= RoomTypeFlags.GRAND_ZODIAC_INT && RoomInfo.GetRoomType() <= RoomTypeFlags.GRAND_ZODIAC_ADV)));
                 return condition ? 0 : 1;
             }
         }
@@ -351,25 +351,25 @@ namespace Pangya_GameServer.Roms
                     foreach (var el in player_info)
                     {
                         // Update Place Player
-                        if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.PRACTICE || RoomInfo.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+                        if (RoomInfo.GetRoomType() == RoomTypeFlags.PRACTICE || RoomInfo.GetRoomType() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
                         {
-                            el.Value.place.ulPlace = 2;
+                            el.Value.LadderGrade = 2;
                         }
                         else
                         {
-                            el.Value.place.ulPlace = 0;
+                            el.Value.LadderGrade = 0;
                         }
 
-                        el.Value.state_flag.away = 0;
+                        el.Value.State.Sleep = 0;
 
-                        // Aqui só zera quem não é Master da sala, o master deixa sempre ready
-                        if (RoomInfo.master == el.Key.UserInfo.uid)
+                        // Aqui só zera quem não é Master da sala, o Master deixa sempre Ready
+                        if (RoomInfo.OwnerUID == el.Key.UserInfo.UID)
                         {
-                            el.Value.state_flag.ready = 1;
+                            el.Value.State.Ready = 1;
                         }
                         else
                         {
-                            el.Value.state_flag.ready = 0;
+                            el.Value.State.Ready = 0;
                         }
 
                         // Update Player info
@@ -380,26 +380,26 @@ namespace Pangya_GameServer.Roms
                     }
 
                     // Atualiza type da sala, só não atualiza se for GM evento ou GZ Event e SSC
-                    if (!(RoomInfo.trofel == TROFEL_GM_EVENT_TYPEID || RoomInfo.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE || RoomInfo.master == -2))
-                        RoomInfo.state = 1; //em espera
+                    if (!(RoomInfo.TrophyID == TROFEL_GM_EVENT_TYPEID || RoomInfo.GetRoomType() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE || RoomInfo.OwnerUID == -2))
+                        RoomInfo.StateRoom = 1; //em espera
 
-                    // Att Exp rate, e Pang rate, que criou a sala, att ele também quando começa o jogo
+                    // Att Exp Rate, e Pang Rate, que criou a sala, att ele também quando começa o jogo
 
-                    RoomInfo.rate_exp = (uint)GameServer.getInstance().getInfo().rate.exp;
-                    RoomInfo.rate_pang = (uint)GameServer.getInstance().getInfo().rate.pang;
-                    RoomInfo.angel_event = GameServer.getInstance().getInfo().rate.angel_event.IsTrue();
+                    RoomInfo.RateExperience = (uint)GameServer.Instance.getInfo().Rate.Experience;
+                    RoomInfo.RatePangs = (uint)GameServer.Instance.getInfo().Rate.Pang;
+                    RoomInfo.IsAngelQuiterEvent = GameServer.Instance.getInfo().Rate.AngelEvent.IsTrue();
 
 
                     // Update Course of Hole
                     if (RoomInfo.GetMap() >= 0x7F) // Random Course With Course already draw
-                        RoomInfo.course = ROOM_INFO_COURSE.UNK; // Random Course standard
+                        RoomInfo.CourseIndex = RoomCourseFlags.UNK; // Random Course standard
 
 
                     // Update Master da sala
                     UpdateMaster(null);
 
-                    if (RoomInfo.master == -2)
-                        RoomInfo.master = -1; // pode deletar a sala quando sair todos
+                    if (RoomInfo.OwnerUID == -2)
+                        RoomInfo.OwnerUID = -1; // pode deletar a sala quando sair todos
 
 
                     if (Players.Count > 0)
@@ -430,7 +430,7 @@ namespace Pangya_GameServer.Roms
                             catch (exception e)
                             {
 
-                                _smp.message_pool.getInstance().push(new message("[room::finish_game::KickBotTourney][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[room::finish_game::KickBotTourney][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                             }
                         }
 
@@ -455,43 +455,43 @@ namespace Pangya_GameServer.Roms
         public void UpdateGuild(Player session)
         {
             if (session.UserInfo.Guild.uid == -1)
-                throw new Exception($"[channel::UpdateGuild] [Error] PLAYER[UID={session.UserInfo.uid}] player nao esta em uma guild.");
+                throw new Exception($"[Channel::UpdateGuild] [Error] Normal[UID={session.UserInfo.UID}] player nao esta em uma Guild.");
 
             PlayerRoomInfo pri = GetPlayerInfo(session);
 
             if (pri == null)
-                throw new Exception($"[channel::UpdateGuild] [Error] PLAYER[UID={session.UserInfo.uid}] nao tem o info do player na sala[NUMERO={RoomInfo.numero}]. Hacker ou Bug.");
+                throw new Exception($"[Channel::UpdateGuild] [Error] Normal[UID={session.UserInfo.UID}] nao tem o info do player na sala[NUMERO={RoomInfo.RoomID}]. Hacker ou Bug.");
 
             Guild guild = null;
 
-            if (RoomInfo.guilds.guild_1_uid == 0 && RoomInfo.guilds.guild_2_uid != session.UserInfo.Guild.uid)
+            if (RoomInfo.GuildBattle.guild_1_uid == 0 && RoomInfo.GuildBattle.guild_2_uid != session.UserInfo.Guild.uid)
             {
-                RoomInfo.guilds.guild_1_uid = session.UserInfo.Guild.uid;
-                RoomInfo.guilds.guild_1_nome = session.UserInfo.Guild.name;
-                RoomInfo.guilds.guild_1_mark = session.UserInfo.Guild.mark_emblem;
-                RoomInfo.guilds.guild_1_index_mark = (ushort)session.UserInfo.Guild.index_mark_emblem;
+                RoomInfo.GuildBattle.guild_1_uid = session.UserInfo.Guild.uid;
+                RoomInfo.GuildBattle.guild_1_nome = session.UserInfo.Guild.name;
+                RoomInfo.GuildBattle.guild_1_mark = session.UserInfo.Guild.mark_emblem;
+                RoomInfo.GuildBattle.guild_1_index_mark = (ushort)session.UserInfo.Guild.index_mark_emblem;
 
-                pri.state_flag.team = 0;
-                guild = GuildManager.addGuild(Guild.eTEAM.RED, RoomInfo.guilds.guild_1_uid);
+                pri.State.Team = 0;
+                guild = GuildManager.addGuild(Guild.eTEAM.RED, RoomInfo.GuildBattle.guild_1_uid);
             }
-            else if (RoomInfo.guilds.guild_1_uid == session.UserInfo.Guild.uid)
+            else if (RoomInfo.GuildBattle.guild_1_uid == session.UserInfo.Guild.uid)
             {
-                pri.state_flag.team = 0;
+                pri.State.Team = 0;
                 guild = GuildManager.findGuildByTeam(Guild.eTEAM.RED);
             }
-            else if (RoomInfo.guilds.guild_2_uid == 0)
+            else if (RoomInfo.GuildBattle.guild_2_uid == 0)
             {
-                RoomInfo.guilds.guild_2_uid = session.UserInfo.Guild.uid;
-                RoomInfo.guilds.guild_2_nome = session.UserInfo.Guild.name;
-                RoomInfo.guilds.guild_2_mark = session.UserInfo.Guild.mark_emblem;
-                RoomInfo.guilds.guild_2_index_mark = (ushort)session.UserInfo.Guild.index_mark_emblem;
+                RoomInfo.GuildBattle.guild_2_uid = session.UserInfo.Guild.uid;
+                RoomInfo.GuildBattle.guild_2_nome = session.UserInfo.Guild.name;
+                RoomInfo.GuildBattle.guild_2_mark = session.UserInfo.Guild.mark_emblem;
+                RoomInfo.GuildBattle.guild_2_index_mark = (ushort)session.UserInfo.Guild.index_mark_emblem;
 
-                pri.state_flag.team = 1;
-                guild = GuildManager.addGuild(Guild.eTEAM.BLUE, RoomInfo.guilds.guild_2_uid);
+                pri.State.Team = 1;
+                guild = GuildManager.addGuild(Guild.eTEAM.BLUE, RoomInfo.GuildBattle.guild_2_uid);
             }
             else
             {
-                pri.state_flag.team = 1;
+                pri.State.Team = 1;
                 guild = GuildManager.findGuildByTeam(Guild.eTEAM.BLUE);
             }
 
@@ -501,12 +501,12 @@ namespace Pangya_GameServer.Roms
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message(
-                    $"[room::updateGuild][Warning] PLAYER[UID={session.UserInfo.uid}] tentou entrar em uma guild da sala[NUMERO={RoomInfo.numero}], mas nao conseguiu criar ou achar nenhum guild na sala. Bug.",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[room::updateGuild][Warning] Normal[UID={session.UserInfo.UID}] tentou entrar em uma Guild da sala[NUMERO={RoomInfo.RoomID}], mas nao conseguiu criar ou achar nenhum Guild na sala. Bug.",
                    type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
-            Teams[pri.state_flag.team].addPlayer(session);
+            Teams[pri.State.Team].addPlayer(session);
         }
 
         private void InitTeams()
@@ -527,11 +527,11 @@ namespace Pangya_GameServer.Roms
 
                 if ((pPri = GetPlayerInfo(el)) == null)
                 {
-                    throw new exception("[room::init_teans] [Error] nao encontrou o info do PLAYER[UID=" + Convert.ToString(el.UserInfo.uid) + "] na sala. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[room::init_teans] [Error] nao encontrou o info do Normal[UID=" + Convert.ToString(el.UserInfo.UID) + "] na sala. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         1504, 0));
                 }
 
-                Teams[pPri.state_flag.team].addPlayer(el);
+                Teams[pPri.State.Team].addPlayer(el);
             }
 
         }
@@ -551,7 +551,7 @@ namespace Pangya_GameServer.Roms
                     catch (exception e)
                     {
 
-                        _smp.message_pool.getInstance().push(new message("[room::leaveAll] [Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[room::leaveAll] [Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
             }
@@ -563,28 +563,28 @@ namespace Pangya_GameServer.Roms
 
             if (IsFull())
             {
-                throw new exception("[room::addInvited] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar na a sala[NUMERO=" + RoomInfo.numero + "], mas a sala ja esta cheia.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::addInvited] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou entrar na a sala[NUMERO=" + RoomInfo.RoomID + "], mas a sala ja esta cheia.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     2, 0));
             }
 
             if (FindIndexSession(uidHasInvite) == (int)~0)
             {
-                throw new exception("[room::addInvited] [Error] quem convidou[UID=" + Convert.ToString(uidHasInvite) + "] o PLAYER[UID=" + session.UserInfo.uid + "] para a sala nao esta na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::addInvited] [Error] quem convidou[UID=" + Convert.ToString(uidHasInvite) + "] o Normal[UID=" + session.UserInfo.UID + "] para a sala nao esta na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     2010, 0));
             }
 
-            var s = FindSessionByUid(session.UserInfo.uid);
+            var s = FindSessionByUid(session.UserInfo.UID);
 
             if (s != null)
             {
-                throw new exception("[room::addInvited] [Error] PLAYER[UID=" + Convert.ToString(uidHasInvite) + "] tentou adicionar o convidado[UID=" + session.UserInfo.uid + "] a sala, mas ele ja esta na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::addInvited] [Error] Normal[UID=" + Convert.ToString(uidHasInvite) + "] tentou adicionar o Invite[UID=" + session.UserInfo.UID + "] a sala, mas ele ja esta na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     2001, 0));
             }
             AddPlayer(session, true);
 
-            ++RoomInfo.num_player;
+            ++RoomInfo.CurrentUsers;
 
-            PlayerRoomInfoEx pri = null;
+            PlayerRoomInfo pri = null;
 
             try
             {
@@ -596,7 +596,7 @@ namespace Pangya_GameServer.Roms
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[room::addInvited][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::addInvited][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             if (pri == null)
@@ -607,16 +607,16 @@ namespace Pangya_GameServer.Roms
 
 
 
-                throw new exception("[[room::addInvited] [Error] PLAYER[UID=" + Convert.ToString(uidHasInvite) + "] tentou adicionar o convidado[UID=" + session.UserInfo.uid + "] a sala, nao conseguiu criar o Player Room Info Invited do Player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[[room::addInvited] [Error] Normal[UID=" + Convert.ToString(uidHasInvite) + "] tentou adicionar o Invite[UID=" + session.UserInfo.UID + "] a sala, nao conseguiu criar o Player Room Info Invited do Player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     2002, 0));
             }
 
             // Add Invite Channel Info
             InviteChannelInfo ici = new InviteChannelInfo
             {
-                room_number = RoomInfo.numero,
+                room_number = RoomInfo.RoomID,
                 invite_uid = uidHasInvite,
-                invited_uid = session.UserInfo.uid,
+                invited_uid = session.UserInfo.UID,
                 time = new SystemTime(DateTime.Now)
             };
 
@@ -624,12 +624,12 @@ namespace Pangya_GameServer.Roms
             // End Add Invite Channel Info
 
             // Update Char Invited ON ROOM
-            var p = new Packet((ushort)0x48);
+            var p = new Packet(0x48);
 
             p.WriteByte(1);
             p.WriteInt16(-1);
 
-            p.WriteBytes(pri.ToArrayEx());
+            p.WriteBytes(pri.ToArray(WithCharacter: true));
 
             p.WriteByte(0); // Final Packet
             SendBroadCast(p);
@@ -640,36 +640,36 @@ namespace Pangya_GameServer.Roms
         {
             return Invites.FirstOrDefault(el =>
             {
-                return (el.room_number == RoomInfo.numero && el.invited_uid == session.UserInfo.uid);
+                return (el.room_number == RoomInfo.RoomID && el.invited_uid == session.UserInfo.UID);
             });
         }
 
         public InviteChannelInfo GetInvited(uint uid)
         {
-            return Invites.FirstOrDefault(el => el.room_number == RoomInfo.numero && el.invited_uid == uid); ;
+            return Invites.FirstOrDefault(el => el.room_number == RoomInfo.RoomID && el.invited_uid == uid); ;
         }
 
         public InviteChannelInfo DeleteInvited(Player session)
         {
 
-            var it = PlayersInfo.FirstOrDefault(c => c.Key.UserInfo.uid == session.UserInfo.uid);
+            var it = PlayersInfo.FirstOrDefault(c => c.Key.UserInfo.UID == session.UserInfo.UID);
 
             if (it.Key == null && GetInvited(session) == null)
-                throw new exception("[room::DeleteInvited] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou deletar convidado,"
-                    + " mas nao tem o info do convidado na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, 2003, 0));
+                throw new exception("[room::DeleteInvited] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou deletar Invite,"
+                    + " mas nao tem o info do Invite na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, 2003, 0));
 
 
             int index = FindIndexSession(session);
 
             if (index == -1 && GetInvited(session) == null)
             {
-                throw new exception("[room::DeleteInvited] [Error] session[UID=" + session.UserInfo.uid + "] nao existe no vector de sessions da sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::DeleteInvited] [Error] session[UID=" + session.UserInfo.UID + "] nao existe no vector de sessions da sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     5, 0));
             }
             
             RemovePlayer(session);
 
-            --RoomInfo.num_player;
+            --RoomInfo.CurrentUsers;
 
             PlayersInfo.Remove(session);
 
@@ -692,7 +692,7 @@ namespace Pangya_GameServer.Roms
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[room::DeleteInvited][Warning] PLAYER[UID=" + session.UserInfo.uid + "] nao tem um convite.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::DeleteInvited][Warning] Normal[UID=" + session.UserInfo.UID + "] nao tem um convite.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             // End Delete Invite Channel Info
@@ -700,10 +700,10 @@ namespace Pangya_GameServer.Roms
             // Resposta Delete Convidado
             var p = new Packet((ushort)0x130);
 
-            p.WriteUInt32(session.UserInfo.uid);
+            p.WriteUInt32(session.UserInfo.UID);
             SendBroadCast(p);
 
-            _smp.message_pool.getInstance().push(new message("[room::DeleteInvited][Info] Deleteou um convite[Convidado=" + session.UserInfo.uid + "] na Sala[NUMERO=" + RoomInfo.numero + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[room::DeleteInvited][Info] Deleteou um convite[Convidado=" + session.UserInfo.UID + "] na Sala[NUMERO=" + RoomInfo.RoomID + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
 
             return ici;
@@ -729,7 +729,7 @@ namespace Pangya_GameServer.Roms
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[room::DeleteInvited][Warning] PLAYER[UID=" + session.UserInfo.uid + "] nao tem um convite.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::DeleteInvited][Warning] Normal[UID=" + session.UserInfo.UID + "] nao tem um convite.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             // End Delete Invite Channel Info
@@ -737,10 +737,10 @@ namespace Pangya_GameServer.Roms
             // Resposta Delete Convidado
             var p = new Packet((ushort)0x130);
 
-            p.WriteUInt32(session.UserInfo.uid);
+            p.WriteUInt32(session.UserInfo.UID);
             SendBroadCast(p);
 
-            _smp.message_pool.getInstance().push(new message("[room::DeleteInvited][Info] Deleteou um convite[Convidado=" + session.UserInfo.uid + "] na Sala[NUMERO=" + RoomInfo.numero + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[room::DeleteInvited][Info] Deleteou um convite[Convidado=" + session.UserInfo.UID + "] na Sala[NUMERO=" + RoomInfo.RoomID + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
 
             return ici;
@@ -750,17 +750,17 @@ namespace Pangya_GameServer.Roms
         {
             if (uid == 0)
             {
-                throw new exception("[room::DeleteInvited] [Error] uid is invalid(zero). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::DeleteInvited] [Error] UID is invalid(zero). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     2005, 0));
             }
 
-            var it = PlayersInfo.FirstOrDefault(el => el.Value.convidado == 1 && el.Value.uid == uid);
+            var it = PlayersInfo.FirstOrDefault(el => el.Value.Invite == 1 && el.Value.UID == uid);
 
             // Corrigido: era PlayersInfo.Last().Key — crashes em dicionário vazio e não é
             // um sentinel válido para "não encontrado". Verificação correta é it.Key == null.
             if (it.Key == null)
             {
-                throw new exception("[room::DeleteInvited] [Error] PLAYER[UID=" + Convert.ToString(uid) + "] tentou deletar convidado, mas nao tem o info do convidado na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::DeleteInvited] [Error] Normal[UID=" + Convert.ToString(uid) + "] tentou deletar Invite, mas nao tem o info do Invite na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     2003, 0));
             }
 
@@ -775,7 +775,7 @@ namespace Pangya_GameServer.Roms
 
             Players.RemoveAt(index);
 
-            --RoomInfo.num_player;
+            --RoomInfo.CurrentUsers;
 
             PlayersInfo.Remove(it.Key);
 
@@ -785,7 +785,7 @@ namespace Pangya_GameServer.Roms
             // Delete Invite Channel Info
             InviteChannelInfo ici = new InviteChannelInfo();
 
-            var itt = Invites.FirstOrDefault(el => el.room_number == RoomInfo.numero && el.invited_uid == uid);
+            var itt = Invites.FirstOrDefault(el => el.room_number == RoomInfo.RoomID && el.invited_uid == uid);
 
 
             if (itt != null)
@@ -798,7 +798,7 @@ namespace Pangya_GameServer.Roms
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[room::DeleteInvited][Warning] PLAYER[UID=" + Convert.ToString(uid) + "] nao tem um convite.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::DeleteInvited][Warning] Normal[UID=" + Convert.ToString(uid) + "] nao tem um convite.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             // End Delete Invite Channel Info
@@ -809,7 +809,7 @@ namespace Pangya_GameServer.Roms
             p.WriteUInt32(uid);
             SendBroadCast(p);
 
-            _smp.message_pool.getInstance().push(new message("[room::DeleteInvited][Info] Deleteou um convite[Convidado=" + Convert.ToString(uid) + "] na Sala[NUMERO=" + RoomInfo.numero + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[room::DeleteInvited][Info] Deleteou um convite[Convidado=" + Convert.ToString(uid) + "] na Sala[NUMERO=" + RoomInfo.RoomID + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             return ici;
         }
@@ -818,13 +818,13 @@ namespace Pangya_GameServer.Roms
         private void CalcRainLounge()
         {
 
-            // Só calcRainLounge se for lounge
-            if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+            // Só calcRainLounge se for Lounge
+            if (RoomInfo.GetRoomType() == RoomTypeFlags.LOUNGE)
             {
 
                 WeatherChatRoom = 0; // Good Weather
 
-                short rate_rain = GameServer.getInstance().getInfo().rate.chuva;
+                short rate_rain = GameServer.Instance.getInfo().Rate.Rain;
 
                 LotterySystem loterry = new LotterySystem();
 
@@ -855,8 +855,8 @@ namespace Pangya_GameServer.Roms
         private void MakeBotVisual(Player session)
         {
             // Add Bot
-            List<PlayerRoomInfoEx> v_element = new List<PlayerRoomInfoEx>();
-            PlayerRoomInfoEx pri = new PlayerRoomInfoEx();
+            List<PlayerRoomInfo> v_element = new List<PlayerRoomInfo>();
+            PlayerRoomInfo pri = new PlayerRoomInfo();
 
             try
             {
@@ -872,33 +872,33 @@ namespace Pangya_GameServer.Roms
 
                 if (v_element.Count == 0)
                 {
-                    throw new exception("[room::MakeBot] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou criar Bot na sala[NUMERO=" + RoomInfo.numero + ", MASTER=" + Convert.ToString(RoomInfo.master) + "], mas nao nenhum Player na sala. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[room::MakeBot] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou criar Bot na sala[NUMERO=" + RoomInfo.RoomID + ", MASTER=" + Convert.ToString(RoomInfo.OwnerUID) + "], mas nao nenhum Player na sala. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         1, 5000));
                 }
 
                 // Inicializa os dados do Bot
-                pri.uid = session.UserInfo.uid;
-                pri.oid = session.ConnectionID;
-                pri.state_flag.ready = 1;
-                pri.position = 0;
-                pri.char_typeid = 0x4000000;
-                pri.title = 0x39800013; // Title Helper
-                pri.nickname = "\\1Bot";
-                pri.sDisplayID = "@NT_" + pri.nickname; 
+                pri.UID = session.UserInfo.UID;
+                pri.OID = session.ConnectionID;
+                pri.State.Ready = 1;
+                pri.RankPosition = 0;
+                pri.CharacterID = 0x4000000;
+                pri.TitleSkin = 0x39800013; // Title Helper
+                pri.NickName = "\\1Bot";
+                pri.DisplayID = "@NT_" + pri.NickName; 
                 // Add o Bot a sala, só no visual
                 v_element.Add(pri);
 
                 // Packet
                 var p = new Packet();
 
-                if (RoomInfo.GetTipo() != ROOM_INFO_TYPE.STROKE)
+                if (RoomInfo.GetRoomType() != RoomTypeFlags.STROKE)
                 {
                     // Option 0, passa todos que estão na sala
-                    if (Handle_PACKET_RESPONSE.pacote048(p, session, v_element, 0x100))
+                    if (Handle_PACKET_RESPONSE.MakePlayerRoomInfo(p, session, v_element, 0x100))
                         SendBroadCast(p);
 
                     // Option 1, passa só o Player que entrou na sala, nesse caso foi o Bot
-                    if (Handle_PACKET_RESPONSE.pacote048(p, session, new List<PlayerRoomInfoEx> { pri }, 0x101))
+                    if (Handle_PACKET_RESPONSE.MakePlayerRoomInfo(p, session, [pri], 0x101))
                         SendBroadCast(p);
                 } 
                 // Criou Bot com sucesso
@@ -935,7 +935,7 @@ namespace Pangya_GameServer.Roms
                     // Bot Ticket TypeId
 
                     // Premium User Não precisa de ticket não
-                    if (session.UserInfo.UserCapabilities.premium_user || session.UserInfo.UserCapabilities.game_master)
+                    if (session.UserInfo.UserCapabilities.UserPremium || session.UserInfo.UserCapabilities.IsGameMaster)
                     {
 
 
@@ -991,7 +991,7 @@ namespace Pangya_GameServer.Roms
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[room::MakeBot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::MakeBot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // SLast Message
                 p.init_plain(0x40); // Msg to Chat of Player
@@ -1012,18 +1012,18 @@ namespace Pangya_GameServer.Roms
         public void SendPlayerInfo(Player session, int _option)
         {
 
-            int option = !(RoomInfo.GetTipo() == ROOM_INFO_TYPE.STROKE ||
-                           RoomInfo.GetTipo() == ROOM_INFO_TYPE.MATCH ||
-                           RoomInfo.GetTipo() == ROOM_INFO_TYPE.LOUNGE ||
-                           RoomInfo.GetTipo() == ROOM_INFO_TYPE.PANG_BATTLE) ? 0x100 : 0;
+            int option = !(RoomInfo.GetRoomType() == RoomTypeFlags.STROKE ||
+                           RoomInfo.GetRoomType() == RoomTypeFlags.MATCH ||
+                           RoomInfo.GetRoomType() == RoomTypeFlags.LOUNGE ||
+                           RoomInfo.GetRoomType() == RoomTypeFlags.PANG_BATTLE) ? 0x100 : 0;
 
             option += _option;
 
-            if (option == 0 && RoomInfo.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+            if (option == 0 && RoomInfo.GetRoomType() == RoomTypeFlags.LOUNGE)
                 option = 7;
 
-            List<PlayerRoomInfoEx> v_element = new List<PlayerRoomInfoEx>();
-            PlayerRoomInfoEx pri = null;
+            List<PlayerRoomInfo> v_element = new List<PlayerRoomInfo>();
+            PlayerRoomInfo pri = null;
 
             try
             {
@@ -1042,7 +1042,7 @@ namespace Pangya_GameServer.Roms
 
                 var p = new Packet();
 
-                if (Handle_PACKET_RESPONSE.pacote048(p, session, (_option == 1 || _option == 4 || _option == 0x103) ? [pri] : v_element, option))
+                if (Handle_PACKET_RESPONSE.MakePlayerRoomInfo(p, session, (_option == 1 || _option == 4 || _option == 0x103) ? [pri] : v_element, option))
                     SendBroadCast(p);
             }
             catch
@@ -1054,7 +1054,7 @@ namespace Pangya_GameServer.Roms
 
         public void SendPlayerStateLounge(Player session)
         { 
-            if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+            if (RoomInfo.GetRoomType() == RoomTypeFlags.LOUNGE)
             {
                 var it = session.UserInfo.FindStateCharacterLounger(session.Inventory.UserEquippedItem.CharacterEquiped.id);
                 if (it == null)
@@ -1070,17 +1070,17 @@ namespace Pangya_GameServer.Roms
         public void SendWeatherLounge(Player session)
         {
 
-            if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+            if (RoomInfo.GetRoomType() == RoomTypeFlags.LOUNGE)
             {
 
-                // Envia o tempo(weather) do lounge só se ele for diferente de tempo bom
+                // Envia o tempo(weather) do Lounge só se ele for diferente de tempo bom
                 if (WeatherChatRoom != 0)
                 {
 
                     var p = new Packet((ushort)0x9E);
 
                     p.WriteUInt16(WeatherChatRoom);
-                    p.WriteByte(0); // Flag (acho), vou colocar 0 o padrão, colocou 1 aqui só quando eu mudou com o comando GM
+                    p.WriteByte(0); // ServerFlag (acho), vou colocar 0 o padrão, colocou 1 aqui só quando eu mudou com o comando GM
                     session.Send(p);
                 }
             }
@@ -1091,22 +1091,22 @@ namespace Pangya_GameServer.Roms
             var p = new Packet();
             try
             {
-                Player master = FindSessionByUid((uint)RoomInfo.master);
+                Player master = FindSessionByUid((uint)RoomInfo.OwnerUID);
 
-                if (session != null && session.UserInfo.UserCapabilities.game_master && RoomInfo.master != -2)
+                if (session != null && session.UserInfo.UserCapabilities.IsGameMaster && RoomInfo.OwnerUID != -2)
                 {
-                    // Só troca o master se ele saiu da sala ou se ele não for GM
-                    if (master == null || !(master.UserInfo.UserCapabilities.game_master/* & 4*/))
+                    // Só troca o Master se ele saiu da sala ou se ele não for GM
+                    if (master == null || !(master.UserInfo.UserCapabilities.IsGameMaster/* & 4*/))
                     {
-                        RoomInfo.master = (int)session.UserInfo.uid;
-                        RoomInfo.state_flag = 0x100; // GM
+                        RoomInfo.OwnerUID = (int)session.UserInfo.UID;
+                        RoomInfo.SpecialFlag = 0x100; // GM
 
                         if (master != null)
                         {
                             UpdatePlayerInfo(master);
                             p.init_plain(0x78);
                             p.WriteInt32(master.ConnectionID);
-                            p.WriteByte((byte)~GetPlayerInfo(master).state_flag.ready);
+                            p.WriteByte((byte)~GetPlayerInfo(master).State.Ready);
 
                             SendBroadCast(p);
                         }
@@ -1119,20 +1119,20 @@ namespace Pangya_GameServer.Roms
                         SendBroadCast(p);
                     }
                 }
-                else if (master == null && Players.Count > 0 && RoomInfo.master != -2)
+                else if (master == null && Players.Count > 0 && RoomInfo.OwnerUID != -2)
                 {
-                    if (RoomInfo.GetTipo() != ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE && RoomInfo.GetTipo() != ROOM_INFO_TYPE.GRAND_PRIX)
+                    if (RoomInfo.GetRoomType() != RoomTypeFlags.SPECIAL_SHUFFLE_COURSE && RoomInfo.GetRoomType() != RoomTypeFlags.GRAND_PRIX)
                     {
                         // Find GM 
-                        var i = Players.FirstOrDefault(pl => pl.UserInfo.UserCapabilities.game_master);
+                        var i = Players.FirstOrDefault(pl => pl.UserInfo.UserCapabilities.IsGameMaster);
 
                         if (i != null)
                             master = i;
                         else
                             master = Players[0];
 
-                        RoomInfo.master = (int)master.UserInfo.uid;
-                        RoomInfo.state_flag = (short)(master.UserInfo.UserCapabilities.game_master ? 0x100 : 0);
+                        RoomInfo.OwnerUID = (int)master.UserInfo.UID;
+                        RoomInfo.SpecialFlag = (short)(master.UserInfo.UserCapabilities.IsGameMaster ? 0x100 : 0);
 
                         UpdatePlayerInfo(master);
 
@@ -1164,53 +1164,53 @@ namespace Pangya_GameServer.Roms
         private void AddPlayerKicked(uint uid)
         {
             if (IsKickedPlayer(uid))
-                _smp.message_pool.getInstance().push(new message("[room::addPlayerKicked] [Error][Warning] PLAYER[UID=" + (uid) + "] ja foi chutado da sala[NUMERO="
-                    + (RoomInfo.numero) + "]", type_msg.CL_FILE_TIME_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::addPlayerKicked] [Error][Warning] Normal[UID=" + (uid) + "] ja foi chutado da sala[NUMERO="
+                    + (RoomInfo.RoomID) + "]", type_msg.CL_FILE_TIME_LOG_AND_CONSOLE));
             else
                 PlayersKickeds[uid] = true;
         }
          
-        private PlayerRoomInfoEx MakePlayerInfo(Player session)
+        private PlayerRoomInfo MakePlayerInfo(Player session)
         {
-            PlayerRoomInfoEx pri = new();
+            PlayerRoomInfo pri = new();
 
             // Player Room Info Init
-            pri.oid = session.ConnectionID;
-            pri.nickname = session.UserInfo.nickname;
-            pri.guild_name = session.UserInfo.Guild.name;
-            pri.position = (byte)(GetPosition(session) + 1);
-            pri.capability = session.UserInfo.UserCapabilities;
-            pri.title = session.Inventory.UserEquipment.m_title;
-            pri.sDisplayID = "@NT_" + session.UserInfo.nickname;
+            pri.OID = session.ConnectionID;
+            pri.NickName = session.UserInfo.NickName;
+            pri.GuildName = session.UserInfo.Guild.name;
+            pri.RankPosition = (byte)(GetPosition(session) + 1);
+            pri.Capability = session.UserInfo.UserCapabilities;
+            pri.TitleSkin = session.Inventory.UserEquipment.m_title;
+            pri.DisplayID = "@NT_" + session.UserInfo.NickName;
             if (session.Inventory.UserEquippedItem.CharacterEquiped != null)
-                pri.char_typeid = session.Inventory.UserEquippedItem.CharacterEquiped._typeid;
+                pri.CharacterID = session.Inventory.UserEquippedItem.CharacterEquiped._typeid;
 
-            pri.skin = session.Inventory.UserEquipment.skin_typeid;
+            pri.ItemSkin = session.Inventory.UserEquipment.skin_typeid;
 
-            pri.skin[4] = 0;
+            pri.ItemSkin[4] = 0;
 
-            if (GetMaster() == session.UserInfo.uid)
+            if (GetMaster() == session.UserInfo.UID)
             {
-                pri.state_flag.master = 1;
-                pri.state_flag.ready = 1;// Sempre está pronto(ready) o master
+                pri.State.Master = 1;
+                pri.State.Ready = 1;// Sempre está pronto(Ready) o Master
             }
-            pri.state_flag.sexo = session.UserInfo.Member.sexo;
+            pri.State.Gender = session.UserInfo.Member.Gender;
 
-            if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.MATCH)
+            if (RoomInfo.GetRoomType() == RoomTypeFlags.MATCH)
             {
                 if (Players.Count > 1)
                 {
                     if (Teams[0].getCount() >= 2 && Teams[1].getCount() >= 2)
                     {
-                        throw new exception("[room::MakePlayerInfo] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar em time para todos os times da sala estao cheios. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, 1500, 0));
+                        throw new exception("[room::MakePlayerInfo] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou entrar em time para todos os times da sala estao cheios. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, 1500, 0));
                     }
                     else if (Teams[0].getCount() >= 2)
                     {
-                        pri.state_flag.team = 1;
+                        pri.State.Team = 1;
                     }
                     else if (Teams[1].getCount() >= 2)
                     {
-                        pri.state_flag.team = 0;
+                        pri.State.Team = 0;
                     }
                     else
                     {
@@ -1219,77 +1219,77 @@ namespace Pangya_GameServer.Roms
 
                         if (pPri == null)
                         {
-                            throw new exception("[room::MakePlayerInfo] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar em um time, mas o ultimo player da sala, nao tem um info no sala. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, 1501, 0));
+                            throw new exception("[room::MakePlayerInfo] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou entrar em um time, mas o ultimo player da sala, nao tem um info no sala. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, 1501, 0));
                         }
 
-                        pri.state_flag.team = (byte)~pPri.state_flag.team;
+                        pri.State.Team = (byte)~pPri.State.Team;
                     }
                 }
                 else
                 {
-                    pri.state_flag.team = 0;
+                    pri.State.Team = 0;
                 }
 
-                Teams[pri.state_flag.team].addPlayer(session);
+                Teams[pri.State.Team].addPlayer(session);
             }
-            else if (RoomInfo.GetTipo() != ROOM_INFO_TYPE.GUILD_BATTLE)
+            else if (RoomInfo.GetRoomType() != RoomTypeFlags.GUILD_BATTLE)
             {
-                pri.state_flag.team = (byte)((pri.position - 1) % 2);
+                pri.State.Team = (byte)((pri.RankPosition - 1) % 2);
             }
 
-            if (session.UserInfo.level >= 6 && session.UserInfo.Statistics.jogado >= 50)
+            if (session.UserInfo.Level >= 6 && session.UserInfo.Statistics.jogado >= 50)
             {
                 float rate = session.UserInfo.Statistics.getQuitRate();
 
                 if (rate < GOOD_PLAYER_ICON)
                 {
-                    pri.state_flag.azinha = 1;
+                    pri.State.Wings = 1;
                 }
                 else if (rate >= QUITER_ICON_1 && rate < QUITER_ICON_2)
                 {
-                    pri.state_flag.quiter_1 = 1;
+                    pri.State.Quit10Porcent = 1;
                 }
                 else if (rate >= QUITER_ICON_2)
                 {
-                    pri.state_flag.quiter_2 = 1;
+                    pri.State.Quit20Porcent = 1;
                 }
             }
 
-            pri.level = session.UserInfo.Member.level;
+            pri.GameLevel = session.UserInfo.Member.GameLevel;
 
             if (session.Inventory.UserEquippedItem.CharacterEquiped != null && session.UserInfo.Statistics.getQuitRate() < GOOD_PLAYER_ICON)
-                pri.icon_angel = session.Inventory.UserEquippedItem.CharacterEquiped.AngelEquiped();
+                pri.StateAngel.Value = session.Inventory.UserEquippedItem.CharacterEquiped.AngelEquiped();
             else
-                pri.icon_angel = 0;
+                pri.StateAngel.Value = 0;
 
-            pri.place.ulPlace = 10;
-            pri.guild_uid = session.UserInfo.Guild.uid;
-            pri.guild_mark_img = session.UserInfo.Guild.mark_emblem;
-            pri.guild_mark_index = session.UserInfo.Guild.index_mark_emblem;
-            pri.uid = session.UserInfo.uid;
-            pri.state_action.animation = session.UserInfo.LoungeState;
-            pri.state_action.room_id = 0;
-            pri.state_action.posture = session.UserInfo.PostureRoom; 
-            pri.location.x += session.UserInfo.CurrentLocation.x;
-            pri.location.z += session.UserInfo.CurrentLocation.z;
-            pri.location.y += session.UserInfo.CurrentLocation.y;
-            pri.shop = _tradeShop.getPersonShop(session);
+            pri.LadderGrade = 10;
+            pri.GuildIndex = session.UserInfo.Guild.uid;
+            pri.GuildMark = session.UserInfo.Guild.mark_emblem;
+            pri.GuildMarkIndex = session.UserInfo.Guild.index_mark_emblem;
+            pri.UID = session.UserInfo.UID;
+            pri.Action.Animation = session.UserInfo.LoungeState;
+            pri.Action.SubRoomID = 0;
+            pri.Action.Posture = session.UserInfo.PostureRoom; 
+            pri.LocationInfo.X += session.UserInfo.CurrentLocation.x;
+            pri.LocationInfo.Z += session.UserInfo.CurrentLocation.z;
+            pri.LocationInfo.Y += session.UserInfo.CurrentLocation.y;
+            pri.ShopRoom = _tradeShop.getPersonShop(session);
 
             if (session.Inventory.UserEquippedItem.MascotEquiped != null)
-                pri.mascot_typeid = session.Inventory.UserEquippedItem.MascotEquiped._typeid;
+                pri.MascotID = session.Inventory.UserEquippedItem.MascotEquiped._typeid;
 
-            pri.flag_item_boost = session.Inventory.CheckHaveItemBoost();
-            pri.channeling_flag = 0;
-            pri.convidado = 0;
-            pri.avg_score = session.UserInfo.Statistics.getMediaScore();
+            pri.ItemSpecial = session.Inventory.CheckHaveItemBoost();
+            pri.ChannelingFlag = 0;
+            pri.Invite = 0;
+            pri.AvengeScore = session.UserInfo.Statistics.getMediaScore();
 
             if (session.Inventory.UserEquippedItem.CharacterEquiped != null)
-                pri.ci = session.Inventory.UserEquippedItem.CharacterEquiped;
+                pri.CharacterInfo = session.Inventory.UserEquippedItem.CharacterEquiped;
             if (!PlayersInfo.TryAdd(session, pri))
             {
                 if (PlayersInfo.TryGetValue(session, out var existingPri))
                 {
-                    if (existingPri.uid != session.UserInfo.uid)
+                    if (existingPri.UID != session.UserInfo.UID)
                     {
                         try
                         {
@@ -1298,37 +1298,37 @@ namespace Pangya_GameServer.Roms
                         }
                         catch (IndexOutOfRangeException)
                         {
-                            _smp.message_pool.getInstance().push(new message($"[room::MakePlayerInfo] [Error][Warning] PLAYER[UID={session.UserInfo.uid}], nao conseguiu atualizar o PlayerRoomInfo da session para o novo PlayerRoomInfo do player atual da session. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[room::MakePlayerInfo] [Error][Warning] Normal[UID={session.UserInfo.UID}], nao conseguiu atualizar o PlayerRoomInfo da session para o novo PlayerRoomInfo do player atual da session. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             throw;
                         }
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message($"[room::MakePlayerInfo][Info] PLAYER[UID={session.UserInfo.uid}] nao conseguiu adicionar o PlayerRoomInfo da session, por que ja tem o mesmo PlayerRoomInfo no map.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[room::MakePlayerInfo][Info] Normal[UID={session.UserInfo.UID}] nao conseguiu adicionar o PlayerRoomInfo da session, por que ja tem o mesmo PlayerRoomInfo no map.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message($"[room::MakePlayerInfo] [Error] nao conseguiu inserir o pair de PlayerInfo do PLAYER[UID={session.UserInfo.uid}] no map de player info do room. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[room::MakePlayerInfo] [Error] nao conseguiu inserir o pair de PlayerInfo do Normal[UID={session.UserInfo.UID}] no map de player info do room. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
 
             return pri;
         }
 
-        private PlayerRoomInfoEx MakePlayerInvitedInfo(Player session)
+        private PlayerRoomInfo MakePlayerInvitedInfo(Player session)
         {
 
-            PlayerRoomInfoEx pri = new PlayerRoomInfoEx();
+            PlayerRoomInfo pri = new PlayerRoomInfo();
 
             // Player Room Info Init
-            pri.oid = session.ConnectionID;
-            pri.position = (byte)(GetPosition(session) + 1); // posição na sala 
-            pri.place.ulPlace = 10; // 0x0A dec"10" session.UserInfo.place, pode ser lugar[place]
+            pri.OID = session.ConnectionID;
+            pri.RankPosition = (byte)(GetPosition(session) + 1); // posição na sala 
+            pri.LadderGrade = 10; // 0x0A dec"10" session.PlayerUserStatistics.LadderGrade, pode ser lugar[LadderGrade]
 
-            pri.uid = session.UserInfo.uid;
+            pri.UID = session.UserInfo.UID;
 
-            pri.convidado = 1; // Flag Convidado, [Não sei bem por que os que entra na sala normal tem valor igual aqui, já que é type de convidado waiting], Valor constante da sala para os players(ACHO)
+            pri.Invite = 1; // ServerFlag Convidado, [Não sei bem por que os que entra na sala Normal tem valor igual aqui, já que é type de Invite waiting], Valor constante da sala para os players(ACHO)
 
             // Check inset pair in map of room player info
             if (PlayersInfo.ContainsKey(session))
@@ -1345,7 +1345,7 @@ namespace Pangya_GameServer.Roms
                 }
                 catch (IndexOutOfRangeException)
                 {
-                    _smp.message_pool.getInstance().push(new message("[room::MakePlayerInfo] [Error][Warning] PLAYER[UID=" + session.UserInfo.uid + "], nao conseguiu atualizar o PlayerRoomInfo da session para o novo PlayerRoomInfo do player atual da session. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[room::MakePlayerInfo] [Error][Warning] Normal[UID=" + session.UserInfo.UID + "], nao conseguiu atualizar o PlayerRoomInfo da session para o novo PlayerRoomInfo do player atual da session. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     throw;
                 }
             }
@@ -1358,8 +1358,8 @@ namespace Pangya_GameServer.Roms
 
         public void UpdatePlayerInfo(Player session)
         {
-            PlayerRoomInfoEx pri = new PlayerRoomInfoEx();
-            PlayerRoomInfoEx _pri = null;
+            PlayerRoomInfo pri = new PlayerRoomInfo();
+            PlayerRoomInfo _pri = null;
             try
             {
 
@@ -1370,65 +1370,65 @@ namespace Pangya_GameServer.Roms
                 pri = _pri;
 
                 // Player Room Info Update
-                pri.oid = session.ConnectionID;
+                pri.OID = session.ConnectionID;
 
-                pri.position = (byte)(GetPosition(session) + 1); // posição na sala
-                pri.capability = session.UserInfo.UserCapabilities;
-                pri.title = session.Inventory.UserEquipment.m_title;
+                pri.RankPosition = (byte)(GetPosition(session) + 1); // posição na sala
+                pri.Capability = session.UserInfo.UserCapabilities;
+                pri.TitleSkin = session.Inventory.UserEquipment.m_title;
 
                 if (session.Inventory.UserEquippedItem.CharacterEquiped != null)
-                    pri.char_typeid = session.Inventory.UserEquippedItem.CharacterEquiped._typeid;
+                    pri.CharacterID = session.Inventory.UserEquippedItem.CharacterEquiped._typeid;
 
 
-                pri.skin[4] = 0; // Aqui tem que ser zero, se for outro valor não mostra a imagem do character equipado
+                pri.ItemSkin[4] = 0; // Aqui tem que ser zero, se for outro valor não mostra a imagem do character equipado
 
-                if (GetMaster() == session.UserInfo.uid)
+                if (GetMaster() == session.UserInfo.UID)
                 {
-                    pri.state_flag.master = 1;
-                    pri.state_flag.ready = 1; // Sempre está pronto(ready) o master
+                    pri.State.Master = 1;
+                    pri.State.Ready = 1; // Sempre está pronto(Ready) o Master
                 }
                 else
                 {
 
                     // Só troca o estado de pronto dele na sala, se anterior mente ele era Master da sala ou não estiver pronto
-                    if (pri.state_flag.master == 1 || !(pri.state_flag.ready == 1))
+                    if (pri.State.Master == 1 || !(pri.State.Ready == 1))
                     {
-                        pri.state_flag.ready = 0;
+                        pri.State.Ready = 0;
                     }
 
-                    pri.state_flag.master = 0;
+                    pri.State.Master = 0;
                 }
 
-                pri.state_flag.sexo = session.UserInfo.Member.sexo;
+                pri.State.Gender = session.UserInfo.Member.Gender;
 
                 // Update Team se for Match
-                if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.MATCH)
+                if (RoomInfo.GetRoomType() == RoomTypeFlags.MATCH)
                 {
 
-                    // Verifica se o Player está em algum team para atualizar o team dele se ele não estiver em nenhum
-                    var Player_team = pri.state_flag.team;
+                    // Verifica se o Player está em algum Team para atualizar o Team dele se ele não estiver em nenhum
+                    var Player_team = pri.State.Team;
                     Player p_seg_team = null;
 
-                    // atualizar o team do Player a type de team dele não bate com o team dele
-                    if (Teams[Player_team].findPlayerByUID(pri.uid) == null && (p_seg_team = Teams[~Player_team].findPlayerByUID(pri.uid)) == null)
+                    // atualizar o Team do Player a type de Team dele não bate com o Team dele
+                    if (Teams[Player_team].findPlayerByUID(pri.UID) == null && (p_seg_team = Teams[~Player_team].findPlayerByUID(pri.UID)) == null)
                     {
 
-                        // Player não está em nenhum team
+                        // Player não está em nenhum Team
                         if (Players.Count > 1)
                         {
 
                             if (Teams[0].getCount() >= 2 && Teams[1].getCount() >= 2)
                             {
-                                throw new exception("[room::updatePlayerInfo] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar em time para todos os times da sala estao cheios. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                                throw new exception("[room::updatePlayerInfo] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou entrar em time para todos os times da sala estao cheios. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                                     1500, 0));
                             }
                             else if (Teams[0].getCount() >= 2)
                             {
-                                pri.state_flag.team = 1; // Blue
+                                pri.State.Team = 1; // Blue
                             }
                             else if (Teams[1].getCount() >= 2)
                             {
-                                pri.state_flag.team = 0; // Red
+                                pri.State.Team = 0; // Red
                             }
                             else
                             {
@@ -1437,88 +1437,88 @@ namespace Pangya_GameServer.Roms
 
                                 if (pPri == null)
                                 {
-                                    throw new exception("[room::updatePlayerInfo] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar em um time, mas o ultimo Player da sala, nao tem um info no sala. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                                    throw new exception("[room::updatePlayerInfo] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou entrar em um time, mas o ultimo Player da sala, nao tem um info no sala. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                                         1501, 0));
                                 }
 
-                                pri.state_flag.team = (byte)~pPri.state_flag.team;
+                                pri.State.Team = (byte)~pPri.State.Team;
                             }
 
                         }
                         else
                         {
-                            pri.state_flag.team = 0;
+                            pri.State.Team = 0;
                         }
 
-                        Teams[pri.state_flag.team].addPlayer(session);
+                        Teams[pri.State.Team].addPlayer(session);
 
                     }
                     else if (p_seg_team != null)
                     {
-                        // a type de team do Player está errada, ele está no outro team, ajeita
-                        pri.state_flag.team = (byte)~Player_team;
+                        // a type de Team do Player está errada, ele está no outro Team, ajeita
+                        pri.State.Team = (byte)~Player_team;
                     }
                 }
-                else if (RoomInfo.tipo != (byte)ROOM_INFO_TYPE.GUILD_BATTLE) // O Guild Battle tem sua própria função para inicializar e atualizar o team e os dados da guild
+                else if (RoomInfo.RealRoomType != (byte)RoomTypeFlags.GUILD_BATTLE) // O Guild Battle tem sua própria função para inicializar e atualizar o Team e os dados da Guild
                 {
-                    pri.state_flag.team = Convert.ToByte(((pri.position > 0 ? pri.position : 1) - 1) % 2);
+                    pri.State.Team = Convert.ToByte(((pri.RankPosition > 0 ? pri.RankPosition : 1) - 1) % 2);
                 }
 
-                // Só faz calculo de Quita rate depois que o Player
-                // estiver no level Beginner E e jogado 50 games
-                if (session.UserInfo.level >= 6 && session.UserInfo.Statistics.jogado >= 50)
+                // Só faz calculo de Quita Rate depois que o Player
+                // estiver no Level Beginner E e jogado 50 games
+                if (session.UserInfo.Level >= 6 && session.UserInfo.Statistics.jogado >= 50)
                 {
                     float rate = session.UserInfo.Statistics.getQuitRate();
 
                     if (rate < GOOD_PLAYER_ICON)
                     {
-                        pri.state_flag.azinha = 1;
+                        pri.State.Wings = 1;
                     }
                     else if (rate >= QUITER_ICON_1 && rate < QUITER_ICON_2)
                     {
-                        pri.state_flag.quiter_1 = 1;
+                        pri.State.Quit10Porcent = 1;
                     }
                     else if (rate >= QUITER_ICON_2)
                     {
-                        pri.state_flag.quiter_2 = 1;
+                        pri.State.Quit20Porcent = 1;
                     }
                 }
 
-                pri.level = session.UserInfo.Member.level;
+                pri.GameLevel = session.UserInfo.Member.GameLevel;
 
                 if (session.Inventory.UserEquippedItem.CharacterEquiped != null && session.UserInfo.Statistics.getQuitRate() < GOOD_PLAYER_ICON)
-                    pri.icon_angel = session.Inventory.UserEquippedItem.CharacterEquiped.AngelEquiped();
+                    pri.StateAngel.Value = session.Inventory.UserEquippedItem.CharacterEquiped.AngelEquiped();
                 else
-                    pri.icon_angel = 0;
+                    pri.StateAngel.Value = 0;
 
-                pri.place.ulPlace = 10; // 0x0A dec"10" session.UserInfo.place
-                pri.guild_uid = session.UserInfo.Guild.uid;
+                pri.LadderGrade = 10; // 0x0A dec"10" session.PlayerUserStatistics.LadderGrade
+                pri.GuildIndex = session.UserInfo.Guild.uid;
 
-                pri.uid = session.UserInfo.uid;
-                pri.state_action.animation = session.UserInfo.LoungeState;
-                pri.state_action.room_id = 0; // Ví Players com valores 2 e 4 e 0
-                pri.state_action.posture = session.UserInfo.PostureRoom;
-                pri.location.x += session.UserInfo.CurrentLocation.x;
-                pri.location.z += session.UserInfo.CurrentLocation.z;
-                pri.location.y += session.UserInfo.CurrentLocation.y;
+                pri.UID = session.UserInfo.UID;
+                pri.Action.Animation = session.UserInfo.LoungeState;
+                pri.Action.SubRoomID = 0; // Ví Players com valores 2 e 4 e 0
+                pri.Action.Posture = session.UserInfo.PostureRoom;
+                pri.LocationInfo.X += session.UserInfo.CurrentLocation.x;
+                pri.LocationInfo.Z += session.UserInfo.CurrentLocation.z;
+                pri.LocationInfo.Y += session.UserInfo.CurrentLocation.y;
 
                 // Personal Shop
-                pri.shop = _tradeShop.getPersonShop(session);
+                pri.ShopRoom = _tradeShop.getPersonShop(session);
 
                 if (session.Inventory.UserEquippedItem.MascotEquiped != null)
-                    pri.mascot_typeid = session.Inventory.UserEquippedItem.MascotEquiped._typeid;
+                    pri.MascotID = session.Inventory.UserEquippedItem.MascotEquiped._typeid;
 
-                pri.flag_item_boost = session.Inventory.CheckHaveItemBoost();
-                pri.channeling_flag = 0;
+                pri.ItemSpecial = session.Inventory.CheckHaveItemBoost();
+                pri.ChannelingFlag = 0;
 
-                // Só atualiza a type de convidado se for diferente de 1, por que 1 ele é convidado
-                if (pri.convidado != 1)
-                    pri.convidado = 0; // Flag Convidado, [Não sei bem por que os que entra na sala normal tem valor igual aqui, já que é type de convidado waiting], Valor constante da sala para os Players(ACHO)
+                // Só atualiza a type de Invite se for diferente de 1, por que 1 ele é Invite
+                if (pri.Invite != 1)
+                    pri.Invite = 0; // ServerFlag Convidado, [Não sei bem por que os que entra na sala Normal tem valor igual aqui, já que é type de Invite waiting], Valor constante da sala para os Players(ACHO)
 
-                pri.avg_score = session.UserInfo.Statistics.getMediaScore();
+                pri.AvengeScore = session.UserInfo.Statistics.getMediaScore();
 
                 if (session.Inventory.UserEquippedItem.CharacterEquiped != null)
-                    pri.ci = session.Inventory.UserEquippedItem.CharacterEquiped;
+                    pri.CharacterInfo = session.Inventory.UserEquippedItem.CharacterEquiped;
 
                 // Salva novamente
                 PlayersInfo[session] = pri;
@@ -1540,7 +1540,7 @@ namespace Pangya_GameServer.Roms
         { Teams[team].addPlayer(session); }
 
         public void DeletePlayerTeam(Player session, byte opt)
-        { Teams[GetPlayerInfo(session).state_flag.team].deletePlayer(session, opt); }
+        { Teams[GetPlayerInfo(session).State.Team].deletePlayer(session, opt); }
 
 
         public void SendTimeGame(Player session)
@@ -1555,15 +1555,15 @@ namespace Pangya_GameServer.Roms
 
             try
             {
-                if (IsKickedPlayer(session.UserInfo.uid))
+                if (IsKickedPlayer(session.UserInfo.UID))
                 {
-                    throw new exception("[Room::RequestSendTimeGame] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar na sala[NUMERO=" + RoomInfo.numero + "] ja em jogo, mas o player foi chutado da sala antes de comecar o jogo.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Room::RequestSendTimeGame] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou entrar na sala[NUMERO=" + RoomInfo.RoomID + "] ja em jogo, mas o player foi chutado da sala antes de comecar o jogo.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         2704, 7));
                 }
 
                 if (CurrentGame == null)
                 {
-                    throw new exception("[Room::RequestSendTimeGame] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou pegar o tempo do tourney que comecou na sala[NUMERO=" + RoomInfo.numero + "], mas a sala nao tem nenhum jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Room::RequestSendTimeGame] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou pegar o tempo do Tourney que comecou na sala[NUMERO=" + RoomInfo.RoomID + "], mas a sala nao tem nenhum jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         2705, 1));
                 }
 
@@ -1573,7 +1573,7 @@ namespace Pangya_GameServer.Roms
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Room::RequestSendTimeGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Room::RequestSendTimeGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Resposta erro
                 p.init_plain(0x113);
@@ -1602,25 +1602,25 @@ namespace Pangya_GameServer.Roms
             try
             {
 
-                if (IsKickedPlayer(session.UserInfo.uid))
+                if (IsKickedPlayer(session.UserInfo.UID))
                 {
-                    throw new exception("[Room::RequestEnterGameAfterStarted][Warning] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar na sala[NUMERO=" + RoomInfo.numero + "] ja em jogo, mas o player foi chutado da sala antes de comecar o jogo.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Room::RequestEnterGameAfterStarted][Warning] Normal[UID=" + session.UserInfo.UID + "] tentou entrar na sala[NUMERO=" + RoomInfo.RoomID + "] ja em jogo, mas o player foi chutado da sala antes de comecar o jogo.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         2704, 7));
                 }
 
                 if (CurrentGame == null)
                 {
-                    throw new exception("[Room::RequestEnterGameAfterStarted] [Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar na sala[NUMERO=" + RoomInfo.numero + "] ja em jogo, mas a sala nao tem nenhum jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Room::RequestEnterGameAfterStarted] [Error] Normal[UID=" + session.UserInfo.UID + "] tentou entrar na sala[NUMERO=" + RoomInfo.RoomID + "] ja em jogo, mas a sala nao tem nenhum jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         2705, 1));
                 }
 
-                if (IsGamingBefore(session.UserInfo.uid))
+                if (IsGamingBefore(session.UserInfo.UID))
                 {
-                    throw new exception("[Room::RequestEnterGameAfterStarted][Warning] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar na sala[NUMERO=" + RoomInfo.numero + "] ja em jogo, mas o player ja tinha jogado nessa sala e saiu, e nao pode mais entrar.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Room::RequestEnterGameAfterStarted][Warning] Normal[UID=" + session.UserInfo.UID + "] tentou entrar na sala[NUMERO=" + RoomInfo.RoomID + "] ja em jogo, mas o player ja tinha jogado nessa sala e saiu, e nao pode mais entrar.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         2703, 6));
                 }
 
-                var tempo = (RoomInfo.qntd_hole == 18) ? 10 * 60000 : 5 * 60000;
+                var tempo = (RoomInfo.HoleCount == 18) ? 10 * 60000 : 5 * 60000;
 
                 var remain = UtilTime.GetLocalDateDiff(session.GetGameRoom().GetTimeStart());
 
@@ -1631,7 +1631,7 @@ namespace Pangya_GameServer.Roms
 
                 if (remain >= tempo)
                 {
-                    throw new exception("[Room::RequestEnterGameAfrerStarted][Warning] PLAYER[UID=" + session.UserInfo.uid + "] tentou entrar na sala[NUMERO=" + RoomInfo.numero + "] ja em jogo, mas o tempo de entrar no tourney acabou.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, // Acabou o tempo de entrar na sala
+                    throw new exception("[Room::RequestEnterGameAfrerStarted][Warning] Normal[UID=" + session.UserInfo.UID + "] tentou entrar na sala[NUMERO=" + RoomInfo.RoomID + "] ja em jogo, mas o tempo de entrar no Tourney acabou.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, // Acabou o tempo de entrar na sala
                         2706, 2));
                 }
 
@@ -1644,10 +1644,10 @@ namespace Pangya_GameServer.Roms
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Room::RequestEnterGameAfterStarted][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Room::RequestEnterGameAfterStarted][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Excluí player da sala se adicionou ele antes
-                if (FindSessionByUid(session.UserInfo.uid) != null)
+                if (FindSessionByUid(session.UserInfo.UID) != null)
                 {
                     Leave(session, 0);
                 }

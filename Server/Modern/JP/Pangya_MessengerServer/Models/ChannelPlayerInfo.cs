@@ -49,7 +49,7 @@ namespace Pangya_MessengerServer.Models
             {
                 p.WriteBytes(room.ToArray());//info room 
                 p.WriteUInt32(server_uid);//server conected
-                p.WriteByte(id);//channel id
+                p.WriteByte(id);//channel Login
                 p.WriteString(name, 64);//channel name
                 return p.GetBytes;
             }

@@ -16,7 +16,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdCreateUser(id, pass, ip, serverUid);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -31,7 +31,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdFirstLoginCheck(uid);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -43,7 +43,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdAddFirstLogin(uid, flag);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -56,7 +56,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdFirstSetCheck(uid);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -68,7 +68,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdAddFirstSet(uid);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -83,7 +83,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdPlayerInfo(uid);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -98,7 +98,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdRegisterLogonServer(uid, serverUid);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -110,7 +110,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdRegisterPlayerLogin(_uid, _ip, _server_uid);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -124,7 +124,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdVerifyIP(uid, ip);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -136,7 +136,7 @@ namespace Pangya_LoginServer.DataBase
         {
             var cmd = new CmdCheckConfirmAccount(uid);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();

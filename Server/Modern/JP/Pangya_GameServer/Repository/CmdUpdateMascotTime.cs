@@ -55,7 +55,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_id <= 0)
             {
-                throw new exception("[CmdUpdateMascotTime::prepareConsulta][Error] mascot id[value=" + Convert.ToString(m_id) + "] is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdUpdateMascotTime::prepareConsulta][Error] mascot Login[value=" + Convert.ToString(m_id) + "] is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
@@ -68,7 +68,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_id) + ", " + makeText(m_time));
 
-            checkResponse(r, "nao conseguiu atualizar o tempo do mascot[ID=" + Convert.ToString(m_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o tempo do mascot[ID=" + Convert.ToString(m_id) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

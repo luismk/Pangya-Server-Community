@@ -66,12 +66,12 @@ namespace PangyaAPI.Network.Security
 
             if (!disableCompression)
             {
-                header[0] = 0; // Flag de compressão ativa
+                header[0] = 0; // ServerFlag de compressão ativa
                 compressedData = Compress_Data(sourceData);
             }
             else
             {
-                header[0] = 1; // Flag de sem compressão
+                header[0] = 1; // ServerFlag de sem compressão
                 compressedData = sourceData;
             }
 
@@ -133,7 +133,7 @@ namespace PangyaAPI.Network.Security
             byte[] result = Decompress_Data(compressedBody, dataLength);
 
             if (result.Length != dataLength)
-                throw new Exception($"decompress dataLength not match. {dataLength} != {result.Length}");
+                throw new Exception($"decompress dataLength not Match. {dataLength} != {result.Length}");
 
             return result;
         }

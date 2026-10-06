@@ -15,7 +15,7 @@ namespace Pangya_GameServer.Handles
         { 
             try
             {
-                var room = Player.GetGameRoom() ?? throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou responder se quer continuar o versus ou nao na sala[NUMERO=" + Player.GetRoom()?.GetRoomId() + "], mas a sala nao tem nenhum jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                var room = Player.GetGameRoom() ?? throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + "] tentou responder se quer continuar o versus ou nao na sala[NUMERO=" + Player.GetRoom()?.GetRoomId() + "], mas a sala nao tem nenhum jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         1, 0x556001));
 
                 byte opt = Packet.ReadByte();
@@ -40,12 +40,12 @@ namespace Pangya_GameServer.Handles
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_REPLY_CONTINUE_VERSUS][Error] PLAYER[UID=" + Player.UserInfo.uid + "] respondeu uma opcao invalida para continuar o versus na sala[NUMERO=" + Player.GetRoom()?.GetRoomId() + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_REPLY_CONTINUE_VERSUS][Error] Normal[UID=" + Player.UserInfo.UID + "] respondeu uma opcao invalida para continuar o versus na sala[NUMERO=" + Player.GetRoom()?.GetRoomId() + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_REPLY_CONTINUE_VERSUS][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_REPLY_CONTINUE_VERSUS][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

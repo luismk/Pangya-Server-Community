@@ -16,8 +16,8 @@ namespace Pangya_GameServer.Feature.GM
         public async Task Execute(Player session, Packet packet)
         {  
 
-            if (session.UserInfo.UserCapabilities.block_give_item_gm)
-                throw new exception($"PLAYER[UID={session.UserInfo.uid}] bloqueado para dar itens.",
+            if (session.UserInfo.UserCapabilities.IsGameMasterBlockItemGive)
+                throw new exception($"Normal[UID={session.UserInfo.UID}] bloqueado para dar itens.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 9, 0x5700100));
 
             // 3. Leitura do Pacote
@@ -30,7 +30,7 @@ namespace Pangya_GameServer.Feature.GM
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 3, 0x5700100)); 
 
             // 4. Validação do Alvo
-            var target = GameServer.getInstance().FindSessionByOid(targetOid);
+            var target = GameServer.Instance.FindSessionByOid(targetOid);
             if (target == null)
                 throw new exception($"Alvo [OID={targetOid}] não encontrado.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 2, 0x5700100));
@@ -44,7 +44,7 @@ namespace Pangya_GameServer.Feature.GM
                 throw new exception("Quantidade excede o limite de 20k.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 4, 0x5700100));
 
-            var itemBase = sIff.getInstance().findCommomItem(itemTypeId);
+            var itemBase = sIff.Instance.findCommomItem(itemTypeId);
             if (itemBase == null || itemBase.ID != itemTypeId)
                 throw new exception($"Item [0x{itemTypeId:X8}] não existe no IFF.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 6, 0));
@@ -53,7 +53,7 @@ namespace Pangya_GameServer.Feature.GM
             stItem item = new stItem();
             BuyItem bi = new BuyItem { id = -1, _typeid = itemTypeId, qntd = itemQuantity };
 
-            // O '1' ao final ignora o check de level, conforme seu código anterior
+            // O '1' ao final ignora o check de Level, conforme seu código anterior
             ItemManager.initItemFromBuyItem(target.UserInfo, item, bi, false, 0, 0, 1);
 
             if (item._typeid == 0)
@@ -63,7 +63,7 @@ namespace Pangya_GameServer.Feature.GM
             var logMsg = $"GM Send Gift: item[ {itemBase.Name} ]";
 
             // 7. Entrega via MailBox
-            if (MailManager.SendMessageWithItem(0, target.UserInfo.uid, logMsg, item) <= 0)
+            if (MailManager.SendMessageWithItem(0, target.UserInfo.UID, logMsg, item) <= 0)
                 throw new exception("Falha ao inserir item no MailBox.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 7, 0));
         }

@@ -45,7 +45,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta);
 
-            checkResponse(r, "nao conseguiu atualizar o guild update activity[INDEX=" + Convert.ToString(m_index) + "]");
+            checkResponse(r, "nao conseguiu atualizar o Guild update activity[INDEX=" + Convert.ToString(m_index) + "]");
 
             return r;
         }

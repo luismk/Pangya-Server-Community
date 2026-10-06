@@ -15,13 +15,13 @@ namespace Pangya_GameServer.Handles
         {
             try
             {
-                var r = Player.GetGameRoom() ?? throw new exception("[Error] PLAYER [UID=" + Player.UserInfo.uid + "]  tentou sair do Chip-in Practice na sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas ele nao esta em nenhum sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                var r = Player.GetGameRoom() ?? throw new exception("[Error] Normal [UID=" + Player.UserInfo.UID + "]  tentou sair do Chip-in Practice na sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas ele nao esta em nenhum sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         1, 0x6207701));
 
 
-                if (r.GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+                if (r.GetTipo() != RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
                 {
-                    throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou sair do Chip-in Practice na sala[NUMERO=" + r.GetRoomId() + "], mas TIPO=" + Convert.ToString((ushort)r.GetTipo()) + " de jogo da sala nao é Chip-in Practice", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + "] tentou sair do Chip-in Practice na sala[NUMERO=" + r.GetRoomId() + "], mas TIPO=" + Convert.ToString((ushort)r.GetTipo()) + " de jogo da sala nao é Chip-in Practice", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         2, 0x6701002));
                 }
 
@@ -33,7 +33,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_LEAVE_CHIP_IN_PRACTICE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_LEAVE_CHIP_IN_PRACTICE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

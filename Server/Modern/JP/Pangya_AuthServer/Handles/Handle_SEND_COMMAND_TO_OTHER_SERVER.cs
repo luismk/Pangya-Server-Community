@@ -27,27 +27,27 @@ namespace Pangya_AuthServer.Handles
                     commandData = Packet.ReadBytes(payloadSize);
                 }
 
-                Console.WriteLine($"[Command Relay] Server {Player.UserInfo.uid} -> Alvo {targetUidOrType} | Cmd: {commandId}");
+                Console.WriteLine($"[Command Relay] Server {Player.UserInfo.UID} -> Alvo {targetUidOrType} | Cmd: {commandId}");
 
                 // 3. Lógica de busca de destino (UID específico ou Tipo)
-                var target = AuthServer.getInstance().FindPlayer(targetUidOrType);
+                var target = AuthServer.Instance.FindPlayer(targetUidOrType);
 
                 if (target != null)
                 {
                     // Envia para um servidor específico (Unicast)
-                    await SendRelay(target, Player.UserInfo.uid, commandId, commandData);
+                    await SendRelay(target, Player.UserInfo.UID, commandId, commandData);
                 }
                 else
                 {
                     // Se não achou por UID, tenta buscar todos do mesmo Tipo (Excluindo o remetente)
-                    var serversOfType = AuthServer.getInstance().FindPlayerByTypeExcludeUID(targetUidOrType, Player.UserInfo.uid);
+                    var serversOfType = AuthServer.Instance.FindPlayerByTypeExcludeUID(targetUidOrType, Player.UserInfo.UID);
 
                     if (serversOfType != null && serversOfType.Count > 0)
                     {
                         // Envia para todos (Broadcast)
                         foreach (var srv in serversOfType)
                         {
-                            await SendRelay(srv, Player.UserInfo.uid, commandId, commandData);
+                            await SendRelay(srv, Player.UserInfo.UID, commandId, commandData);
                         }
                     }
                     else

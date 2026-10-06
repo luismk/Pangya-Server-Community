@@ -48,7 +48,7 @@ namespace Pangya_GameServer.Repository
 
         private List<AttendanceRewardItemCtx> v_item = new List<AttendanceRewardItemCtx>();
 
-        private const string m_szConsulta = "SELECT typeid, quantidade, tipo FROM pangya.pangya_attendance_table_item_reward";
+        private const string m_szConsulta = "SELECT typeid, quantidade, Type FROM pangya.pangya_attendance_table_item_reward";
 
     }
 }

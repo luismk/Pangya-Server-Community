@@ -13,7 +13,7 @@ namespace Pangya_AuthServer.Handles.Commands
         public async Task Execute(CommandInfo el)
         {
             CmdShutdownInfo cmd_si = new CmdShutdownInfo(el.idx);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd_si);
+            snmdb.NormalManagerDB.Instance.add(0, cmd_si);
 
             if (cmd_si.getException().getCodeError() != 0) return;
 
@@ -21,13 +21,13 @@ namespace Pangya_AuthServer.Handles.Commands
             var p = new Packet(0x02);
             p.WriteInt32(timeSec);
 
-            var m_si = AuthServer.getInstance().m_si;
+            var m_si = AuthServer.Instance.m_si;
 
             // Se o target for o próprio Auth
-            if (el.target == m_si.uid || el.target == m_si.tipo)
+            if (el.target == m_si.UID || el.target == m_si.Type)
             {
-                CommandSender.Broadcast(AuthServer.getInstance().getAllSessions(), p);
-                _smp.message_pool.getInstance().push(new message($"[Shutdown] Desligando Auth em {timeSec}s", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                CommandSender.Broadcast(AuthServer.Instance.getAllSessions(), p);
+                _smp.LogManager.Instance.push(new AppMessage($"[Shutdown] Desligando Auth em {timeSec}s", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (timeSec <= 0) Thread.Sleep(5000);
                 // shutdown_logic_here();

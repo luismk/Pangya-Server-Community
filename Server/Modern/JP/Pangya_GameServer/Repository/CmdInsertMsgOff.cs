@@ -82,7 +82,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_to_uid) + ", " + m_msg);
 
-            checkResponse(r, "nao conseguiu inserir Message Off[" + m_msg + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "] para o PLAYER[UID=" + Convert.ToString(m_to_uid) + "]");
+            checkResponse(r, "nao conseguiu inserir Message Off[" + m_msg + "] do Normal[UID=" + Convert.ToString(m_uid) + "] para o Normal[UID=" + Convert.ToString(m_to_uid) + "]");
 
             return r;
         }

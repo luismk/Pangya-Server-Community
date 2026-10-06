@@ -100,7 +100,7 @@ namespace Pangya_GameServer.Repository
         protected override Response prepareConsulta()
         {
 
-            if (m_typeid == 0 || sIff.getInstance().getItemGroupIdentify(m_typeid) != IFF_GROUP.CADDIE)
+            if (m_typeid == 0 || sIff.Instance.getItemGroupIdentify(m_typeid) != IFF_GROUP.CADDIE)
             {
                 throw new exception("[CmdFindCaddie::prepareConsulta][Error] _typeid caddie is invalid", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
@@ -112,7 +112,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_typeid));
 
-            checkResponse(r, "nao conseguiu encontrar o caddie[TYPEID=" + Convert.ToString(m_typeid) + "] para do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu encontrar o caddie[TYPEID=" + Convert.ToString(m_typeid) + "] para do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

@@ -32,24 +32,24 @@ namespace Pangya_GameServer.Handles
                 // 2. Validações de comprimento (Business Logic)
                 if (pass.Length == 0)
                 {
-                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_MODE][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar o modo de entrar no dolfini locker, mas a senha fornecida esta vazia. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_MODE][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar o HoleMode de entrar no dolfini locker, mas a Password fornecida esta vazia. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 350, 5100251));
                 }
 
                 if (pass.Length > 4)
                 {
-                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_MODE][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar o modo de entrar no dolfini locker, mas o tamanho da senha é maior que o permitido. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_MODE][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar o HoleMode de entrar no dolfini locker, mas o tamanho da Password é maior que o permitido. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 351, 5100252));
                 }
 
                 // 3. Preparação do pacote de resposta (0x173)
                 p.init_plain(0x173);
 
-                // 4. Verificação da senha e execução da troca de modo
+                // 4. Verificação da Password e execução da troca de HoleMode
                 if (string.CompareOrdinal(pass, Player.Inventory.DolfineLocker.pass) != 0)
                 {
                     // Senha incorreta
-                    _smp.message_pool.getInstance().push(new message("[Dolfini Locker::Change Mode Enter][Success] senha[" + pass + "] incorreta para o PLAYER [UID=" + Player.UserInfo.uid + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Dolfini Locker::Change Mode Enter][Success] Password[" + pass + "] incorreta para o Normal [UID=" + Player.UserInfo.UID + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     p.WriteUInt32(1); // Erro: Senha não confere
                 }
@@ -60,11 +60,11 @@ namespace Pangya_GameServer.Handles
 
                     p.WriteUInt32(0); // OK
 
-                    _smp.message_pool.getInstance().push(new message("[Dolfini Locker::Change Mode Enter][Success] PLAYER [UID=" + Player.UserInfo.uid + "] alterou o modo do locker com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Dolfini Locker::Change Mode Enter][Success] Normal [UID=" + Player.UserInfo.UID + "] alterou o HoleMode do locker com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // 5. Atualização assíncrona no Banco de Dados
-                    // Note: Usei o tipo 2 conforme o seu código original
-                    NormalManagerDB.getInstance().add(2, new CmdUpdateDolfiniLockerMode(Player.UserInfo.uid, locker));
+                    // Note: Usei o Type 2 conforme o seu código original
+                    NormalManagerDB.Instance.add(2, new CmdUpdateDolfiniLockerMode(Player.UserInfo.UID, locker));
                 }
 
                 // Envia a resposta final para o cliente
@@ -73,7 +73,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
                 // Tratamento de exceções do sistema
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_MODE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_MODE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x173);
 

@@ -26,7 +26,7 @@ namespace Pangya_GameServer.Handles
                 // Verifica se tem alteração nos pangs
                 ulong old_pang = Player.UserInfo.Statistics.pang;
 
-                // Update o pang do server com o valor que está no banco de dados
+                // Update o Pang do server com o valor que está no banco de dados
                 Player.UserInfo.updatePang();
 
                 if (old_pang != Player.UserInfo.Statistics.pang)
@@ -40,14 +40,14 @@ namespace Pangya_GameServer.Handles
                     Player.Send(p);
                 }
 
-                // Verifica se tem alguma atualização da guild Web para atualizar o Player no server e cliente
-                // Só verifica se o Player estiver em uma guild
+                // Verifica se tem alguma atualização da Guild Web para atualizar o Player no server e cliente
+                // Só verifica se o Player estiver em uma Guild
                 if (Player.UserInfo.Guild.uid > 0)
                 {
                     CmdGuildUpdateActivityInfo cmd_guai = new CmdGuildUpdateActivityInfo(Player.UserInfo.Guild.uid,
-                        Player.UserInfo.uid, true);
+                        Player.UserInfo.UID, true);
 
-                    NormalManagerDB.getInstance().add(0, cmd_guai, null, null);
+                    NormalManagerDB.Instance.add(0, cmd_guai, null, null);
 
                     if (cmd_guai.getException().getCodeError() != 0)
                     {
@@ -71,15 +71,15 @@ namespace Pangya_GameServer.Handles
                                         p.WriteUInt32(el.club_uid);
                                         p.WriteUInt32(el.player_uid);
 
-                                        GameServer.getInstance().sendCommandToOtherServerWithAuthServer(p, 3);
+                                        GameServer.Instance.sendCommandToOtherServerWithAuthServer(p, 3);
 
-                                        var s = GameServer.getInstance().FindPlayer(el.player_uid);
+                                        var s = GameServer.Instance.FindPlayer(el.player_uid);
 
                                         if (s != null)
                                         {
-                                            CmdMemberInfo cmd_mi = new CmdMemberInfo(s.UserInfo.uid);
+                                            CmdMemberInfo cmd_mi = new CmdMemberInfo(s.UserInfo.UID);
 
-                                            NormalManagerDB.getInstance().add(0, cmd_mi, null, null);
+                                            NormalManagerDB.Instance.add(0, cmd_mi, null, null);
 
                                             if (cmd_mi.getException().getCodeError() != 0)
                                             {
@@ -88,18 +88,18 @@ namespace Pangya_GameServer.Handles
 
                                             var mi = cmd_mi.getInfo();
 
-                                            if (mi.guild_uid > 0u)
+                                            if (mi.GuildIndex > 0u)
                                             {
-                                                s.UserInfo.Member.guild_mark_img_no = mi.guild_mark_img_no;
-                                                s.UserInfo.Member.guild_uid = mi.guild_uid;
-                                                s.UserInfo.Member.guild_pang = mi.guild_pang;
-                                                s.UserInfo.Member.guild_point = mi.guild_point;
-                                                s.UserInfo.Member.guild_name = mi.guild_name;
-                                                s.UserInfo.Member.guild_mark_img = mi.guild_mark_img;
+                                                s.UserInfo.Member.GuildMarkIndex = mi.GuildMarkIndex;
+                                                s.UserInfo.Member.GuildIndex = mi.GuildIndex;
+                                                s.UserInfo.Member.GuildWinPangs = mi.GuildWinPangs;
+                                                s.UserInfo.Member.GuildWinPoints = mi.GuildWinPoints;
+                                                s.UserInfo.Member.GuildName = mi.GuildName;
+                                                s.UserInfo.Member.GuildMarkImage = mi.GuildMarkImage;
 
-                                                CmdGuildInfo cmd_gi = new CmdGuildInfo(s.UserInfo.uid, 0);
+                                                CmdGuildInfo cmd_gi = new CmdGuildInfo(s.UserInfo.UID, 0);
 
-                                                NormalManagerDB.getInstance().add(0, cmd_gi, null, null);
+                                                NormalManagerDB.Instance.add(0, cmd_gi, null, null);
 
                                                 if (cmd_gi.getException().getCodeError() != 0)
                                                 {
@@ -123,15 +123,15 @@ namespace Pangya_GameServer.Handles
                                         p.WriteUInt32(el.club_uid);
                                         p.WriteUInt32(el.player_uid);
 
-                                        GameServer.getInstance().sendCommandToOtherServerWithAuthServer(p, 3);
+                                        GameServer.Instance.sendCommandToOtherServerWithAuthServer(p, 3);
 
                                         Player.UserInfo.Guild.clear();
-                                        Player.UserInfo.Member.guild_mark_img_no = 0;
-                                        Player.UserInfo.Member.guild_uid = 0;
-                                        Player.UserInfo.Member.guild_pang = 0;
-                                        Player.UserInfo.Member.guild_point = 0;
-                                        Player.UserInfo.Member.guild_name = "";
-                                        Player.UserInfo.Member.guild_mark_img = "";
+                                        Player.UserInfo.Member.GuildMarkIndex = 0;
+                                        Player.UserInfo.Member.GuildIndex = 0;
+                                        Player.UserInfo.Member.GuildWinPangs = 0;
+                                        Player.UserInfo.Member.GuildWinPoints = 0;
+                                        Player.UserInfo.Member.GuildName = "";
+                                        Player.UserInfo.Member.GuildMarkImage = "";
 
                                         if (Player.GetChannel() != null)
                                         {
@@ -146,19 +146,19 @@ namespace Pangya_GameServer.Handles
                                         p.WriteUInt32(el.club_uid);
                                         p.WriteUInt32(el.player_uid);
 
-                                        GameServer.getInstance().sendCommandToOtherServerWithAuthServer(p, 3);
+                                        GameServer.Instance.sendCommandToOtherServerWithAuthServer(p, 3);
 
-                                        var s = GameServer.getInstance().FindPlayer(el.player_uid);
+                                        var s = GameServer.Instance.FindPlayer(el.player_uid);
 
                                         if (s != null)
                                         {
                                             s.UserInfo.Guild.clear();
-                                            s.UserInfo.Member.guild_mark_img_no = 0;
-                                            s.UserInfo.Member.guild_uid = 0;
-                                            s.UserInfo.Member.guild_pang = 0;
-                                            s.UserInfo.Member.guild_point = 0;
-                                            s.UserInfo.Member.guild_name = "";
-                                            s.UserInfo.Member.guild_mark_img = "";
+                                            s.UserInfo.Member.GuildMarkIndex = 0;
+                                            s.UserInfo.Member.GuildIndex = 0;
+                                            s.UserInfo.Member.GuildWinPangs = 0;
+                                            s.UserInfo.Member.GuildWinPoints = 0;
+                                            s.UserInfo.Member.GuildName = "";
+                                            s.UserInfo.Member.GuildMarkImage = "";
 
                                             if (s.GetChannel() != null)
                                             {
@@ -170,8 +170,8 @@ namespace Pangya_GameServer.Handles
                                     }
                             }
 
-                            // Atualiza o STATE do guild update activity por que ela já foi tratada
-                            NormalManagerDB.getInstance().add(27,
+                            // Atualiza o STATE do Guild update activity por que ela já foi tratada
+                            NormalManagerDB.Instance.add(27,
                                  new CmdUpdateGuildUpdateActiviy(el.index),
                                  null, null);
                         }
@@ -180,7 +180,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             { 
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestExitedFromWebGuild][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestExitedFromWebGuild][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

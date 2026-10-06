@@ -1,5 +1,5 @@
 using Pangya_GameServer.Flags;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.Session;
 using PangyaAPI.IFF.Flags;
 using PangyaAPI.IFF.Handle.JP;
@@ -25,7 +25,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
         private PangyaThread _checkSyncThread;
         private bool _initGrandZodiacState;
 
-        public GrandZodiacBase(List<Player> players, RoomInfo roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
+        public GrandZodiacBase(List<Player> players, GameRoomInfoModel roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
         {
             PlayersGoldenBeam = new List<(Player session, bool HioTime)>();
             Rewards = new List<stReward>();
@@ -95,7 +95,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                         // Resposta Player saiu do jogo MSG
                         p.init_plain(0x40); 
                         p.WriteByte(2); // Player Saiu Msg 
-                        p.WriteString(it.UserInfo.nickname); 
+                        p.WriteString(it.UserInfo.NickName); 
                         p.WriteUInt16(0); // size Msg, n o precisa de msg o pangya j  manda na opt 2
                         sessions.SendBroadCast(p);    
 
@@ -111,13 +111,13 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
 
@@ -159,7 +159,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::SendInitialData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::SendInitialData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -178,7 +178,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
                 if (hole == null)
                 {
-                    throw new exception("[GrandZodiacBase::requestInitHole][Error] course->findHole nao encontrou o hole retonou nullptr, o server esta com erro no init course do GrandZodiacBase.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_ZODIAC_BASE,
+                    throw new exception("[GrandZodiacBase::requestInitHole][Error] CourseIndex->findHole nao encontrou o hole retonou nullptr, o server esta com erro no init CourseIndex do GrandZodiacBase.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_ZODIAC_BASE,
                         2555, 0));
                 }
 
@@ -195,14 +195,14 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 // N mero do hole atual, que o player est  jogandp
                 pgi.hole = ctxhole.numero;
 
-                // Flag que marca se o player j  inicializou o primeiro hole do jogo
+                // ServerFlag que marca se o player j  inicializou o primeiro hole do jogo
                 if (!pgi.init_first_hole)
                 {
                     pgi.init_first_hole = true;
                 }
 
-                // Gera degree para o player ou pega o degree sem gerar que   do modo do hole repeat
-                pgi.degree = (RoomInfo.GetModo() == ROOM_INFO_MODO.M_REPEAT) ? hole.getWind().degree.getDegree() : hole.getWind().degree.getShuffleDegree();
+                // Gera degree para o player ou pega o degree sem gerar que   do HoleMode do hole repeat
+                pgi.degree = (RoomInfo.GetHoleType() == RoomHoleType.M_REPEAT) ? hole.getWind().degree.getDegree() : hole.getWind().degree.getShuffleDegree();
 
                 // Resposta de tempo do hole
                 p.init_plain(0x9E);
@@ -217,16 +217,16 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 p.init_plain(0x5B);
 
                 p.WriteByte(hole.getWind().wind + windFlag);
-                p.WriteByte((windFlag < 0) ? 1 : 0); // Flag de card de vento, aqui   a qnd diminui o vento, 1 Vento azul
+                p.WriteByte((windFlag < 0) ? 1 : 0); // ServerFlag de card de vento, aqui   a qnd diminui o vento, 1 Vento Blue
                 p.WriteUInt16(pgi.degree);
-                p.WriteByte(1); // Flag do vento, 1 Reseta o Vento, 0 soma o vento que nem o comando gm \wind do pangya original
+                p.WriteByte(1); // ServerFlag do vento, 1 Reseta o Vento, 0 soma o vento que nem o comando gm \wind do pangya original
                 session.Send(p);
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestInitHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestInitHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
         }
@@ -258,7 +258,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                     session.Send(p);
                 }
 
-                // Primeiro pacote dizendo que terminou de carregar o course GZ
+                // Primeiro pacote dizendo que terminou de carregar o CourseIndex GZ
                 p.init_plain(0x201);
 
                 session.Send(p);
@@ -266,7 +266,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestFinishLoadHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestFinishLoadHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -287,14 +287,14 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
                 pgi.data.tacada_num = 0;
 
-                // Giveup Flag
+                // Giveup ServerFlag
                 pgi.data.giveup = 0;
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestFinishCharIntro][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestFinishCharIntro][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -314,7 +314,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
                 pgi.shot_data = sd;
 
-                // Aqui seta o state e verifica se   para mandar a resposta
+                // Aqui seta o StateRoom e verifica se   para mandar a resposta
                 if (pgi.m_sync_shot_gz.setStateAndCheckAllAndClear(SyncShotGrandZodiac.eSYNC_SHOT_GRAND_ZODIAC_STATE.SSGZS_FIRST_SHOT_INIT))
                 {
                     SendReplyInitShotAndSyncShot(session);
@@ -324,7 +324,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestInitShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestInitShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -347,7 +347,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestActiveBooster][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestActiveBooster][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -368,7 +368,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestActiveCutin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestActiveCutin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x18D);
                 p.WriteByte(0); // OPT 
@@ -393,7 +393,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestStartFirstHoleGrandZodiac][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestStartFirstHoleGrandZodiac][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -408,7 +408,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestReplyInitialValueGrandZodiac][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestReplyInitialValueGrandZodiac][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -420,7 +420,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             {
 
 #if DEBUG
-                //_smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestFinishGame][Log] Packet Hex: " + packet.Log(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                //_smp.message_pool.getInstance.push(new message("[GrandZodiacBase::requestFinishGame][Log] Packet Hex: " + packet.Log(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 #endif // DEBUG
 
                 // Packet0CB
@@ -430,7 +430,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestFinishGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestFinishGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -449,7 +449,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::SendRemainTime][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::SendRemainTime][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -464,7 +464,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
             if (hole == null)
             {
-                throw new exception("[GrandZodiacBase::finishHole][Error] PLAYER[UID=" + (session.UserInfo.uid) + "] tentou finalizar hole[NUMERO=" + ((ushort)pgi.hole) + "] no jogo, mas o numero do hole is invalid. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_ZODIAC_BASE,
+                throw new exception("[GrandZodiacBase::finishHole][Error] Normal[UID=" + (session.UserInfo.UID) + "] tentou finalizar hole[NUMERO=" + ((ushort)pgi.hole) + "] no jogo, mas o RoomID do hole is invalid. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_ZODIAC_BASE,
                     20, 0));
             }
 
@@ -504,7 +504,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 // Zera o score, que o Grand Zodiac usa o total_score
                 pgi.data.score = 0;
 
-                // Giveup Flag
+                // Giveup ServerFlag
                 pgi.data.giveup = 0;
 
                 // Zera as penalidades do hole
@@ -522,7 +522,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 // Zera o score, que o Grand Zodiac usa o total_score
                 pgi.data.score = 0;
 
-                // Giveup Flag
+                // Giveup ServerFlag
                 pgi.data.giveup = 0;
 
                 // Zera as penalidades do hole do player
@@ -556,7 +556,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 var pair = Course.findRange(pgi.hole);
                 foreach (var it in pair)
                 {
-                    if (it.Key <= RoomInfo.qntd_hole)
+                    if (it.Key <= RoomInfo.HoleCount)
                     {
                         continue;
                     }
@@ -599,7 +599,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                     }
 
                 }
-                else if (sIff.getInstance().getItemGroupIdentify(el.Value._typeid) == IFF_GROUP.BALL/* / *Ball * /*/ || sIff.getInstance().getItemGroupIdentify(el.Value._typeid) == IFF_GROUP.AUX_PART)
+                else if (sIff.Instance.getItemGroupIdentify(el.Value._typeid) == IFF_GROUP.BALL/* / *Ball * /*/ || sIff.Instance.getItemGroupIdentify(el.Value._typeid) == IFF_GROUP.AUX_PART)
                 {
                     el.Value.count = (pgi.data.total_tacada_num / 4); // uma comet e um anel por 4 tacadas
                 }
@@ -615,12 +615,12 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
                 if (s == null)
                 {
-                    throw new exception("[GrandZodiacBase::requestTranslateSyncShotData][Error] PLAYER[UID=" + (session.UserInfo.uid) + "] tentou sincronizar tacada do PLAYER[OID=" + (ssd.oid) + "], mas o player nao existe nessa jogo. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_ZODIAC_BASE,
+                    throw new exception("[GrandZodiacBase::requestTranslateSyncShotData][Error] Normal[UID=" + (session.UserInfo.UID) + "] tentou sincronizar tacada do Normal[OID=" + (ssd.oid) + "], mas o player nao existe nessa jogo. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_ZODIAC_BASE,
                         200, 0));
                 }
 
                 // Update Sync Shot Player
-                if (session.UserInfo.uid == s.UserInfo.uid)
+                if (session.UserInfo.UID == s.UserInfo.UID)
                 {
 
                     var pgi = InitPlayerInfo("requestTranslateSyncShotData",
@@ -645,7 +645,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestTranslateSyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestTranslateSyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -701,7 +701,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestSaveInfo][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestSaveInfo][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -788,7 +788,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 // Deixai assim por que o Original manda a msg depois, pelo que estava no outro server
                 DrawDropItem(session);
 
-                // Aqui seta o state e verifica se   para mandar a resposta
+                // Aqui seta o StateRoom e verifica se   para mandar a resposta
                 if (pgi.m_sync_shot_gz.setStateAndCheckAllAndClear(SyncShotGrandZodiac.eSYNC_SHOT_GRAND_ZODIAC_STATE.SSGZS_FIRST_SHOT_SYNC))
                 {
                     SendReplyInitShotAndSyncShot(session);
@@ -798,7 +798,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::requestReplySyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::requestReplySyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -861,7 +861,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::SendPlacar][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::SendPlacar][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -897,7 +897,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::checkEndShotOfHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::checkEndShotOfHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return 0;
@@ -909,7 +909,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             TimeSpan ts = datetime.Elapsed;
             try
             { 
-                _smp.message_pool.getInstance().push(new message($"[GrandZodiacBase::syncFirstHole][Log] Partida comecou: {String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds)}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiacBase::syncFirstHole][Log] Partida comecou: {String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds)}", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 uint retWait = WAIT_TIMEOUT;
 
@@ -943,7 +943,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
                                                 SendRemainTime(el);
                                                 var p = new Packet();
-                                                // Resposta passa o oid do player que vai come a o Hole
+                                                // Resposta passa o OID do player que vai come a o Hole
                                                 p.init_plain(0x53);
 
                                                 p.WriteInt32(el.ConnectionID);
@@ -974,7 +974,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
                                         var elapsed = Timer.getElapsed();
 
-                                        if (elapsed >= (RoomInfo.time_30s - 60000))
+                                        if (elapsed >= (RoomInfo.TimeMin - 60000))
                                         {
 
                                             // Come a o tempo do golden beam time
@@ -994,7 +994,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
                                         var elapsed = Timer.getElapsed();
 
-                                        if (elapsed >= (RoomInfo.time_30s - 30000))
+                                        if (elapsed >= (RoomInfo.TimeMin - 30000))
                                         {
 
                                             // Terminar o golden beam
@@ -1037,27 +1037,27 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                     catch (exception e)
                     {
                         GrandZodiacState.unlock();
-                        _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::syncFirstHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::syncFirstHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     catch (Exception e)
                     {
                         // Captura exceções nativas do .NET (NullReferenceException, etc.)
                         // que de outra forma matariam esta thread silenciosamente.
                         GrandZodiacState.unlock();
-                        _smp.message_pool.getInstance().push(new message($"[GrandZodiacBase::syncFirstHole][UnhandledException] {e.GetType().Name}: {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiacBase::syncFirstHole][UnhandledException] {e.GetType().Name}: {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 } 
                
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::syncFirstHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::syncFirstHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             //para o tempo
             datetime.Stop();
             ts = datetime.Elapsed;
      
-            _smp.message_pool.getInstance().push(new message($"[GrandZodiacBase::syncFirstHole][Log] Partida Finalizada. Tempo total: {String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds)}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiacBase::syncFirstHole][Log] Partida Finalizada. Tempo total: {String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds)}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             return null;
         }
 
@@ -1096,7 +1096,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
                 if (hole == null)
                 {
-                    throw new exception("[GrandZodiacBase::requestInitHole][Error] course->findHole nao encontrou o hole retonou nullptr, o server esta com erro no init course do Chip-in Practice.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHIP_IN_PRACTICE,
+                    throw new exception("[GrandZodiacBase::requestInitHole][Error] CourseIndex->findHole nao encontrou o hole retonou nullptr, o server esta com erro no init CourseIndex do Chip-in Practice.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHIP_IN_PRACTICE,
                         2555, 0));
                 }
 
@@ -1104,7 +1104,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
 
                 hole.SetWind(wind);
 
-                // Gera degree para o player ou pega o degree sem gerar que   do modo do hole repeat
+                // Gera degree para o player ou pega o degree sem gerar que   do HoleMode do hole repeat
                 pgi.degree = hole.getWind().degree.getShuffleDegree();
 
                 var windFlag = InitCardWindPlayer(pgi, hole.getWind().wind);
@@ -1113,9 +1113,9 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 p.init_plain(0x5B);
 
                 p.WriteByte(hole.getWind().wind + windFlag);
-                p.WriteByte((windFlag < 0) ? 1 : 0); // Flag de card de vento, aqui   a qnd diminui o vento, 1 Vento azul
+                p.WriteByte((windFlag < 0) ? 1 : 0); // ServerFlag de card de vento, aqui   a qnd diminui o vento, 1 Vento Blue
                 p.WriteUInt16(pgi.degree);
-                p.WriteByte(1/* / *Reseta * /*/); // Flag do vento, 1 Reseta o Vento, 0 soma o vento que nem o comando gm \wind do pangya original
+                p.WriteByte(1/* / *Reseta * /*/); // ServerFlag do vento, 1 Reseta o Vento, 0 soma o vento que nem o comando gm \wind do pangya original
                 session.Send(p);
 
 
@@ -1144,7 +1144,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::nextHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::nextHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1154,7 +1154,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             if (pgi == null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::setInitFirstHole][Error] PlayerGrandZodiacInfo* _pgi is invalid(nullptr).", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::setInitFirstHole][Error] PlayerGrandZodiacInfo* _pgi is invalid(nullptr).", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -1185,7 +1185,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::checkAllInitFirstHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::checkAllInitFirstHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             });
 
@@ -1205,7 +1205,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             if (pgi == null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::setInitFirstHoleAndCheckAllInitFirstHoleAndClear][Error] PlayerGrandZodiacInfo* _pgi is invalid(nullptr).", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::setInitFirstHoleAndCheckAllInitFirstHoleAndClear][Error] PlayerGrandZodiacInfo* _pgi is invalid(nullptr).", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return false;
             }
@@ -1230,7 +1230,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::setInitFirstHoleAndCheckAllInitFirstHoleAndClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::setInitFirstHoleAndCheckAllInitFirstHoleAndClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             });
 
@@ -1253,7 +1253,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             if (pgi == null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::setEndGame][Error] PlayerGrandZodiacInfo* _pgi is invalid(nullptr).", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::setEndGame][Error] PlayerGrandZodiacInfo* _pgi is invalid(nullptr).", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -1284,7 +1284,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::checkAllEndGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::checkAllEndGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             });
 
@@ -1304,7 +1304,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             if (pgi == null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::setEndGameAndCheckAllEndGameAndClear][Error] PlayerGrandZodiacInfo* _pgi is invalid(nullptr).", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::setEndGameAndCheckAllEndGameAndClear][Error] PlayerGrandZodiacInfo* _pgi is invalid(nullptr).", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return false;
             }
@@ -1329,7 +1329,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::setInitFirstHoleAndCheckAllInitFirstHoleAndClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::setInitFirstHoleAndCheckAllInitFirstHoleAndClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             });
 
@@ -1360,7 +1360,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::ClearAllInitFirstHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::ClearAllInitFirstHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             });
 
@@ -1381,7 +1381,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::clear_all_end_game][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::clear_all_end_game][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             });
         }
@@ -1428,7 +1428,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                         pgi.data.score++;
                     }
 
-                    // Sem setas, se ele n o mandou nenhum special shot ou spin ou curva ele n o apertou setas, s  as apagadas essas n o conta
+                    // Sem setas, se ele n o mandou nenhum Special shot ou spin ou curva ele n o apertou setas, s  as apagadas essas n o conta
                     if (pgi.shot_data.special_shot.ulSpecialShot == 0u)
                     {
 
@@ -1470,7 +1470,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::SendReplyInitShotAndSyncShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::SendReplyInitShotAndSyncShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1487,7 +1487,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::makePlayerInfoObject][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::makePlayerInfoObject][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return pgzi;
@@ -1505,7 +1505,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacBase::SetPlayerGoldenBeam][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacBase::SetPlayerGoldenBeam][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1513,7 +1513,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
         {
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
-                throw new exception($"[{GetType().Name}::{method}][Error] PLAYER[UID={session.UserInfo.uid}] {message}, mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 4));
+                throw new exception($"[{GetType().Name}::{method}][Error] Normal[UID={session.UserInfo.UID}] {message}, mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 4));
 
             return (PlayerGrandZodiacInfo)pgi;
         }
@@ -1534,7 +1534,7 @@ namespace Pangya_GameServer.Roms.GameBase.Modes
                     const int ShutdownTimeoutMs = 5000;
                     if (!_checkSyncThread.waitThreadFinish(ShutdownTimeoutMs))
                     {
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[GrandZodiacBase::FinishThreadSyncFirstHole][Warning] Thread não encerrou em {ShutdownTimeoutMs}ms — forçando exit.",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
                         _checkSyncThread.exit_thread();

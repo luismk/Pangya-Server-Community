@@ -87,7 +87,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid_sell) + ", " + Convert.ToString(m_uid_buy) + ", " + Convert.ToString(m_psi.item._typeid) + ", " + Convert.ToString(m_psi.item.id) + ", " + Convert.ToString(m_item_id_buy) + ", " + Convert.ToString(m_psi.item.qntd) + ", " + Convert.ToString(m_psi.item.pang) + ", " + Convert.ToString((ulong)m_psi.item.qntd * m_psi.item.pang));
 
-            checkResponse(r, "nao conseguiu inserir log so personal shop[UID_SELL=" + Convert.ToString(m_uid_sell) + ", UID_BUY=" + Convert.ToString(m_uid_buy) + ", ITEM_TYPEID=" + Convert.ToString(m_psi.item._typeid) + ", ITEM_ID_SELL=" + Convert.ToString(m_psi.item.id) + ", ITEM_ID_BUY=" + Convert.ToString(m_item_id_buy) + ", ITEM_QNTD=" + Convert.ToString(m_psi.item.qntd) + ", ITEM_PANG=" + Convert.ToString(m_psi.item.pang) + ", TOTAL_PANG=" + Convert.ToString((ulong)m_psi.item.qntd * m_psi.item.pang) + "]");
+            checkResponse(r, "nao conseguiu inserir log so personal ShopRoom[UID_SELL=" + Convert.ToString(m_uid_sell) + ", UID_BUY=" + Convert.ToString(m_uid_buy) + ", ITEM_TYPEID=" + Convert.ToString(m_psi.item._typeid) + ", ITEM_ID_SELL=" + Convert.ToString(m_psi.item.id) + ", ITEM_ID_BUY=" + Convert.ToString(m_item_id_buy) + ", ITEM_QNTD=" + Convert.ToString(m_psi.item.qntd) + ", ITEM_PANG=" + Convert.ToString(m_psi.item.pang) + ", TOTAL_PANG=" + Convert.ToString((ulong)m_psi.item.qntd * m_psi.item.pang) + "]");
 
             return r;
         }

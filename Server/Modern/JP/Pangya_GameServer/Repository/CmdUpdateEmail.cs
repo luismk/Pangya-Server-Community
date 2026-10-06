@@ -62,7 +62,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta[0] + Convert.ToString((ushort)m_ei.lida_yn) + m_szConsulta[1] + Convert.ToString(m_ei.visit_count) + m_szConsulta[2] + Convert.ToString(m_uid) + m_szConsulta[3] + Convert.ToString(m_ei.id));
 
-            checkResponse(r, "nao conseguiu atualizar o Email[ID=" + Convert.ToString(m_ei.id) + ", LIDA_YN=" + Convert.ToString((ushort)m_ei.lida_yn) + ", VISIT_COUNT=" + Convert.ToString(m_ei.visit_count) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o Email[ID=" + Convert.ToString(m_ei.id) + ", LIDA_YN=" + Convert.ToString((ushort)m_ei.lida_yn) + ", VISIT_COUNT=" + Convert.ToString(m_ei.visit_count) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

@@ -43,7 +43,7 @@ namespace Pangya_GameServer.Manager
 
                 if (!itt)
                 {
-                    _smp.message_pool.getInstance().push(new message("[BlockMemoryManager::blockUID][Error] tentou inserir um block ja existente no map[KEY=" + Convert.ToString(_uid) + "]. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[BlockMemoryManager::blockUID][Error] tentou inserir um block ja existente no map[KEY=" + Convert.ToString(_uid) + "]. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 it = mp_block.FirstOrDefault(c => c.Key == _uid);
@@ -57,7 +57,7 @@ namespace Pangya_GameServer.Manager
 
             if (it.Value == null)
             {
-                _smp.message_pool.getInstance().push(new message("[BlockMemoryManager::unblockUID][Error] block[UID=" + Convert.ToString(_uid) + "] nao existe no map. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[BlockMemoryManager::unblockUID][Error] block[UID=" + Convert.ToString(_uid) + "] nao existe no map. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             } 

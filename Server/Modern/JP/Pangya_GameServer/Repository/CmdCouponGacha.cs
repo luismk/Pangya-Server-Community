@@ -47,7 +47,7 @@ namespace Pangya_GameServer.Repository
 
     return r;
 }
-        private string[] m_szConsulta = { "SELECT c0 FROM pangya.pangya_item_warehouse WHERE typeid = 436207744 AND uid = ", "SELECT c0 FROM pangya.pangya_item_warehouse WHERE typeid = 436207747 AND uid = " };
+        private string[] m_szConsulta = { "SELECT c0 FROM pangya.pangya_item_warehouse WHERE typeid = 436207744 AND UID = ", "SELECT c0 FROM pangya.pangya_item_warehouse WHERE typeid = 436207747 AND UID = " };
 
 
 

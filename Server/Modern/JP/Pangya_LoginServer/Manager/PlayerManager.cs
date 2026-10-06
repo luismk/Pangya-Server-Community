@@ -11,21 +11,21 @@ namespace Pangya_LoginServer.Manager
         {
             return GetAllSessions()
                 .OfType<Player>()
-                .FirstOrDefault(p => p.UserInfo?.uid == uid);
+                .FirstOrDefault(p => p.UserInfo?.UID == uid);
         }
 
         public Player FindByNickname(string nickname)
         {
             return GetAllSessions()
                 .OfType<Player>()
-                .FirstOrDefault(p => p.UserInfo?.id == nickname);
+                .FirstOrDefault(p => p.UserInfo?.Login == nickname);
         }
 
         public bool IsAlreadyLoggedIn(uint uid)
         {
             return GetAllSessions()
                 .OfType<Player>()
-                .Any(p => p.Connected && p.UserInfo?.uid == uid);
+                .Any(p => p.Connected && p.UserInfo?.UID == uid);
         }
 
         // Método para o sistema de Kick (Derrubar conexão duplicada)

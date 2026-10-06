@@ -31,8 +31,8 @@ namespace PangyaAPI.Network.Repository
                 m_ask.valid = byte.Parse(_result.data[2].ToString());
 
                 if (m_ask.server_uid != m_server_uid)
-                    throw new Exception("[CmdAuthServerKey::lineResult][Error] m_ask.server_uid = " + (m_ask.server_uid).ToString()
-                        + " not match with m_server_uid = " + (m_server_uid).ToString());
+                    throw new Exception("[CmdAuthServerKey::lineResult][Error] m_ask.ServerIndex = " + (m_ask.server_uid).ToString()
+                        + " not Match with m_server_uid = " + (m_server_uid).ToString());
             }
             catch (Exception ex)
             {
@@ -46,7 +46,7 @@ namespace PangyaAPI.Network.Repository
                 throw new Exception("[CmdAuthServerKey::prepareConsulta][Error] m_server_uid is invalid(zero).");
 
 
-            var r = consulta("SELECT server_uid, [key], VALID FROM pangya.pangya_auth_key WHERE server_uid =" + m_server_uid);
+            var r = consulta("SELECT ServerIndex, [key], VALID FROM pangya.pangya_auth_key WHERE ServerIndex =" + m_server_uid);
 
             checkResponse(r, "nao conseguiu pegar o Auth Server Key do Server[UID=" + (m_server_uid) + "]");
             return r;

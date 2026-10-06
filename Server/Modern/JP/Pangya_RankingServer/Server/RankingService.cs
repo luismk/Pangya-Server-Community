@@ -27,7 +27,7 @@ namespace Pangya_RankingServer.Server
         int m_sync_update_time_refresh = 0;
 
         private readonly PlayerManager _playerManager;
-        public RankingService() : base(new PlayerManager(500), new PacketDispatcher<Player, PacketIDClient>(), TypeServer.RankServer)
+        public RankingService() : base(new PlayerManager(500), new PacketDispatcher<Player, PacketIDClient>(), ServerType.RankServer)
         {
             // Fazemos o cast do sessionManager para o seu PlayerManager
             _playerManager = (PlayerManager)SessionsManager;
@@ -37,8 +37,8 @@ namespace Pangya_RankingServer.Server
             RegisterHandlers(); 
 
             // Carrega IFF_STRUCT
-            if (!sIff.getInstance().isLoad())
-                sIff.getInstance().Init(); 
+            if (!sIff.Instance.isLoad())
+                sIff.Instance.Init(); 
         }
 
         private async void RegisterHandlers()
@@ -58,7 +58,7 @@ namespace Pangya_RankingServer.Server
         {
             if (_command.Count == 0)
             {
-                _smp.message_pool.getInstance().push(new message("[RankingService::CheckCommand][Error] Missing parameter", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankingService::CheckCommand][Error] Missing parameter", type_msg.CL_ONLY_CONSOLE));
                 return true;
             }
 
@@ -89,29 +89,29 @@ namespace Pangya_RankingServer.Server
                     switch (sTipo)
                     {
                         case "iff":
-                            sIff.getInstance().reload();
+                            sIff.Instance.reload();
                             return true;
                         default:
-                            _smp.message_pool.getInstance().push(new message($"[RankingServer::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[RankingServer::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
                             return false;
                     }
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message($"[RankingServer::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[RankingServer::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
                     return false;
                 }
             }
             else if (s.Equals("help", StringComparison.OrdinalIgnoreCase))
             {
-                var msg = _smp.message_pool.getInstance();
-                msg.push(new message("======= COMMAND LIST =======", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("status                      - Mostra uso de memória, usuários e uptime.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("clear / cls                 - Limpa o console.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("reload_files                - Recarrega arquivos básicos do servidor.", type_msg.CL_ONLY_CONSOLE));
-                 msg.push(new message("---------------------------------------------------", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("reload_system [tipo]        - Tipos: iff.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("===================================================", type_msg.CL_ONLY_CONSOLE));
+                var msg = _smp.LogManager.Instance;
+                msg.push(new AppMessage("======= COMMAND LIST =======", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("status                      - Mostra uso de memória, usuários e uptime.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("clear / cls                 - Limpa o console.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("reload_files                - Recarrega arquivos básicos do servidor.", type_msg.CL_ONLY_CONSOLE));
+                 msg.push(new AppMessage("---------------------------------------------------", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("reload_system [Type]        - Tipos: iff.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("===================================================", type_msg.CL_ONLY_CONSOLE));
             }
             return false;
         }
@@ -120,7 +120,7 @@ namespace Pangya_RankingServer.Server
         {
             if (session is not Player player)
             {
-                Console.WriteLine($"[Erro] A sessão conectada não é do tipo Player! Tipo real: {session.GetType().Name}");
+                Console.WriteLine($"[Erro] A sessão conectada não é do Type Player! Tipo real: {session.GetType().Name}");
                 return;
             }
 
@@ -131,11 +131,11 @@ namespace Pangya_RankingServer.Server
                 packet.WriteByte(5);
                 packet.WriteString(UtilTime.formatDateLocal(0));
                 player.Send(packet, true);
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::OnClientConnected][Sucess] PLAYER[IP: {player.GetIP()}, OID: {player.ConnectionID}", 0));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::OnClientConnected][Sucess] PLAYER[IP: {player.GetIP()}, OID: {player.ConnectionID}", 0));
             }
             catch (exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
               $"[RankingService.OnClientConnected][ErrorSt]: {ex.getFullMessageError()}",
               type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -149,11 +149,11 @@ namespace Pangya_RankingServer.Server
             Player p = (Player)session;
             try
             {
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::OnClientDisconnected][Warning] PLAYER[ID: {p.UserInfo?.id} UID: {p.UserInfo?.uid}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::OnClientDisconnected][Warning] PLAYER[ID: {p.UserInfo?.Login} UID: {p.UserInfo?.UID}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RankingService::OnClientDisconnecteded][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankingService::OnClientDisconnecteded][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -189,8 +189,8 @@ namespace Pangya_RankingServer.Server
                 if (!IsRunning)
                     return;
 
-                if (!sRankRegistryManager.getInstance().isLoad())
-                    sRankRegistryManager.getInstance().load(); // Carrega os registros do Rank
+                if (!sRankRegistryManager.Instance.isLoad())
+                    sRankRegistryManager.Instance.load(); // Carrega os registros do Rank
 
                 if (IsRunning && m_sync_update_time_refresh == 0 && m_refresh_time.isOutDated())
                 {
@@ -199,7 +199,7 @@ namespace Pangya_RankingServer.Server
                     m_sync_update_time_refresh = 1;
 
                     // Envia a requisi��o para o banco de dados
-                    snmdb.NormalManagerDB.getInstance().add(1,
+                    snmdb.NormalManagerDB.Instance.add(1,
                      new CmdUpdateRankRegistry(),
                      DBResponse,
                      this);
@@ -208,24 +208,24 @@ namespace Pangya_RankingServer.Server
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RankingService::onHeartBeat][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankingService::onHeartBeat][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
         protected override void OnStart()
         {
-            Console.Title = $"Ranking Service - P: {m_si.curr_user}, Auth: {(m_unit_connect != null && m_unit_connect.isLive()? "ON": "OFF")}";
+            Console.Title = $"Ranking Service - P: {m_si.CurrentUsers}, Auth: {(m_unit_connect != null && m_unit_connect.isLive()? "ON": "OFF")}";
         }
 
         public override async void LoadConfig()
         {
             base.LoadConfig();
             // Server Tipo
-            m_si.tipo = 4/*Auth Server*/;
+            m_si.Type = 4/*Auth Server*/;
             // Carrega a configura��o do Rank
             CmdRankConfigInfo cmd_rci = new CmdRankConfigInfo(); // Waiter
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd_rci);
+            snmdb.NormalManagerDB.Instance.add(0, cmd_rci);
 
             if (cmd_rci.getException().getCodeError() != 0)
             {
@@ -250,10 +250,10 @@ namespace Pangya_RankingServer.Server
                     // Atualiza tempo e recarregar o registro do Rank novamente
                     m_refresh_time.setLastRefreshDate(_date);
 
-                    sRankRegistryManager.getInstance().load();
+                    sRankRegistryManager.Instance.load();
 
                     // Cria arquivo de log, com todos os registros
-                    sRankRegistryManager.getInstance().makeLog();
+                    sRankRegistryManager.Instance.makeLog();
 
                     // Libera o HearBeat para verificar de novo quando tempo vai acabar
                     m_sync_update_time_refresh = 0;
@@ -261,7 +261,7 @@ namespace Pangya_RankingServer.Server
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[rank_server::updateTimeRefresh][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankService::updateTimeRefresh][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -269,7 +269,7 @@ namespace Pangya_RankingServer.Server
         {
             LoadConfig();
 
-            sIff.getInstance().reload();
+            sIff.Instance.reload();
         }
 
         public override void authCmdShutdown(int _time_sec)
@@ -303,8 +303,8 @@ namespace Pangya_RankingServer.Server
                 {
 
                     // Log
-                    _smp.message_pool.getInstance().push(new message("[RankingServer::authCmdDisconnectPlayer][log] Comando do Auth Server, Server[UID: " + (_req_server_uid)
-                            + "] pediu para desconectar o Player[UID: " + (s.UserInfo.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[RankingServer::authCmdDisconnectPlayer][log] Comando do Auth Server, Server[UID: " + (_req_server_uid)
+                            + "] pediu para desconectar o Player[UID: " + (s.UserInfo.UID) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // Deconecta o Player
                     OnClientDisconnected(s);
@@ -314,14 +314,14 @@ namespace Pangya_RankingServer.Server
 
                 }
                 else
-                    _smp.message_pool.getInstance().push(new message("[RankingServer::authCmdDisconnectPlayer][WARNING] Comando do Auth Server, Server[UID: " + (_req_server_uid)
+                    _smp.LogManager.Instance.push(new AppMessage("[RankingServer::authCmdDisconnectPlayer][WARNING] Comando do Auth Server, Server[UID: " + (_req_server_uid)
                             + "] pediu para desconectar o Player[UID: " + (_player_uid) + "], mas nao encontrou ele no server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[RankingServer::authCmdDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankingServer::authCmdDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -362,14 +362,14 @@ namespace Pangya_RankingServer.Server
                     ConfirmLoginOnOtherServer(s, _req_server_uid, _aspi); 
                 }
                 else
-                    _smp.message_pool.getInstance().push(new message("[RankingServer::authCmdConfirmSendInfoPlayerOnline][WARNING] Player[UID: " + (_aspi.uid)
+                    _smp.LogManager.Instance.push(new AppMessage("[RankingServer::authCmdConfirmSendInfoPlayerOnline][WARNING] Player[UID: " + (_aspi.uid)
                             + "] retorno do confirma login com Auth Server do Server[UID: " + (_req_server_uid) + "], mas o palyer nao esta mais conectado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[RankingServer::authCmdConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankingServer::authCmdConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -421,21 +421,21 @@ namespace Pangya_RankingServer.Server
             try
             {
 
-                if (_aspi.uid != _session.UserInfo.uid)
+                if (_aspi.uid != _session.UserInfo.UID)
                 {
-                    throw new exception("[rank_server::confirmLoginOnOtherServer][Error] Player[UID=" + Convert.ToString(_session.UserInfo.uid) + ", REQ_UID=" + Convert.ToString(_aspi.uid) + ", REQ_SERVER=" + Convert.ToString(_req_server_uid) + "] request Info player, mas nao eh o mesmo UID que foi retornado do request com o Auth Server. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER,
+                    throw new exception("[RankService::confirmLoginOnOtherServer][Error] Player[UID=" + Convert.ToString(_session.UserInfo.UID) + ", REQ_UID=" + Convert.ToString(_aspi.uid) + ", REQ_SERVER=" + Convert.ToString(_req_server_uid) + "] request Info player, mas nao eh o mesmo UID que foi retornado do request com o Auth Server. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER,
                         1, 0x5200201));
                 }
 
                 if (_aspi.option != 1)
                 {
-                    throw new exception("[rank_server::confirmLoginOnOtherServer][Error] Player[UID=" + Convert.ToString(_session.UserInfo.uid) + ", REQ_UID=" + Convert.ToString(_aspi.uid) + ", REQ_SERVER=" + Convert.ToString(_req_server_uid) + "] request Info player, mas nao esta online no outro server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER,
+                    throw new exception("[RankService::confirmLoginOnOtherServer][Error] Player[UID=" + Convert.ToString(_session.UserInfo.UID) + ", REQ_UID=" + Convert.ToString(_aspi.uid) + ", REQ_SERVER=" + Convert.ToString(_req_server_uid) + "] request Info player, mas nao esta online no outro server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER,
                         2, 0x5200202));
                 }
 
-                if (_aspi.id.CompareTo(_session.UserInfo.id) != 0)
+                if (_aspi.id.CompareTo(_session.UserInfo.Login) != 0)
                 {
-                    throw new exception("[rank_server::confirmLoginOnOtherServer][Error] Player[UID=" + Convert.ToString(_session.UserInfo.uid) + ", REQ_UID=" + Convert.ToString(_aspi.uid) + ", REQ_SERVER=" + Convert.ToString(_req_server_uid) + "] request Info player, mas nao eh o mesmo ID[ID=" + _session.UserInfo.id + ", REQ_ID=" + _aspi.id + "] que foi retornado do request com o Auth Server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER,
+                    throw new exception("[RankService::confirmLoginOnOtherServer][Error] Player[UID=" + Convert.ToString(_session.UserInfo.UID) + ", REQ_UID=" + Convert.ToString(_aspi.uid) + ", REQ_SERVER=" + Convert.ToString(_req_server_uid) + "] request Info player, mas nao eh o mesmo ID[ID=" + _session.UserInfo.Login + ", REQ_ID=" + _aspi.id + "] que foi retornado do request com o Auth Server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER,
                         3, 0x5200203));
                 }
 
@@ -448,14 +448,14 @@ namespace Pangya_RankingServer.Server
                 // Resposta para o Pedido de Login
                 SendFirstPage(_session, 0); 
 
-                _smp.message_pool.getInstance().push(new message($"[ConfirmLoginOnOtherServer][Log] PLAYER[UID: {_session.UserInfo.uid}, NICK: {_session.UserInfo.nickname}] SUCESS.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[ConfirmLoginOnOtherServer][Log] PLAYER[UID: {_session.UserInfo.UID}, NICK: {_session.UserInfo.NickName}] SUCESS.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
                 // Resposta
                 SendFirstPage(_session, 1);
 
-                _smp.message_pool.getInstance().push(new message("[rank_server::confirmLoginOnOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankService::confirmLoginOnOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -479,11 +479,11 @@ namespace Pangya_RankingServer.Server
                 p.WriteByte(_session.UserInfo.m_sd.term_s5_type);
                 p.WriteByte(_session.UserInfo.m_sd.class_type);
 
-                sRankRegistryManager.getInstance().pageToPacket(p, _session.UserInfo.m_sd);
+                sRankRegistryManager.Instance.pageToPacket(p, _session.UserInfo.m_sd);
 
                 if (_session.UserInfo.m_sd.active > 0)
                 {
-                    sRankRegistryManager.getInstance().playerPositionToPacket(p,
+                    sRankRegistryManager.Instance.playerPositionToPacket(p,
                         _session, _session.UserInfo.m_sd);
                 }
                 else
@@ -500,14 +500,14 @@ namespace Pangya_RankingServer.Server
         {
             if (_arg == null)
             {
-                _smp.message_pool.getInstance().push(new message("[rank_server::SQLDBResponse][WARNING] _arg is nullptr, na msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankService::SQLDBResponse][WARNING] _arg is nullptr, na msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[rank_server::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankService::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -521,7 +521,7 @@ namespace Pangya_RankingServer.Server
                         {
 
                             // Exception print no console
-                            _smp.message_pool.getInstance().push(new message("[rank_server::SQLDBResponse][Error] " + cmd_urr.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[RankService::SQLDBResponse][Error] " + cmd_urr.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             // Liberar o verificador no HearBeat
                             updateTimeRefresh(0u, DateTime.Now);

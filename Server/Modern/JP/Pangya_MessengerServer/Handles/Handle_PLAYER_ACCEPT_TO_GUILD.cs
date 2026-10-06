@@ -30,11 +30,11 @@ namespace Pangya_MessengerServer.Handles
                 }
 
                 // Busca todos os membros da Guild que estão online no Messenger
-                var v_cm = MessengerServer.getInstance().FindAllGuildMember(club_id);
+                var v_cm = MessengerServer.Instance.FindAllGuildMember(club_id);
 
                 if (v_cm.Count == 0)
                 {
-                    _smp.message_pool.getInstance().push(new message($"[HandleAcceptGuildMember][WARNING] Club[ID={club_id}] não tem membros online para atualizar.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[HandleAcceptGuildMember][WARNING] Club[ID={club_id}] não tem membros online para atualizar.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 // Atualiza o FriendManager de todos os membros online da Guild (para incluírem o novo membro)
@@ -44,14 +44,14 @@ namespace Pangya_MessengerServer.Handles
                 }
 
                 // Verifica se o novo membro está online agora
-                var s = MessengerServer.getInstance().FindPlayer(member_uid);
+                var s = MessengerServer.Instance.FindPlayer(member_uid);
                 PlayerInfo pi = new();
 
                 if (s == null || !s.Connected)
                 {
                     // --- PLAYER ACEITO ESTÁ OFFLINE ---
                     var cmd_pi = new CmdPlayerInfo(member_uid);
-                    NormalManagerDB.getInstance().add(0, cmd_pi, null, null);
+                    NormalManagerDB.Instance.add(0, cmd_pi, null, null);
 
                     if (cmd_pi.getException().getCodeError() != 0) throw cmd_pi.getException();
                     pi.Set(cmd_pi.getInfo());
@@ -59,33 +59,33 @@ namespace Pangya_MessengerServer.Handles
                 else
                 {
                     // --- PLAYER ACEITO ESTÁ ONLINE ---
-                    s.UserInfo.guild_uid = club_id;
+                    s.UserInfo.GuildIndex = club_id;
                     s.UserInfo.m_friend_manager.init(s.UserInfo);
                     pi = s.UserInfo;
                 }
 
-                // Sincroniza a lista de amigos/guild (Packet 0x102) para todos os membros online
+                // Sincroniza a lista de amigos/Guild (Packet 0x102) para todos os membros online
                 foreach (var member in v_cm.Values.Where(m => m != null))
                 {
-                    MessengerServer.getInstance().SendUpdatedFriendList(member);
+                    MessengerServer.Instance.SendUpdatedFriendList(member);
                 }
 
                 // Notifica a Guild (Broadcast) que o player foi aceito (Packet 0x3B)
                 p.init_plain(0x3B);
-                p.Write(pi.uid);
+                p.Write(pi.UID);
                 p.Write(club_id);
-                p.Write(pi.sex);
-                p.WriteString(pi.id);
-                p.WriteString(pi.nickname);
-                p.Write((ushort)0x1F); // Flag padrão Pangya (USA/International)
+                p.Write(pi.Gender);
+                p.WriteString(pi.Login);
+                p.WriteString(pi.NickName);
+                p.Write((ushort)0x1F); // ServerFlag padrão Pangya (USA/International)
 
-                MessengerServer.getInstance().FriendBroadcast(v_cm, s, p);
+                MessengerServer.Instance.FriendBroadcast(v_cm, s, p);
 
-                _smp.message_pool.getInstance().push(new message($"[HandleAcceptGuildMember][Log] Player[UID={member_uid}] aceito no Club[UID={club_id}] com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[HandleAcceptGuildMember][Log] Player[UID={member_uid}] aceito no Club[UID={club_id}] com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[MessengerService::HandleAcceptGuildMember][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerService::HandleAcceptGuildMember][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         } 
     }

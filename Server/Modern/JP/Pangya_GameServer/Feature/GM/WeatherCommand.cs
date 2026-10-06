@@ -18,7 +18,7 @@ namespace Pangya_GameServer.Feature.GM
             {
                 // 2. Localização da Sala
                 // 3. Validação de Integridade da Sala
-                var room = session.GetRoom() ?? throw new exception($"[GM::Weather] Sala {session.UserInfo.Member.sala_numero} não encontrada para o player [UID={session.UserInfo.uid}].",
+                var room = session.GetRoom() ?? throw new exception($"[GM::Weather] Sala {session.UserInfo.Member.RoomID} não encontrada para o player [UID={session.UserInfo.UID}].",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0x5700100));
 
                 // 4. Execução e Log
@@ -33,29 +33,29 @@ namespace Pangya_GameServer.Feature.GM
                     p.WriteByte(1);  
                     room.SendBroadCast(p);
 
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[GM::Weather][Success] {session.UserInfo.nickname} alterou o clima na Sala {room.GetRoomId()} (Canal: {session.GetChannel()?.getName()})",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[GM::Weather][Success] {session.UserInfo.NickName} alterou o clima na Sala {room.GetRoomId()} (Canal: {session.GetChannel()?.getName()})",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 else if (game != null)
                 {
                     game.RequestExecCCGChangeWeather(session, pkt);
 
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[GM::Weather][Success] {session.UserInfo.nickname} alterou o clima na Sala {room.GetRoomId()} (Canal: {session.GetChannel()?.getName()})",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[GM::Weather][Success] {session.UserInfo.NickName} alterou o clima na Sala {room.GetRoomId()} (Canal: {session.GetChannel()?.getName()})",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 else
                 {
                     // Caso o GM esteja no Lobby do canal e tente mudar o clima global do canal (se suportado)
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[GM::Weather][Warning] {session.UserInfo.nickname} tentou mudar o clima, mas não está em uma sala.",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[GM::Weather][Warning] {session.UserInfo.NickName} tentou mudar o clima, mas não está em uma sala.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[WeatherCommand][Error] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

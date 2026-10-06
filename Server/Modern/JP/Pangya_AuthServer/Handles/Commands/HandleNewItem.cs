@@ -23,7 +23,7 @@ namespace Pangya_AuthServer.Handles.Commands
             catch (Exception ex)
             {
                 // Log de Erro: Fundamental para capturar falhas de null reference ou rede
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[HandleNewItem][Error] Failed to execute for Player {el.arg[0]}. Exception: {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

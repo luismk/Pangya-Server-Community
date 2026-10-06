@@ -21,24 +21,24 @@ namespace Pangya_GameServer.Handles
                 if (whisperState > 1)
                 {
                     throw new exception(
-                        $"[Handle_PLAYER_CHANGE_WHISPER_STATE][Error] PLAYER[UID={Player.UserInfo.uid}] enviou estado inválido: {whisperState}",
+                        $"[Handle_PLAYER_CHANGE_WHISPER_STATE][Error] Normal[UID={Player.UserInfo.UID}] enviou estado inválido: {whisperState}",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 0x5300101));
                 }
 
                 // Atualiza o estado na estrutura de dados da sessão
-                // mi.state_flag.whisper costuma ser usado para sincronização visual/IFF
-                Player.UserInfo.Member.state_flag.whisper = whisperState;
+                // mi.State.Whisper costuma ser usado para sincronização visual/IFF
+                Player.UserInfo.Member.State.Whisper = whisperState;
                 Player.UserInfo.WhisperState = whisperState;
 
                 // Log formatado para o console e arquivo
                 string stateText = whisperState == 1 ? "ON" : "OFF";
-                _smp.message_pool.getInstance().push(new message(
-                    $"[Handle_PLAYER_CHANGE_WHISPER_STATE][Info] PLAYER[UID={Player.UserInfo.uid}] trocou o Whisper State para : {stateText}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[Handle_PLAYER_CHANGE_WHISPER_STATE][Info] Normal[UID={Player.UserInfo.UID}] trocou o Whisper State para : {stateText}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_CHANGE_WHISPER_STATE][ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

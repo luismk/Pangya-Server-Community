@@ -148,7 +148,7 @@ namespace Pangya_GameServer.Feature
             }
 
             // Log
-            _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::calculeRoundReward][Log] Golden Time[Rate=" + Convert.ToString(m_current_golden_time.rate_of_players) + "] Round(" + (reward.round.time.ConvertTime()) + ") - Total de participantes(" + Convert.ToString(_player_reward.Count) + ") - Total de ganhadores(" + Convert.ToString(number_of_winners) + ").", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::calculeRoundReward][Log] Golden Time[Rate=" + Convert.ToString(m_current_golden_time.rate_of_players) + "] Round(" + (reward.round.time.ConvertTime()) + ") - Total de participantes(" + Convert.ToString(_player_reward.Count) + ") - Total de ganhadores(" + Convert.ToString(number_of_winners) + ").", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             LotterySystem lottery = new LotterySystem();
 
@@ -173,7 +173,7 @@ namespace Pangya_GameServer.Feature
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::calculeRoundReward][Error][Warning] nao conseguiu sortear um player em lottery.spinRoleta(). Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::calculeRoundReward][Error][Warning] nao conseguiu sortear um player em lottery.spinRoleta(). Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
 
@@ -287,7 +287,7 @@ namespace Pangya_GameServer.Feature
 
                 string ret = "";
 
-                var @base = sIff.getInstance().findCommomItem(_typeid);
+                var @base = sIff.Instance.findCommomItem(_typeid);
 
                 if (@base != null)
                 {
@@ -308,11 +308,11 @@ namespace Pangya_GameServer.Feature
                 foreach (var el in _reward.players)
                 {
 
-                    if ((p = GameServer.getInstance().FindPlayer(el.uid)) == null)
+                    if ((p = GameServer.Instance.FindPlayer(el.uid)) == null)
                     {
 
                         // Log, Player que ganhou n�o est� mais online, vai ficar sem o item
-                        _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::sendRewardToMailOfPlayers][Warning] Player[UID=" + Convert.ToString(el.uid) + "] ganhou o item[TYPEID=" + Convert.ToString(_reward.round.item._typeid) + ", QNTD=" + Convert.ToString(_reward.round.item.qntd) + ", QNTD_TIME=" + Convert.ToString(_reward.round.item.qntd_time) + "], mas saiu antes dos pr�mios ser entregues, vai ficar sem o pr�mio.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::sendRewardToMailOfPlayers][Warning] Player[UID=" + Convert.ToString(el.uid) + "] ganhou o item[TYPEID=" + Convert.ToString(_reward.round.item._typeid) + ", QNTD=" + Convert.ToString(_reward.round.item.qntd) + ", QNTD_TIME=" + Convert.ToString(_reward.round.item.qntd_time) + "], mas saiu antes dos pr�mios ser entregues, vai ficar sem o pr�mio.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         continue;
                     }
@@ -332,15 +332,15 @@ namespace Pangya_GameServer.Feature
 
                     if (item._typeid == 0)
                     {
-                        _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::sendRewardToMailOfPlayers][Error][Warning] tentou enviar o reward para o PLAYER[UID=" + Convert.ToString(p.UserInfo.uid) + "] o Item[TYPEID=" + Convert.ToString(_reward.round.item._typeid) + ", QNTD=" + Convert.ToString(_reward.round.item.qntd) + ", QNTD_TIME=" + Convert.ToString(_reward.round.item.qntd_time) + "], mas nao conseguiu inicializar o item. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::sendRewardToMailOfPlayers][Error][Warning] tentou enviar o reward para o Normal[UID=" + Convert.ToString(p.UserInfo.UID) + "] o Item[TYPEID=" + Convert.ToString(_reward.round.item._typeid) + ", QNTD=" + Convert.ToString(_reward.round.item.qntd) + ", QNTD_TIME=" + Convert.ToString(_reward.round.item.qntd_time) + "], mas nao conseguiu inicializar o item. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
                     var msg = ("Golden Time - Round(" + (_reward.round.time.ConvertTime()) + "): item[ " + getItemName(_reward.round.item._typeid) + " ]");
 
                     if (MailManager.SendMessageWithItem(0,
-                        p.UserInfo.uid, msg, item) <= 0)
+                        p.UserInfo.UID, msg, item) <= 0)
                     {
-                        _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::sendRewardToMailOfPlayers][Error][Warning] tentou enviar reward para o PLAYER[UID=" + Convert.ToString(p.UserInfo.uid) + "] o Item[TYPEID=" + Convert.ToString(_reward.round.item._typeid) + ", QNTD=" + Convert.ToString(_reward.round.item.qntd) + ", QNTD_TIME=" + Convert.ToString(_reward.round.item.qntd_time) + "], mas nao conseguiu colocar o item no mail box dele. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::sendRewardToMailOfPlayers][Error][Warning] tentou enviar reward para o Normal[UID=" + Convert.ToString(p.UserInfo.UID) + "] o Item[TYPEID=" + Convert.ToString(_reward.round.item._typeid) + ", QNTD=" + Convert.ToString(_reward.round.item.qntd) + ", QNTD_TIME=" + Convert.ToString(_reward.round.item.qntd_time) + "], mas nao conseguiu colocar o item no mail box dele. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
 
@@ -348,7 +348,7 @@ namespace Pangya_GameServer.Feature
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::sendRewardToMailOfPlayers][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::sendRewardToMailOfPlayers][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -357,7 +357,7 @@ namespace Pangya_GameServer.Feature
             // Carrega a lista de eventos
             CmdGoldenTimeInfo cmd_gti = new CmdGoldenTimeInfo(); // Waiter
 
-            NormalManagerDB.getInstance().add(0, cmd_gti);
+            NormalManagerDB.Instance.add(0, cmd_gti);
 
             if (cmd_gti.getException().getCodeError() != 0)
             {
@@ -373,8 +373,8 @@ namespace Pangya_GameServer.Feature
                 CmdGoldenTimeRound cmd_gt_round = new CmdGoldenTimeRound(el_gt.id); // Waiter  
                 try
                 {
-                    NormalManagerDB.getInstance().add(0, cmd_gt_item);
-                    NormalManagerDB.getInstance().add(0, cmd_gt_round);
+                    NormalManagerDB.Instance.add(0, cmd_gt_item);
+                    NormalManagerDB.Instance.add(0, cmd_gt_round);
 
                     if (cmd_gt_item.getException().getCodeError() != 0)
                     {
@@ -403,7 +403,7 @@ namespace Pangya_GameServer.Feature
                 {
 
                     // Log
-                    _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::initialize][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::initialize][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
 
@@ -479,7 +479,7 @@ namespace Pangya_GameServer.Feature
             }
 
             if (m_events.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
             // Carregado com sucesso
             m_load = true;
         }
@@ -501,8 +501,8 @@ namespace Pangya_GameServer.Feature
             // Se não há prêmios, não faz sentido prosseguir
             if (m_current_golden_time.item_rewards.Count == 0)
             {
-                _smp.message_pool.getInstance().push(
-                    new message("[GoldenTimeSystem::initCurrentGoldenTime][ERROR] Nenhum item configurado para o Golden Time.",
+                _smp.LogManager.Instance.push(
+                    new AppMessage("[GoldenTimeSystem::initCurrentGoldenTime][ERROR] Nenhum item configurado para o Golden Time.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
@@ -523,8 +523,8 @@ namespace Pangya_GameServer.Feature
 
                 if (reward == null)
                 {
-                    _smp.message_pool.getInstance().push(
-                        new message($"[GoldenTimeSystem::initCurrentGoldenTime][Warning] Não conseguiu sortear um item para o round ({round.time.ConvertTime()})",
+                    _smp.LogManager.Instance.push(
+                        new AppMessage($"[GoldenTimeSystem::initCurrentGoldenTime][Warning] Não conseguiu sortear um item para o round ({round.time.ConvertTime()})",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                     continue;
                 }
@@ -600,7 +600,7 @@ namespace Pangya_GameServer.Feature
             // Atualiza no banco de dados
             if (m_current_golden_time.is_end)
             {
-                NormalManagerDB.getInstance().add(1,
+                NormalManagerDB.Instance.add(1,
                       new CmdUpdateGoldenTime(m_current_golden_time.id, m_current_golden_time.is_end),
                       SQLDBResponse,
                       this);
@@ -667,14 +667,14 @@ namespace Pangya_GameServer.Feature
 
             if (_arg == null)
             {
-                _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::SQLDBResponse][Warning] _arg is nullptr na msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::SQLDBResponse][Warning] _arg is nullptr na msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -690,7 +690,7 @@ namespace Pangya_GameServer.Feature
                         var cmd_ugt = (CmdUpdateGoldenTime)(_pangya_db);
 
                         // Log
-                        _smp.message_pool.getInstance().push(new message("[GoldenTimeSystem::SQLDBResponse][Debug] Atualizou o Golden Time[ID=" + Convert.ToString(cmd_ugt.getId()) + ", IS_END=" + (cmd_ugt.getIsEnd() ? "TRUE" : "FALSE") + "] com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GoldenTimeSystem::SQLDBResponse][Debug] Atualizou o Golden Time[ID=" + Convert.ToString(cmd_ugt.getId()) + ", IS_END=" + (cmd_ugt.getIsEnd() ? "TRUE" : "FALSE") + "] com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         break;
                     }

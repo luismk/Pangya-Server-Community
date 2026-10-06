@@ -1,6 +1,7 @@
 using Pangya_GameServer.Channels;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.Models;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Roms.GameBase.Helpers;
@@ -32,7 +33,7 @@ namespace Pangya_GameServer.Roms
 
 
                 // Update Place Player
-                if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.PRACTICE || RoomInfo.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+                if (RoomInfo.GetRoomType() == RoomTypeFlags.PRACTICE || RoomInfo.GetRoomType() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
                 {
                     player.UserInfo.Place = 2;
                 }
@@ -63,22 +64,22 @@ namespace Pangya_GameServer.Roms
         
         private void GenerateSecurityKey()
         {
-            Random.Shared.NextBytes(RoomInfo.key);
+            Random.Shared.NextBytes(RoomInfo.GameKey);
         }
 
         public string getName()
         {
-            return RoomInfo.name;
+            return RoomInfo.Name;
         }
 
         public string getPass()
         {
-            return RoomInfo.senha_flag == 1 ? "" : RoomInfo.senha;
+            return RoomInfo.IsPublicRoom == 1 ? "" : RoomInfo.Password;
         }
 
-        public ROOM_INFO_TYPE GetTipo()
+        public RoomTypeFlags GetTipo()
         {
-            return RoomInfo.GetTipo();
+            return RoomInfo.GetRoomType();
         }  
 
         private void ClearPlayersKicked()
@@ -91,7 +92,7 @@ namespace Pangya_GameServer.Roms
         {
             for (int i = 0; i < Players.Count; ++i)//255 e o limite
             {
-                PlayersInfo[Players[i]].position = (byte)Math.Min(i + 1, byte.MaxValue);
+                PlayersInfo[Players[i]].RankPosition = (byte)Math.Min(i + 1, byte.MaxValue);
             }
         }
 
@@ -103,11 +104,11 @@ namespace Pangya_GameServer.Roms
                 if (el == null)
                     return false;
 
-                return PlayersInfo.TryGetValue(el, out var playerInfo) && !(playerInfo.convidado == 1);
+                return PlayersInfo.TryGetValue(el, out var playerInfo) && !(playerInfo.Invite == 1);
             });
         }
 
-        public RoomInfo GetInfo()
+        public GameRoomInfoModel GetInfo()
         {
             return RoomInfo;
         }
@@ -124,10 +125,10 @@ namespace Pangya_GameServer.Roms
 
         public Player FindSessionByUid(uint uid)
         { 
-            return Players.FirstOrDefault(el => el.UserInfo.uid == uid);
+            return Players.FirstOrDefault(el => el.UserInfo.UID == uid);
         }
 
-        public Player FindMaster() => Players.FirstOrDefault(el => el.UserInfo.uid == RoomInfo.master);
+        public Player FindMaster() => Players.FirstOrDefault(el => el.UserInfo.UID == RoomInfo.OwnerUID);
         public int FindIndexSession(Player session)
         {
             // Verifica se a lista ou o objeto passado não são nulos para evitar NullReferenceException
@@ -135,7 +136,7 @@ namespace Pangya_GameServer.Roms
                 return -1;
 
             // Retorna o índice do primeiro elemento que satisfaz a condição
-            return Players.FindIndex(s => s.UserInfo.uid == session.UserInfo.uid);
+            return Players.FindIndex(s => s.UserInfo.UID == session.UserInfo.UID);
         }
 
         public int FindIndexSession(uint uid)
@@ -145,7 +146,7 @@ namespace Pangya_GameServer.Roms
                 throw new ArgumentException("O UID fornecido é inválido (zero).", nameof(uid));
             }
              
-            return Players.FindIndex(el => el?.UserInfo?.uid == uid);
+            return Players.FindIndex(el => el?.UserInfo?.UID == uid);
         }
 
         public void @lock()
@@ -190,8 +191,8 @@ namespace Pangya_GameServer.Roms
                 // Resetamos para zero para evitar estados inconsistentes
                 Interlocked.Exchange(ref m_lock_spinstate, 0);
 
-                _smp.message_pool.getInstance().push(new message(
-                    $"[Room::UnLock][Warning] Sala {RoomInfo.numero} já estava desbloqueada.",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[Room::UnLock][Warning] Sala {RoomInfo.RoomID} já estava desbloqueada.",
                     type_msg.CL_ONLY_CONSOLE));
             }
 
@@ -226,12 +227,12 @@ namespace Pangya_GameServer.Roms
           
         public short GetRoomId()
         {
-            return RoomInfo.numero;
+            return RoomInfo.RoomID;
         }
 
         public bool GameRun()
         {
-            return (CurrentGame != null && CurrentGame.GameInitState == 1) || RoomInfo.GetTipo() == ROOM_INFO_TYPE.LOUNGE;
+            return (CurrentGame != null && CurrentGame.GameInitState == 1) || RoomInfo.GetRoomType() == RoomTypeFlags.LOUNGE;
         }
          
         public bool IsGamingBefore(uint uid)
@@ -245,7 +246,7 @@ namespace Pangya_GameServer.Roms
 
             if (CurrentGame == null)
             {
-                throw new exception("[room::isGamingBefore] [Error] a sala[NUMERO=" + RoomInfo.numero + "] nao tem um jogo inicializado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::isGamingBefore] [Error] a sala[NUMERO=" + RoomInfo.RoomID + "] nao tem um jogo inicializado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     1001, 0));
             }
 
@@ -269,7 +270,7 @@ namespace Pangya_GameServer.Roms
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[room::getRealNumPlayerWithoutInvited][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::getRealNumPlayerWithoutInvited][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
 
@@ -288,7 +289,7 @@ namespace Pangya_GameServer.Roms
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[room::haveInvited][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::haveInvited][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             return question;
         }
@@ -298,7 +299,7 @@ namespace Pangya_GameServer.Roms
             if (senhaEncriptSala == null || senhaEncriptSala.Length == 0)
                 return false;
 
-            byte[] storedKey = RoomInfo.key;
+            byte[] storedKey = RoomInfo.GameKey;
 
             if (storedKey == null || storedKey.Length != senhaEncriptSala.Length)
                 return false;
@@ -317,67 +318,67 @@ namespace Pangya_GameServer.Roms
         {
             if (string.IsNullOrEmpty(nome))
             {
-                throw new exception("Error nome esta vazio. Em room::SetNome()", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("Error Name esta vazio. Em room::SetNome()", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     6, 0));
             }
-            RoomInfo.name = nome;
+            RoomInfo.Name = nome;
         }
 
         public void SetSenha(string senha)
         {
             if (string.IsNullOrEmpty(senha))
             {
-                // Sem senha: limpa e marca sala como aberta (senha_flag = 0 = sem senha)
-                RoomInfo.senha = "";
-                RoomInfo.senha_flag = 1;
+                // Sem Password: limpa e marca sala como aberta (IsPublicRoom = 0 = sem Password)
+                RoomInfo.Password = "";
+                RoomInfo.IsPublicRoom = 1;
             }
             else
             {
-                // Com senha: define e marca sala como bloqueada (senha_flag = 1 = tem senha)
-                RoomInfo.senha = senha;
-                RoomInfo.senha_flag = 0;
+                // Com Password: define e marca sala como bloqueada (IsPublicRoom = 1 = tem Password)
+                RoomInfo.Password = senha;
+                RoomInfo.IsPublicRoom = 0;
             }
         }
 
         public void SetType(byte tipo)
         {
 
-            if (tipo == (byte)ROOM_INFO_TYPE.MATCH || tipo == (byte)ROOM_INFO_TYPE.GUILD_BATTLE)
+            if (tipo == (byte)RoomTypeFlags.MATCH || tipo == (byte)RoomTypeFlags.GUILD_BATTLE)
                 InitTeams();
-            else if (tipo != (byte)ROOM_INFO_TYPE.MATCH && RoomInfo.GetTipo() == ROOM_INFO_TYPE.MATCH)
+            else if (tipo != (byte)RoomTypeFlags.MATCH && RoomInfo.GetRoomType() == RoomTypeFlags.MATCH)
                 ClearTeams();
 
-            RoomInfo.tipo = tipo;
+            RoomInfo.RealRoomType = tipo;
 
-            // Atualizar tipo da sala
-            if (RoomInfo.tipo > (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
-                RoomInfo.tipo_show = 4;
-            else if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_ADV || RoomInfo.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
-                RoomInfo.tipo_show = (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT;
+            // Atualizar Type da sala
+            if (RoomInfo.RealRoomType > (byte)RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
+                RoomInfo.RoomType = 4;
+            else if (RoomInfo.GetRoomType() == RoomTypeFlags.GRAND_ZODIAC_ADV || RoomInfo.GetRoomType() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
+                RoomInfo.RoomType = (byte)RoomTypeFlags.GRAND_ZODIAC_INT;
             else
-                RoomInfo.tipo_show = RoomInfo.tipo;
+                RoomInfo.RoomType = RoomInfo.RealRoomType;
 
 
-            if (RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT)
-                RoomInfo.type_extend = RoomInfo.tipo;
+            if (RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT)
+                RoomInfo.SpecialRoomFLag = RoomInfo.RealRoomType;
             else
-                RoomInfo.type_extend = 255;
+                RoomInfo.SpecialRoomFLag = 255;
 
             // Atualiza Trofel se for Tourney
-            if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY || (RoomInfo.master != -2 && RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT && RoomInfo.tipo <= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_ADV))
+            if (RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY || (RoomInfo.OwnerUID != -2 && RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT && RoomInfo.RealRoomType <= (byte)RoomTypeFlags.GRAND_ZODIAC_ADV))
             {
 
-                if ((RoomInfo.max_player > 30 && RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY) || (RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT && RoomInfo.tipo <= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_ADV))
+                if ((RoomInfo.MaxUsers > 30 && RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY) || (RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT && RoomInfo.RealRoomType <= (byte)RoomTypeFlags.GRAND_ZODIAC_ADV))
                 {
 
-                    RoomInfo.flag_gm = 1;
+                    RoomInfo.IsGameMaster = 1;
 
-                    RoomInfo.state_flag = 0x100;
+                    RoomInfo.SpecialFlag = 0x100;
 
-                    RoomInfo.trofel = TROFEL_GM_EVENT_TYPEID;
+                    RoomInfo.TrophyID = TROFEL_GM_EVENT_TYPEID;
 
                 }
-                else if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY || RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT)
+                else if (RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY || RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT)
                 {
                     UpdateTrofel();
                 }
@@ -385,28 +386,28 @@ namespace Pangya_GameServer.Roms
             }
             else
             {
-                RoomInfo.trofel = 0;
+                RoomInfo.TrophyID = 0;
             }
         }
 
         public void SetCourse(byte course)
         {
-            RoomInfo.course = (ROOM_INFO_COURSE)course;
+            RoomInfo.CourseIndex = (RoomCourseFlags)course;
         }
 
         public void SetQntdHole(byte qntdHole)
         {
-            RoomInfo.qntd_hole = qntdHole;
+            RoomInfo.HoleCount = qntdHole;
         }
 
         public void SetModo(byte modo)
         {
-            RoomInfo.modo = modo;
+            RoomInfo.HoleMode = modo;
         }
 
         public void SetStrokeTime(uint tempo)
         {
-            RoomInfo.time_vs = tempo;
+            RoomInfo.TimeSec = tempo;
         }
 
         public void SetMaxUsers(byte maxPlayer)
@@ -414,26 +415,26 @@ namespace Pangya_GameServer.Roms
 
             if (Players.Count > maxPlayer)
             {
-                throw new exception("[room::setMaxPlayer] [Error] MASTER[UID=" + Convert.ToString(RoomInfo.master) + "] _max_PLAYER[VALUE=" + Convert.ToString(maxPlayer) + "] é menor que o numero de jogadores[VALUE=" + Convert.ToString(Players.Count) + "] na sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[room::setMaxPlayer] [Error] MASTER[UID=" + Convert.ToString(RoomInfo.OwnerUID) + "] _max_PLAYER[VALUE=" + Convert.ToString(maxPlayer) + "] é menor que o RoomID de jogadores[VALUE=" + Convert.ToString(Players.Count) + "] na sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     250, 0x588000));
             }
 
             // New Max Player room
-            RoomInfo.max_player = maxPlayer;
+            RoomInfo.MaxUsers = maxPlayer;
 
             // Atualiza Trofeu se for Tourney
-            if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY || (RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT && RoomInfo.tipo <= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_ADV))
+            if (RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY || (RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT && RoomInfo.RealRoomType <= (byte)RoomTypeFlags.GRAND_ZODIAC_ADV))
             {
 
-                if ((RoomInfo.max_player > 30 && RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY) || (RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT && RoomInfo.tipo <= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_ADV))
+                if ((RoomInfo.MaxUsers > 30 && RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY) || (RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT && RoomInfo.RealRoomType <= (byte)RoomTypeFlags.GRAND_ZODIAC_ADV))
                 {
 
-                    RoomInfo.flag_gm = 1;
+                    RoomInfo.IsGameMaster = 1;
 
-                    RoomInfo.trofel = TROFEL_GM_EVENT_TYPEID;
+                    RoomInfo.TrophyID = TROFEL_GM_EVENT_TYPEID;
 
                 }
-                else if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY || RoomInfo.tipo >= (byte)ROOM_INFO_TYPE.GRAND_ZODIAC_INT)
+                else if (RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY || RoomInfo.RealRoomType >= (byte)RoomTypeFlags.GRAND_ZODIAC_INT)
                 {
                     UpdateTrofel();
                 }
@@ -442,47 +443,47 @@ namespace Pangya_GameServer.Roms
 
         public void SetTime30S(uint tempo)
         {
-            RoomInfo.time_30s = tempo;
+            RoomInfo.TimeMin = tempo;
         }
 
         public void SetHoleRepeted(byte holeRepeat)
         {
-            RoomInfo.hole_repeat = holeRepeat;
+            RoomInfo.IDHoleRepeted = holeRepeat;
         }
         
         public void SetGalleryLimit(byte fixedHole)
         {
-            RoomInfo.gallery_limit = fixedHole;
+            RoomInfo.GalleryLimite = fixedHole;
         }
 
         public void SetFixedHole(uint fixedHole)
         {
-            RoomInfo.fixed_hole = fixedHole;
+            RoomInfo.HoleFixed = fixedHole;
         }
 
         public void SetArtefato(uint artefato)
         {
-            RoomInfo.typeid_artefatic = artefato;
+            RoomInfo.ItemIDArtifact = artefato;
         }
 
         public void SetNatural(uint natural)
         {
-            RoomInfo.special_flag_mod.ulNaturalAndShortGame = natural;
+            RoomInfo.SpecialModeRoom.Value = natural;
         }
 
         public void SetState(byte state)
         {
-            RoomInfo.state = state;
+            RoomInfo.StateRoom = state;
         }
 
         public void SetFlag(byte flag)
         {
-            RoomInfo.flag = flag;
+            RoomInfo.FlagRoom = flag;
         }
 
         public void SetStateAFK(byte stateAfk)
         {
-            RoomInfo.state_afk = stateAfk;
+            RoomInfo.StateSleep = stateAfk;
         }
 
         public void SetAllReady()
@@ -491,13 +492,13 @@ namespace Pangya_GameServer.Roms
             foreach (var el in Players)
             {
                 var pri = GetPlayerInfo(el);
-                pri.state_flag.ready = (byte)(ready == 0 ? 1 : 0);//invertido
-                if (pri.state_flag.ready == 1 && !pri.capability.game_master)
+                pri.State.Ready = (byte)(ready == 0 ? 1 : 0);//invertido
+                if (pri.State.Ready == 1 && !pri.Capability.IsGameMaster)
                 {
                     UpdatePlayerInfo(el);
                     var p = new Packet();
                     p.init_plain(0x78);
-                    p.WriteInt32(pri.oid);
+                    p.WriteInt32(pri.OID);
                     p.WriteByte(ready);
                     SendBroadCast(p);
                 }
@@ -514,17 +515,17 @@ namespace Pangya_GameServer.Roms
 
             if (!IsLocked())
             {
-                throw new exception("[Room::checkPass] [Error] sala nao tem senha", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                throw new exception("[Room::checkPass] [Error] sala nao tem Password", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                     1, 0));
             }
 
-            return string.Compare(RoomInfo.senha, pass) == 0;
+            return string.Compare(RoomInfo.Password, pass) == 0;
         }
 
         public bool IsFull()
         {
-            RoomInfo.num_player = (byte)Players.Count;
-            return RoomInfo.num_player >= RoomInfo.max_player;
+            RoomInfo.CurrentUsers = (byte)Players.Count;
+            return RoomInfo.CurrentUsers >= RoomInfo.MaxUsers;
         }
          
         public bool IsKickedPlayer(uint uid)
@@ -544,22 +545,22 @@ namespace Pangya_GameServer.Roms
 
             // Corrigido: && tem precedência sobre ||, então a condição original
             // (A && B || C) era lida como (A && B) || C — adicionados parênteses explícitos.
-            if ((BotTourney && Players.Count == 1 && RoomInfo.GetTipo() == ROOM_INFO_TYPE.TOURNEY)
-                || RoomInfo.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE)
+            if ((BotTourney && Players.Count == 1 && RoomInfo.GetRoomType() == RoomTypeFlags.TOURNEY)
+                || RoomInfo.GetRoomType() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE)
             {
                 return true;
             }
 
             // se a sala for Practice, CHIP-IN Practice, e GRAND_PRIX_NOVICE não precisa o Player está pronto
-            if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.PRACTICE
-                || RoomInfo.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE
-                || RoomInfo.GetTipo() == ROOM_INFO_TYPE.GRAND_PRIX)
+            if (RoomInfo.GetRoomType() == RoomTypeFlags.PRACTICE
+                || RoomInfo.GetRoomType() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE
+                || RoomInfo.GetRoomType() == RoomTypeFlags.GRAND_PRIX)
             {
                 return true;
             }
 
-            // Se o master for GM então não precisar todos está ready(prontos)
-            if (master.UserInfo.UserCapabilities.game_master && !HaveInvitedInternal())
+            // Se o Master for GM então não precisar todos está Ready(prontos)
+            if (master.UserInfo.UserCapabilities.IsGameMaster && !HaveInvitedInternal())
             {
                 return true;
             }
@@ -568,10 +569,10 @@ namespace Pangya_GameServer.Roms
             var count = Players.Count(el =>
             {
                 var pri = GetPlayerInfo(el);
-                return (pri != null && pri.state_flag.ready == 1);
+                return (pri != null && pri.State.Ready == 1);
             });
 
-            // Conta com o master por que o master sempre está pronto(ready)
+            // Conta com o Master por que o Master sempre está pronto(Ready)
             return count == Players.Count;
         }
          
@@ -583,7 +584,7 @@ namespace Pangya_GameServer.Roms
                 if (el == null)
                     return false;
 
-                return PlayersInfo.TryGetValue(el, out var playerInfo) && playerInfo.convidado == 1;
+                return PlayersInfo.TryGetValue(el, out var playerInfo) && playerInfo.Invite == 1;
             });
         }
 
@@ -592,20 +593,20 @@ namespace Pangya_GameServer.Roms
 
             var it = PlayersInfo.FirstOrDefault(c => c.Key.GetUID() == session.GetUID());
 
-            return (it.Value != null && it.Value.convidado == 1);
+            return (it.Value != null && it.Value.Invite == 1);
         }
 
 
 
         public bool IsRoomGM()
         {
-            return RoomInfo.flag_gm == 1 &&
-             RoomInfo.state_flag == 0x100;
+            return RoomInfo.IsGameMaster == 1 &&
+             RoomInfo.SpecialFlag == 0x100;
         }
 
-        public uint GetMaster() => (uint)RoomInfo.master;
+        public uint GetMaster() => (uint)RoomInfo.OwnerUID;
         public uint GetNumPlayers() => (uint)Players.Count;
-        public bool IsLocked() => RoomInfo.senha_flag != 1;
+        public bool IsLocked() => RoomInfo.IsPublicRoom != 1;
 
         public byte GetPosition(Player session)
         {
@@ -622,7 +623,7 @@ namespace Pangya_GameServer.Roms
             return position;
         }
 
-        public PlayerRoomInfoEx GetPlayerInfo(Player session)
+        public PlayerRoomInfo GetPlayerInfo(Player session)
         {
 
             if (session == null)
@@ -631,7 +632,7 @@ namespace Pangya_GameServer.Roms
                     7, 0));
             }
 
-            PlayerRoomInfoEx pri = PlayersInfo.FirstOrDefault(c => c.Key == session).Value;
+            PlayerRoomInfo pri = PlayersInfo.FirstOrDefault(c => c.Key == session).Value;
             if (pri == null)
                 return null;
 
@@ -649,16 +650,16 @@ namespace Pangya_GameServer.Roms
                 if (el?.UserInfo == null) continue;
 
                 // 2. Filtros de lógica
-                bool isTargetSession = session != null && el.UserInfo.uid == session.UserInfo.uid;
+                bool isTargetSession = session != null && el.UserInfo.UID == session.UserInfo.UID;
                 if (isTargetSession) continue;
 
-                if (el.UserInfo.Member.sala_numero == -1) continue;
+                if (el.UserInfo.Member.RoomID == -1) continue;
 
                 // 3. Filtro de convidados (Invertido para legibilidade)
                 if (!withInvited && IsInvited(el)) continue;
 
                 // 4. Verificação de duplicidade e adição
-                if (addedUids.Add(el.UserInfo.uid))
+                if (addedUids.Add(el.UserInfo.UID))
                 {
                     result.Add(el);
                 }
@@ -669,7 +670,7 @@ namespace Pangya_GameServer.Roms
 
         public virtual bool IsDropRoom()
         {
-            return true; // class room normal é sempre true
+            return true; // class room Normal é sempre true
         }
 
         #endregion
@@ -681,8 +682,8 @@ namespace Pangya_GameServer.Roms
 
         public void SendUpdateRoomInfo(int opt = 3)
         {
-            if (RoomInfo.GetTipo() != ROOM_INFO_TYPE.PRACTICE && RoomInfo.GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
-                ChannelOwner.SendBroadcast(Handle_PACKET_RESPONSE.pacote047(new List<RoomInfo>() { RoomInfo }, opt), 0);
+            if (RoomInfo.GetRoomType() != RoomTypeFlags.PRACTICE && RoomInfo.GetRoomType() != RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
+                ChannelOwner.SendBroadcast(Handle_PACKET_RESPONSE.MakeGameRoomList(new List<GameRoomInfoModel>() { RoomInfo }, opt), 0);
         }
 
        
@@ -701,7 +702,7 @@ namespace Pangya_GameServer.Roms
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RoomBroadcast] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomBroadcast] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -719,7 +720,7 @@ namespace Pangya_GameServer.Roms
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RoomBroadcast] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomBroadcast] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -739,7 +740,7 @@ namespace Pangya_GameServer.Roms
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RoomBroadcast] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomBroadcast] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -750,15 +751,15 @@ namespace Pangya_GameServer.Roms
             {
 
                 if (CurrentGame == null)
-                    throw new exception("[room::startGame] [Error] PLAYER[UID=" + (session.UserInfo.uid) + "] tentou comecar o jogo na sala[NUMERO="
-                        + (RoomInfo.numero) + "], mas a sala nao tem nenhum jogo iniciado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, 1, 0x5200101));
+                    throw new exception("[room::startGame] [Error] Normal[UID=" + (session.UserInfo.UID) + "] tentou comecar o jogo na sala[NUMERO="
+                        + (RoomInfo.RoomID) + "], mas a sala nao tem nenhum jogo iniciado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM, 1, 0x5200101));
 
-                if (RoomInfo.flag == 0)
+                if (RoomInfo.FlagRoom == 0)
                 {
 
                     CurrentGame.SendInitialData(session);//aqui
 
-                    if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.STROKE || RoomInfo.GetTipo() == ROOM_INFO_TYPE.MATCH)
+                    if (RoomInfo.GetRoomType() == RoomTypeFlags.STROKE || RoomInfo.GetRoomType() == RoomTypeFlags.MATCH)
                         SendPlayerInfo(session, 0x103);
                 }
                 else
@@ -805,7 +806,7 @@ namespace Pangya_GameServer.Roms
                         p.WriteByte(4);
                         p.WriteByte(2);
 
-                        p.WriteUInt32(RoomInfo.rate_pang);
+                        p.WriteUInt32(RoomInfo.RatePangs);
 
                         session.Send(p);
 
@@ -818,7 +819,7 @@ namespace Pangya_GameServer.Roms
                         p.WriteByte(7);
                         p.WriteByte(0);
 
-                        p.WriteString(session.UserInfo.nickname);
+                        p.WriteString(session.UserInfo.NickName);
 
                         p.WriteBytes(RoomInfo.ToArray());
 
@@ -843,7 +844,7 @@ namespace Pangya_GameServer.Roms
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[room::startGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[room::startGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 

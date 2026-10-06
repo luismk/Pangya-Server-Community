@@ -26,7 +26,7 @@ namespace Pangya_MessengerServer.Handles
                     using (var p = new Packet(0x30))
                     {
                         p.WriteUInt16(0x115); // Sub packet Id
-                        p.WriteUInt32(Player.UserInfo.uid);
+                        p.WriteUInt32(Player.UserInfo.UID);
                         p.WriteUInt32(Player.UserInfo.m_state);
                         p.WriteByte(1); // Status OK
 
@@ -34,24 +34,24 @@ namespace Pangya_MessengerServer.Handles
                         p.WriteBytes(Player.UserInfo.m_cpi.ToArray());
 
                         // Envia para todos os amigos e membros da guilda que não estão bloqueados
-                        var targets = MessengerServer.getInstance().FindAllFriend(
+                        var targets = MessengerServer.Instance.FindAllFriend(
                             Player.UserInfo.m_friend_manager.getAllFriendAndGuildMember(true)
                         );
 
                         if (targets != null && targets.Count > 0)
                         {
-                            MessengerServer.getInstance().FriendBroadcast(targets, Player, p);
+                            MessengerServer.Instance.FriendBroadcast(targets, Player, p);
                         } 
                     }
-                            MessengerServer.getInstance().SendUpdatedFriendList(Player); 
+                            MessengerServer.Instance.SendUpdatedFriendList(Player); 
 
                     // Log de estado no console
-                    LogState(Player.UserInfo.uid, state);
+                    LogState(Player.UserInfo.UID, state);
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_STATE][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_STATE][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;
@@ -68,7 +68,7 @@ namespace Pangya_MessengerServer.Handles
                 _ => $"UNKNOWN ({state})"
             };
 
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                 $"[Handle_PLAYER_STATE][Log] Player[UID={uid}] UPDATE TO {statusStr}",
                 type_msg.CL_FILE_LOG_AND_CONSOLE));
         }

@@ -60,7 +60,7 @@ namespace Pangya_GameServer.Repository
 
             if (_ParseKey.Length == 0)
             {
-                throw new exception("[CmdGeraUCCWebKey::lineResult][Error] _ParseKey is empty, nao conseguiu pegar uma ucc key do banco de dados.", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdGeraUCCWebKey::lineResult][Error] _ParseKey is empty, nao conseguiu pegar uma ucc GameKey do banco de dados.", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                     3, 0));
             }
         }
@@ -83,7 +83,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_ucc_id));
 
-            checkResponse(r, "nao conseguiu gerar um UCC[ID=" + Convert.ToString(m_ucc_id) + "] Web Key para o PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu gerar um UCC[ID=" + Convert.ToString(m_ucc_id) + "] Web Key para o Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

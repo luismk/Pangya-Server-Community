@@ -27,7 +27,7 @@ namespace Pangya_GameServer.Handles
                         await HandleSaveTemporary(opt);
                         break;
                     default:
-                        throw new exception($"[UCC] Option {opt} desconhecida para UID={Player.UserInfo.uid}.",
+                        throw new exception($"[UCC] Option {opt} desconhecida para UID={Player.UserInfo.UID}.",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 0x5200101));
                 }
             }
@@ -60,11 +60,11 @@ namespace Pangya_GameServer.Handles
 
             item.ucc.status = 1;
             item.ucc.name = name;
-            item.ucc.copier_nick = Player.UserInfo.nickname;
-            item.ucc.copier = Player.UserInfo.uid;
+            item.ucc.copier_nick = Player.UserInfo.NickName;
+            item.ucc.copier = Player.UserInfo.UID;
 
 
-            CommandDB.UpdateUCC(Player.UserInfo.uid, item, new SystemTime(1), CmdUpdateUCC.T_UPDATE.FOREVER);
+            CommandDB.UpdateUCC(Player.UserInfo.UID, item, new SystemTime(1), CmdUpdateUCC.T_UPDATE.FOREVER);
             var response = new Packet();
             // Resposta 0x12E
             response.init_plain(0x12E);
@@ -112,7 +112,7 @@ namespace Pangya_GameServer.Handles
             item.ucc.status = 2; // Status 2 = Temporário (ainda editável/não batizado)
             item.ucc.name = "0";
 
-            CommandDB.UpdateUCC(Player.UserInfo.uid, item, new SystemTime(1), CmdUpdateUCC.T_UPDATE.TEMPORARY);
+            CommandDB.UpdateUCC(Player.UserInfo.UID, item, new SystemTime(1), CmdUpdateUCC.T_UPDATE.TEMPORARY);
             var response = new Packet();
             response.init_plain(0x12E);
             response.WriteByte(opt);
@@ -143,11 +143,11 @@ namespace Pangya_GameServer.Handles
             targetItem.ucc.status = 1; // Torna permanente
             targetItem.ucc.idx = sourceItem.ucc.idx;
             targetItem.ucc.name = sourceItem.ucc.name;
-            targetItem.ucc.copier_nick = Player.UserInfo.nickname;
-            targetItem.ucc.copier = Player.UserInfo.uid;
+            targetItem.ucc.copier_nick = Player.UserInfo.NickName;
+            targetItem.ucc.copier = Player.UserInfo.UID;
 
             // 4. Update no Banco de Dados
-            CommandDB.UpdateUCC(Player.UserInfo.uid, targetItem, new SystemTime(DateTime.Now), CmdUpdateUCC.T_UPDATE.COPY);
+            CommandDB.UpdateUCC(Player.UserInfo.UID, targetItem, new SystemTime(DateTime.Now), CmdUpdateUCC.T_UPDATE.COPY);
 
             var response = new Packet();
             // 5. Resposta ao Cliente (0x12E)
@@ -170,10 +170,10 @@ namespace Pangya_GameServer.Handles
             if (typeid == 0 || string.IsNullOrEmpty(idx))
                 throw new exception("[UCC] TypeID ou IDX inválidos.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 4, 0x5200104));
 
-            if (sIff.getInstance().getItemGroupIdentify(typeid) != IFF_GROUP.PART)
+            if (sIff.Instance.getItemGroupIdentify(typeid) != IFF_GROUP.PART)
                 throw new exception("[UCC] Item não é uma parte válida.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 13, 0x5200113));
 
-            var part = sIff.getInstance().findPart(typeid);
+            var part = sIff.Instance.findPart(typeid);
             if (part == null || !part.IsUCC())
                 throw new exception("[UCC] IFF não reconhece como UCC.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 12, 0x5200112));
         }

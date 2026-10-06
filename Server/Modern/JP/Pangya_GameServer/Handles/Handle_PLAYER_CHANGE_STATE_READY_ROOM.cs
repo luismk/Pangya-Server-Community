@@ -36,19 +36,19 @@ namespace Pangya_GameServer.Handles
 
                 if (r == null)
                 {
-                    throw new exception("[Handle_PLAYER_CHANGE_PLAYER_STATE_READY_ROOM][Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0));
+                    throw new exception("[Handle_PLAYER_CHANGE_PLAYER_STATE_READY_ROOM][Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0));
                 }
 
                 if (Packet.Size == 0)
                 {
-                    throw new exception("[Handle_PLAYER_CHANGE_PLAYER_STATE_READY_ROOM][Error] Size PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0));
+                    throw new exception("[Handle_PLAYER_CHANGE_PLAYER_STATE_READY_ROOM][Error] Size Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0));
                 }
 
                 byte ready = Packet.ReadByte();
 
                 PlayerRoomInfo pri = r.GetPlayerInfo(Player);
-                // Update state of ready
-                pri.state_flag.ready = (byte)(ready == 0 ? 1 : 0);//invertido
+                // Update StateRoom of Ready
+                pri.State.Ready = (byte)(ready == 0 ? 1 : 0);//invertido
 
                 Packet p = new(0x78); // Estado de Ready do Player na sala
 
@@ -60,7 +60,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_CHANGE_PLAYER_STATE_READY_ROOM][ErrorSystem] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_CHANGE_PLAYER_STATE_READY_ROOM][ErrorSystem] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

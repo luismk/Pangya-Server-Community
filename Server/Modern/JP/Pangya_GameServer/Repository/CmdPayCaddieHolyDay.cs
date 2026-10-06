@@ -86,7 +86,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_id) + ", " + m_end_dt);
 
-            checkResponse(r, "nao conseguiu atualizar a end date[exntend days of caddie][date=" + m_end_dt + "] do caddie[ID=" + Convert.ToString(m_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar a end date[exntend days of caddie][date=" + m_end_dt + "] do caddie[ID=" + Convert.ToString(m_id) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
 

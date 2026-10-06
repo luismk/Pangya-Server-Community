@@ -80,7 +80,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(query);
 
-            checkResponse(r, "nao conseguiu " + (m_type == eCMD_GRAND_ZODIAC_TYPE.CGZT_GET ? "pegar os pontos do Grand Zodiac" : "atualizar os pontos[" + Convert.ToString(m_pontos) + "]") + " do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu " + (m_type == eCMD_GRAND_ZODIAC_TYPE.CGZT_GET ? "pegar os pontos do Grand Zodiac" : "atualizar os pontos[" + Convert.ToString(m_pontos) + "]") + " do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

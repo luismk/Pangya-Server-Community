@@ -231,7 +231,7 @@ namespace PangyaAPI.Utilities
                 string minPart = minutes != 0 ? minutes.ToString("D2") : "";
                 string timeLog = $"{(minPart != "" ? minPart + ":" : "")}{seconds:D2}:{milliseconds:D3}";
 
-                // _smp.message_pool.getInstance().push(new message($"[PangyaSyncTimer::TickTime][Log] Time: {timeLog}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                // _smp.LogManager.Instance.push(new AppMessage($"[PangyaSyncTimer::TickTime][Log] Time: {timeLog}", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (remaining == 0)
                 {
@@ -261,7 +261,7 @@ namespace PangyaAPI.Utilities
             }
             catch (exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                                         $"[PangyaSyncTimer][Error] -> " + ex.getFullMessageError(),
                                         type_msg.CL_ONLY_CONSOLE_DEBUG));
             }

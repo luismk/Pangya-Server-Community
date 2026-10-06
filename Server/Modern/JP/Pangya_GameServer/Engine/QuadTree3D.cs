@@ -516,7 +516,7 @@ namespace Pangya_GameServer.Engine
 
         private float m_gravity_factor;
 
-        private Vector3D m_second_influ; // N�o sei bem qual � essa segunda influ, pode ser wind hill ou natural
+        private Vector3D m_second_influ; // N�o sei bem qual � essa segunda influ, pode ser wind hill ou NaturalMode
         private Vector3D m_slope_influ; // Aqui � sempre: 0.f, 0.f, 1.f
 
         private Ball3D m_ball;

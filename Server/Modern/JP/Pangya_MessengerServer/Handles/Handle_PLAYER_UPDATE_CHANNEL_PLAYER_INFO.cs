@@ -22,7 +22,7 @@ namespace Pangya_MessengerServer.Handles
                 var servers = PangyaAPI.Network.Repository.DBCommand.GetGame();
 
                 // 3. Valida se o servidor escolhido existe e está online
-                var selectedServer = servers.FirstOrDefault(c => c.uid == Player.UserInfo.m_cpi.server_uid);
+                var selectedServer = servers.FirstOrDefault(c => c.UID == Player.UserInfo.m_cpi.server_uid);
 
 
 
@@ -35,7 +35,7 @@ namespace Pangya_MessengerServer.Handles
                     using (var p = new Packet(0x30))
                     {
                         p.WriteUInt16(0x115); // Sub packet Id
-                        p.WriteUInt32(Player.UserInfo.uid);
+                        p.WriteUInt32(Player.UserInfo.UID);
                         p.WriteUInt32((uint)Player.UserInfo.m_state);
                         p.WriteByte(1); // Status OK
                         p.WriteBytes(Player.UserInfo.m_cpi.ToArray());
@@ -44,27 +44,27 @@ namespace Pangya_MessengerServer.Handles
                         Player.Send(p);
 
                         // 4. Envia para todos os amigos/guilda (Broadcast)
-                        var targets = MessengerServer.getInstance().FindAllFriend(
+                        var targets = MessengerServer.Instance.FindAllFriend(
                                 Player.UserInfo.m_friend_manager.getAllFriendAndGuildMember(true)
                             );
 
                         if (targets != null && targets.Count > 0)
                         {
-                            MessengerServer.getInstance().FriendBroadcast(targets, Player, p);
+                            MessengerServer.Instance.FriendBroadcast(targets, Player, p);
                         }
                     }
                 }
                 else
                 {
                     SendErrorResponse(Player);
-                    MessengerServer.getInstance().Disconnect(Player);
+                    MessengerServer.Instance.Disconnect(Player);
                 }
 
 
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_UPDATE_CHANNEL_INFO][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_UPDATE_CHANNEL_INFO][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Envia pacote de erro (Byte 0) para o cliente não ficar esperando
                 SendErrorResponse(Player);
@@ -81,18 +81,18 @@ namespace Pangya_MessengerServer.Handles
             var servers = PangyaAPI.Network.Repository.DBCommand.GetGame();
 
             // 3. Valida se o servidor escolhido existe e está online
-            var selectedServer = servers.FirstOrDefault(c => c.uid == info.server_uid);
+            var selectedServer = servers.FirstOrDefault(c => c.UID == info.server_uid);
 
             if (selectedServer != null)
             {
-                _smp.message_pool.getInstance().push(new message(
-       $"[Handle_UPDATE_CHANNEL_INFO][Log] Player[{Player.UserInfo.uid}] -> IN: {selectedServer.nome}, Room: {roomNum}, Name: {info.name}",
+                _smp.LogManager.Instance.push(new AppMessage(
+       $"[Handle_UPDATE_CHANNEL_INFO][Log] Player[{Player.UserInfo.UID}] -> IN: {selectedServer.Name}, Room: {roomNum}, Name: {info.name}",
        type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             else
             {
                 // Servidor não encontrado na lista
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_UPDATE_CHANNEL_INFO]][Error] Servidor UID {info.server_uid} não existe ou está offline.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -105,7 +105,7 @@ namespace Pangya_MessengerServer.Handles
             using (var p = new Packet((ushort)0x30))
             {
                 p.WriteUInt16(0x115);
-                p.WriteUInt32(Player.UserInfo.uid);
+                p.WriteUInt32(Player.UserInfo.UID);
                 p.WriteUInt32((uint)Player.UserInfo.m_state);
                 p.WriteByte(0); // Error status
                 Player.Send(p);

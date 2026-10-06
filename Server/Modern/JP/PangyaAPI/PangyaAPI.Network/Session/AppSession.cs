@@ -139,7 +139,7 @@ namespace PangyaAPI.Network.Session
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[AppSession::Clear][Error] {e.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return false;
@@ -186,7 +186,7 @@ namespace PangyaAPI.Network.Session
         {
             if (!_sendChannel.Writer.TryWrite(payload))
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[AppSession::Send][Warn] Canal cheio para {GetIP()} (OID {ConnectionID}). Pacote descartado.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -207,14 +207,14 @@ namespace PangyaAPI.Network.Session
                     }
                     catch (ObjectDisposedException ex)
                     {
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[AppSession::SendLoop][SocketDispose] {ex.Message}",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
                         break;
                     }
                     catch (SocketException ex)
                     {
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[AppSession::SendLoop][SocketError] {ex.Message}",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
                         break;
@@ -223,7 +223,7 @@ namespace PangyaAPI.Network.Session
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[AppSession::SendLoop][Exception] {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

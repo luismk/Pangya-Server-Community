@@ -66,7 +66,7 @@ namespace PangyaAPI.Network.Repository
                     }
                 }
 
-                // Error 1 Success tem um ip e mask válida
+                // Error 1 Success tem um IpAddress e mask válida
                 if (error)
                 {
                     v_list_ip_ban.Add(pb);
@@ -83,7 +83,7 @@ namespace PangyaAPI.Network.Repository
         {
             v_list_ip_ban.Clear();
 
-            var r = consulta("SELECT ip, mask FROM pangya.pangya_ip_table");
+            var r = consulta("SELECT IpAddress, mask FROM pangya.pangya_ip_table");
 
             checkResponse(r, "nao conseguiu recuperar a lista de MAC Address");
             return r;

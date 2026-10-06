@@ -23,18 +23,18 @@ namespace Pangya_AuthServer.Handles
                 if (serverUid > 0)
                 {
                     // Busca um servidor específico por UID
-                    var targetServer = AuthServer.getInstance().FindPlayer(serverUid);
+                    var targetServer = AuthServer.Instance.FindPlayer(serverUid);
 
                     if (targetServer != null)
                     {
 
-                        _smp.message_pool.getInstance().push(new message(
-                   $"[Handle_REQUEST_INFO_PLAYER][Sucess] SERVER[REQ: {Player.UserInfo.uid}, PLAYER: {playerUid}, FOR: {serverUid}]",
+                        _smp.LogManager.Instance.push(new AppMessage(
+                   $"[Handle_REQUEST_INFO_PLAYER][Sucess] SERVER[REQ: {Player.UserInfo.UID}, PLAYER: {playerUid}, FOR: {serverUid}]",
                    type_msg.CL_FILE_LOG_AND_CONSOLE));
                         // Envia comando 0x0B para o servidor alvo
                         using (var p = new Packet(0x0B))
                         {
-                            p.WriteUInt32(Player.UserInfo.uid); // Quem pediu
+                            p.WriteUInt32(Player.UserInfo.UID); // Quem pediu
                             p.WriteUInt32(playerUid);        // De quem quer saber
 
                             targetServer.SendAuth(p);
@@ -42,8 +42,8 @@ namespace Pangya_AuthServer.Handles
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message(
-                   $"[Handle_REQUEST_INFO_PLAYER][Debug] SERVER[UID: {Player.UserInfo.uid}, PLAYER_INFO: {playerUid}, FOR: {serverUid}]",
+                        _smp.LogManager.Instance.push(new AppMessage(
+                   $"[Handle_REQUEST_INFO_PLAYER][Debug] SERVER[UID: {Player.UserInfo.UID}, PLAYER_INFO: {playerUid}, FOR: {serverUid}]",
                    type_msg.CL_FILE_LOG_AND_CONSOLE));
                         // Servidor alvo não encontrado: Retorna erro 0x0C para quem pediu
                         await SendErrorResponse(serverUid, playerUid);
@@ -52,7 +52,7 @@ namespace Pangya_AuthServer.Handles
                 else
                 {
                     // Se ServerUID for 0, o Pangya costuma fazer broadcast para todos os Game Servers (Tipo 1)
-                    var gameServers = AuthServer.getInstance().FindPlayersByType(1);
+                    var gameServers = AuthServer.Instance.FindPlayersByType(1);
 
                     Console.WriteLine($"[Request Info] Broadcast para {gameServers.Count} Game Servers buscando Player {playerUid}");
 
@@ -60,7 +60,7 @@ namespace Pangya_AuthServer.Handles
                     {
                         using (var p = new Packet(0x0B))
                         {
-                            p.WriteUInt32(Player.UserInfo.uid);
+                            p.WriteUInt32(Player.UserInfo.UID);
                             p.WriteUInt32(playerUid);
 
                             srv.SendAuth(p);

@@ -42,18 +42,18 @@ namespace Pangya_GameServer.Feature
             {
                 // 1. Pega informações de quais mapas têm o sistema ativo no Banco
                 CmdCoinCubeInfo cmd_cci = new CmdCoinCubeInfo();
-                NormalManagerDB.getInstance().add(0, cmd_cci, null, null);
+                NormalManagerDB.Instance.add(0, cmd_cci, null, null);
 
                 if (cmd_cci.getException().getCodeError() != 0u)
                     throw cmd_cci.getException();
 
-                var coursesIff = sIff.getInstance().getCourse();
+                var coursesIff = sIff.Instance.getCourse();
                 var dbInfo = cmd_cci.getInfo();
 
                 foreach (var el in coursesIff)
                 {
                     // Identify do mapa (Ex: Blue Lagoon = 0)
-                    byte course_id = (byte)sIff.getInstance().getItemIdentify(el.ID);
+                    byte course_id = (byte)sIff.Instance.getItemIdentify(el.ID);
 
                     // Verifica se o mapa está ativo no banco
                     bool isActive = dbInfo.ContainsKey(course_id) && dbInfo[course_id];
@@ -66,14 +66,14 @@ namespace Pangya_GameServer.Feature
                 }
 
                 if (Course.Count == 0)
-                    _smp.message_pool.getInstance().push(new message("[CubeCoinSystem::initialize][Warning] No courses loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[CubeCoinSystem::initialize][Warning] No courses loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 m_load = true;
             }
             catch (Exception ex)
             {
                 m_load = false;
-                _smp.message_pool.getInstance().push(new message("[CubeCoinSystem::initialize][Error] " + ex.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[CubeCoinSystem::initialize][Error] " + ex.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -237,9 +237,9 @@ namespace Pangya_GameServer.Feature
 
             public void loadLocations()
             {
-                byte course_id = (byte)sIff.getInstance().getItemIdentify(m_typeid);
+                byte course_id = (byte)sIff.Instance.getItemIdentify(m_typeid);
                 var cmd_ccli = new CmdCoinCubeLocationInfo(course_id);
-                NormalManagerDB.getInstance().add(0, cmd_ccli, null, null);
+                NormalManagerDB.Instance.add(0, cmd_ccli, null, null);
 
                 if (cmd_ccli.getException().getCodeError() != 0u) return;
 
@@ -248,7 +248,7 @@ namespace Pangya_GameServer.Feature
                 Parallel.For(1, 19, i =>
                 {
                     byte hole_idx = (byte)i;
-                    var cbih = (course_id == (byte)ROOM_INFO_COURSE.WIZ_CITY)
+                    var cbih = (course_id == (byte)RoomCourseFlags.WIZ_CITY)
                         ? getAllCoinCubeInHoleWizCity(hole_idx)
                         : getAllCoinCubeInHole(course_id, hole_idx);
 
@@ -298,17 +298,17 @@ namespace Pangya_GameServer.Feature
 
             if (_number_hole == 0 || _number_hole > 18)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[CubeCoinSystem::CoinCubeInHole][WARNING] invalid number hole({_number_hole})",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return cbih;
             }
              
-            var course = MapSystem.getInstance().getMap(_course_id);
+            var course = MapSystem.Instance.getMap(_course_id);
 
             if (course == null)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[CubeCoinSystem::CoinCubeInHole][WARNING] Course[={_course_id}] nao foi encontrado no singleton sMap.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return cbih;

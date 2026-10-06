@@ -63,13 +63,13 @@ namespace Pangya_GameServer.Repository
 
             if (m_id <= 0)
             {
-                throw new exception("[CmdUpdateCardQntd::prepareConsulta][Error] card id[value=" + Convert.ToString(m_id) + "] is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdUpdateCardQntd::prepareConsulta][Error] card Login[value=" + Convert.ToString(m_id) + "] is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
             var r = _update(m_szConsulta[0] + Convert.ToString(m_qntd) + m_szConsulta[1] + Convert.ToString(m_uid) + m_szConsulta[2] + Convert.ToString(m_id));
 
-            checkResponse(r, "nao conseguiu atualizar quantidade[value=" + Convert.ToString(m_qntd) + "] do card[ID=" + Convert.ToString(m_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar quantidade[value=" + Convert.ToString(m_qntd) + "] do card[ID=" + Convert.ToString(m_id) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

@@ -196,7 +196,7 @@ namespace PangyaAPI.IFF.Regions.GB.Handle
             }
             catch (exception ex)
             {
-                _smp.message_pool.getInstance().push(new message($"[IFFHandle::Load][Error]: {ex.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[IFFHandle::Load][Error]: {ex.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 throw ex;
             }
         }
@@ -546,7 +546,7 @@ namespace PangyaAPI.IFF.Regions.GB.Handle
         {
             if (!m_loaded)
             {
-                _smp.message_pool.getInstance().push(new message("[IFF::Find][Error] IFF not loaded", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[IFF::Find][Error] IFF not loaded", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return default(T); // se for struct = valor default (0), se for class = null
             }
@@ -557,7 +557,7 @@ namespace PangyaAPI.IFF.Regions.GB.Handle
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[IFF::Find][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[IFF::Find][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return default(T); // se for struct = valor default (0), se for class = null
@@ -1822,7 +1822,7 @@ namespace PangyaAPI.IFF.Regions.GB.Handle
         {
             if (!isLoad())
             {
-                _smp.message_pool.getInstance().push(new message("[iff::FindFirstItemInSetEffectTable][Error] IFF não carregado", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[iff::FindFirstItemInSetEffectTable][Error] IFF não carregado", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return null;
             }
             SetEffectTable ret = null;
@@ -1852,7 +1852,7 @@ namespace PangyaAPI.IFF.Regions.GB.Handle
 
             if (!isLoad())
             {
-                _smp.message_pool.getInstance().push(new message("[iff::FindAllItemInSetEffectTable][Error] IFF não carregado", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[iff::FindAllItemInSetEffectTable][Error] IFF não carregado", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return new List<SetEffectTable>();
             }
 

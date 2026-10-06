@@ -104,7 +104,7 @@ namespace Pangya_GameServer.Models
         public uint tipo { get; set; }
         public ushort opt { get; set; }
         public uint char_typeid { get; set; } // Aqui pode ter o typeid do cutin também
-        public byte active { get; set; } // Active acho, sempre com valor 1 que peguei, 1 quando é id do character, 0 quando é o typeid do Cutin
+        public byte active { get; set; } // Active acho, sempre com valor 1 que peguei, 1 quando é Login do character, 0 quando é o typeid do Cutin
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]

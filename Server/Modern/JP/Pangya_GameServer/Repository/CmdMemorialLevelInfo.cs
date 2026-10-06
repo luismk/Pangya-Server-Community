@@ -44,6 +44,6 @@ namespace Pangya_GameServer.Repository
         }
         private Dictionary<uint, ctx_memorial_level> m_level = new Dictionary<uint, ctx_memorial_level>();
 
-        private const string m_szConsulta = "SELECT level, gacha_end FROM pangya.pangya_new_memorial_level";
+        private const string m_szConsulta = "SELECT Level, gacha_end FROM pangya.pangya_new_memorial_level";
     }
 }

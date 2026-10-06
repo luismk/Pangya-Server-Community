@@ -34,7 +34,7 @@ namespace Pangya_GameServer.Handles
                 ProbCardExtra pce = new ProbCardExtra();
 
                 uint stat = 0;
-                switch (sIff.getInstance().getItemGroupIdentify(cwul.item_typeid))
+                switch (sIff.Instance.getItemGroupIdentify(cwul.item_typeid))
                 {
                     case IFF_GROUP.ITEM:
                         {
@@ -42,19 +42,19 @@ namespace Pangya_GameServer.Handles
 
                             if (pWi == null)
                             {
-                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ele nao tem o item[TYPEID=" + (cwul.item_typeid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ele nao tem o item[TYPEID=" + (cwul.item_typeid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     201, 0x5300202));
                             }
 
                             if (pWi.STDA_C_ITEM_QNTD < (short)cwul.qntd)
                             {
-                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ele nao tem quantidade suficiente do item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + ", QNTD=" + (pWi.STDA_C_ITEM_QNTD) + ", Request=" + (cwul.qntd) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ele nao tem quantidade suficiente do item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + ", QNTD=" + (pWi.STDA_C_ITEM_QNTD) + ", Request=" + (cwul.qntd) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     202, 0x5300203));
                             }
 
-                            if (sIff.getInstance().findItem(pWi._typeid) == null)
+                            if (sIff.Instance.findItem(pWi._typeid) == null)
                             {
-                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas o Item nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas o Item nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     203, 0x5300204));
                             }
 
@@ -74,19 +74,19 @@ namespace Pangya_GameServer.Handles
 
                             if (pCi == null)
                             {
-                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ele nao tem o item[TYPEID=" + (cwul.item_typeid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ele nao tem o item[TYPEID=" + (cwul.item_typeid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     201, 0x5300202));
                             }
 
                             if (pCi.qntd < (short)cwul.qntd)
                             {
-                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ele nao tem quantidade suficiente do Card[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + ", QNTD=" + (pCi.qntd) + ", Request=" + (cwul.qntd) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ele nao tem quantidade suficiente do Card[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + ", QNTD=" + (pCi.qntd) + ", Request=" + (cwul.qntd) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     202, 0x5300203));
                             }
 
-                            if (sIff.getInstance().findCard(pCi._typeid) == null)
+                            if (sIff.Instance.findCard(pCi._typeid) == null)
                             {
-                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas o Card nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas o Card nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     203, 0x5300204));
                             }
 
@@ -108,7 +108,7 @@ namespace Pangya_GameServer.Handles
                             break;
                         }
                     default:
-                        throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas o item[TYPEID=" + (cwul.item_typeid) + "], usado para upar é desconhecido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas o item[TYPEID=" + (cwul.item_typeid) + "], usado para upar é desconhecido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             200, 0x5300201));
                 }
 
@@ -116,37 +116,37 @@ namespace Pangya_GameServer.Handles
 
                 if (pClub == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas o ele nao tem o ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas o ele nao tem o ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         204, 0x5300205));
                 }
 
                 if (pClub.clubset_workshop.rank == -1)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ClubSet dele ja upou todos os levels permitidos. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas ClubSet dele ja upou todos os levels permitidos. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         209, 0x5300210));
                 }
 
-                var clubset = sIff.getInstance().findClubSet(pClub._typeid);
+                var clubset = sIff.Instance.findClubSet(pClub._typeid);
 
                 if (clubset == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "] Level, mas o ClubSet nao existe no IFF_STRUCT so Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "] Level, mas o ClubSet nao existe no IFF_STRUCT so Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         205, 0x5300206));
                 }
 
                 if (clubset.work_shop.tipo == -1)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas esse ClubSet nao pose upar Level. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, mas esse ClubSet nao pose upar Level. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         206, 0x5300207));
                 }
 
                 // Stat Up
-                var level_up_limit = sIff.getInstance().findClubSetWorkShopLevelUpLimit(clubset.work_shop.tipo);
-                var level_up_prob = sIff.getInstance().findClubSetWorkShopLevelUpProb(clubset.work_shop.tipo);
+                var level_up_limit = sIff.Instance.findClubSetWorkShopLevelUpLimit(clubset.work_shop.tipo);
+                var level_up_prob = sIff.Instance.findClubSetWorkShopLevelUpProb(clubset.work_shop.tipo);
 
                 if (level_up_limit.Count == 0 || level_up_prob == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, IFF_STRUCT level_up_limit or level_up_prob not found. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, IFF_STRUCT level_up_limit or level_up_prob not found. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         208, 0x5300209));
                 }
 
@@ -158,7 +158,7 @@ namespace Pangya_GameServer.Handles
 
                 if (limit == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, nao encontrou o level para upar no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, nao encontrou o Level para upar no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         210, 0x5300211));
                 }
 
@@ -181,7 +181,7 @@ namespace Pangya_GameServer.Handles
 
                 if (ItemManager.removeItem(item, Player) <= 0)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, nao conseguiu remover item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar ClubSet[ID=" + (cwul.clubset_id) + "] Level, nao conseguiu remover item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         207, 0x5300208));
                 }
 
@@ -191,8 +191,8 @@ namespace Pangya_GameServer.Handles
                 pClub.clubset_workshop.c[stat]++;
 
                 // UPDATE ON DB
-                NormalManagerDB.getInstance().add(12,
-                     new CmdUpdateClubSetWorkshop(Player.UserInfo.uid,
+                NormalManagerDB.Instance.add(12,
+                     new CmdUpdateClubSetWorkshop(Player.UserInfo.UID,
                          pClub,
                          CmdUpdateClubSetWorkshop.FLAG.F_UP_LEVEL),
                     null, null);
@@ -224,7 +224,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestClubSetWorkShopUpLevel][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestClubSetWorkShopUpLevel][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x23D);
 

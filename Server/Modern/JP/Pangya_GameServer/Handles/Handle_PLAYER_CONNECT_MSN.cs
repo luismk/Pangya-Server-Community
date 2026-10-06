@@ -34,7 +34,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_CONNECT_MSN][Error] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_CONNECT_MSN][Error] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 var p = new Packet(0xFC);
                 p.WriteByte((byte)0); 
                 Player.Send(p);

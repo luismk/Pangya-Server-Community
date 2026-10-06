@@ -12,13 +12,13 @@ namespace Pangya_GameServer.Handles
         {
             var _channel = Player.GetChannel();
 
-            var srv = GameServer.getInstance().getInfo();
+            var srv = GameServer.Instance.getInfo();
             try
             {
-                if (!srv.propriedade.grand_prix)
+                if (!srv.Property.GrandPrixMode)
                 {
                     throw new exception(
-                        $"[GrandPrix] Player[UID={Player.UserInfo.uid}] tentou entrar no Lobby GP desativado.",
+                        $"[GrandPrix] Player[UID={Player.UserInfo.UID}] tentou entrar no Lobby GP desativado.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x750001)
                     );
                 }
@@ -29,9 +29,9 @@ namespace Pangya_GameServer.Handles
                 p.WriteUInt32(0u); // Status OK
 
                 // Lista de Eventos Grand Prix Ativos (Baseado no bitmask/rates do servidor)
-                uint countEvents = srv.rate.countBitGrandPrixEvent();
+                uint countEvents = srv.Rate.CountBitGrandPrixEvent();
                 p.WriteUInt32(countEvents);
-                foreach (var eventType in srv.rate.getValueBitGrandPrixEvent())
+                foreach (var eventType in srv.Rate.GetValueBitGrandPrixEvent())
                 {
                     p.WriteUInt32(eventType);
                 }
@@ -47,7 +47,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_ENTER_GRAND_PRIX_LOBBY][Error] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE)
                 );

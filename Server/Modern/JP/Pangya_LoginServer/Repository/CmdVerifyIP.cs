@@ -58,7 +58,7 @@ namespace Pangya_LoginServer.Repository
 
             if (uid_req != m_uid)
             {
-                throw new exception("[CmdVerifyIP::lineResult][Error] o uid recuperado para verificar o ip access do player e diferente. UID_req: " + Convert.ToString(m_uid) + " != " + Convert.ToString(uid_req), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdVerifyIP::lineResult][Error] o UID recuperado para verificar o IpAddress access do player e diferente. UID_req: " + Convert.ToString(m_uid) + " != " + Convert.ToString(uid_req), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     3, 0));
             }
 
@@ -73,7 +73,7 @@ namespace Pangya_LoginServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + makeText(m_ip));
 
-            checkResponse(r, "nao conseguiu verificar o ip de accesso do player: " + Convert.ToString(m_uid));
+            checkResponse(r, "nao conseguiu verificar o IpAddress de accesso do player: " + Convert.ToString(m_uid));
 
             return r;
         }

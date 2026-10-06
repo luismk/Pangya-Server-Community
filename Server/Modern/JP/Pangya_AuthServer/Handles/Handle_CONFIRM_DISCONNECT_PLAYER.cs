@@ -19,15 +19,15 @@ namespace Pangya_AuthServer.Handles
                 uint targetServerUid = Packet.ReadUInt32();
 
                 // 2. Verifica se o destinatário da confirmação não é o próprio Auth Server
-                // Substitua 'm_si.uid' pela sua constante de UID do servidor atual
-                if (targetServerUid == AuthServer.getInstance().m_si.uid)
+                // Substitua 'm_si.UID' pela sua constante de UID do servidor atual
+                if (targetServerUid == AuthServer.Instance.m_si.UID)
                 {
                     Console.WriteLine($"[Auth] Confirmação de Disconnect: Player {playerUid} desconectado com sucesso (Solicitado pelo Auth).");
                     return;
                 }
 
                 // 3. Busca o servidor que deve receber a confirmação
-                var targetServer = AuthServer.getInstance().FindPlayer(targetServerUid);
+                var targetServer = AuthServer.Instance.FindPlayer(targetServerUid);
 
                 if (targetServer != null)
                 {

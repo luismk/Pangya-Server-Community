@@ -60,7 +60,7 @@ namespace Pangya_GameServer.Manager
             if (_guild == null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GuildRoomManager::deleteGuild][Error] _guild is invalid(null). Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GuildRoomManager::deleteGuild][Error] _guild is invalid(null). Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -122,7 +122,7 @@ namespace Pangya_GameServer.Manager
         { 
             var it = v_guilds.FirstOrDefault(_el =>
             {
-                return _el.findPlayerByUID(_session.UserInfo.uid) != null;
+                return _el.findPlayerByUID(_session.UserInfo.UID) != null;
             }); 
             return it;
         }
@@ -138,7 +138,7 @@ namespace Pangya_GameServer.Manager
             if (v_guilds.Count != 2)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GuildRoomManager::init_duplas][Error] nao tem duas guilds[NUM=" + Convert.ToString(v_guilds.Count) + "] para inicializar as duplas. Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GuildRoomManager::init_duplas][Error] nao tem duas GuildBattle[NUM=" + Convert.ToString(v_guilds.Count) + "] para inicializar as duplas. Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -152,7 +152,7 @@ namespace Pangya_GameServer.Manager
         public int isGoodToStart()
         {
 
-            // S� tem uma ou nenhuma guild na sala
+            // S� tem uma ou nenhuma Guild na sala
             if (v_guilds.Count <= 1)
             {
                 return 0;
@@ -167,7 +167,7 @@ namespace Pangya_GameServer.Manager
             foreach (var el in v_guilds)
             {
 
-                // Não tem o mesmo número de jogadores na sala as guilds
+                // Não tem o mesmo número de jogadores na sala as GuildBattle
                 if (last_players != -1 && last_players != el.numPlayers())
                 {
 
@@ -190,7 +190,7 @@ namespace Pangya_GameServer.Manager
             return ret;
         }
 
-        // Verifica se sobrou s� players de uma guild s�
+        // Verifica se sobrou s� players de uma Guild s�
         public bool oneGuildRest()
         {
 
@@ -202,7 +202,7 @@ namespace Pangya_GameServer.Manager
             return m_dupla_manager.oneGuildRest();
         }
 
-        // update dados guilds
+        // update dados GuildBattle
         public void update()
         {
 
@@ -267,7 +267,7 @@ namespace Pangya_GameServer.Manager
                 gp.pang = el.getPangWin();
                 gp.win = (m_guild_win == GuildRoomManager.eGUILD_WIN.DRAW ? GuildPoints.eGUILD_WIN.DRAW : ((byte)el.getTeam() == (byte)m_guild_win ? GuildPoints.eGUILD_WIN.WIN : GuildPoints.eGUILD_WIN.LOSE));
 
-                //snmp.NormalManagerDB.getInstance().add(2,
+                //snmp.NormalManagerDB.Instance.add(2,
                 //    new CmdUpdateGuildPoints(gp),
                 //    SQLDBResponse,
                 //    this);
@@ -292,8 +292,8 @@ namespace Pangya_GameServer.Manager
                 match.pang[1] = (uint)v_guilds.Last().getPang();
                 match.point[1] = (uint)v_guilds.Last().getPoint();
 
-                //snmp.NormalManagerDB.getInstance().add(1,
-                //    new CmdRegisterGuildMatch(match),
+                //snmp.NormalManagerDB.Instance.add(1,
+                //    new CmdRegisterGuildMatch(Match),
                 //    SQLDBResponse,
                 //    this);
             }
@@ -329,10 +329,10 @@ namespace Pangya_GameServer.Manager
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[GuildRoomManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GuildRoomManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 

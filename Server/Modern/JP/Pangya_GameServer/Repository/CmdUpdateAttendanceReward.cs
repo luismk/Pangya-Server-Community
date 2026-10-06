@@ -63,7 +63,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                     Convert.ToString(m_uid) + ", " + Convert.ToString(m_ari.counter) + ", " + Convert.ToString(m_ari.now._typeid) + ", " + Convert.ToString(m_ari.now.qntd) + ", " + Convert.ToString(m_ari.after._typeid) + ", " + Convert.ToString(m_ari.after.qntd) + ", " + last_login);
 
-            checkResponse(r, "nao conseguiu Atualizar o Attendance Reward[COUNTER=" + Convert.ToString(m_ari.counter) + ", NOW_TYPEID=" + Convert.ToString(m_ari.now._typeid) + ", NOW_QNTD=" + Convert.ToString(m_ari.now.qntd) + ", AFTER_TYPEID=" + Convert.ToString(m_ari.after._typeid) + ", AFTER_QNTD=" + Convert.ToString(m_ari.after.qntd) + ", LAST_LOGIN=" + last_login + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu Atualizar o Attendance Reward[COUNTER=" + Convert.ToString(m_ari.counter) + ", NOW_TYPEID=" + Convert.ToString(m_ari.now._typeid) + ", NOW_QNTD=" + Convert.ToString(m_ari.now.qntd) + ", AFTER_TYPEID=" + Convert.ToString(m_ari.after._typeid) + ", AFTER_QNTD=" + Convert.ToString(m_ari.after.qntd) + ", LAST_LOGIN=" + last_login + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

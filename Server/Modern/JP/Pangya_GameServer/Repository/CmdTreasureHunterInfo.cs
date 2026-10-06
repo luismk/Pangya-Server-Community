@@ -20,7 +20,7 @@ namespace Pangya_GameServer.Repository
             {
                 course = IFNULL<sbyte>(_result.data[0]),
                 point = IFNULL<int>(_result.data[1])
-            }; // treasure hunter info
+            }; // Treasure hunter info
 
             v_thi.Add(thi);
         }

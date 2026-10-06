@@ -27,16 +27,16 @@ namespace Pangya_GameServer.Feature.GM
                 var room = session.GetRoom();
 
                 // 3. Validação de Segurança
-                if (session.UserInfo.Member.sala_numero != -1 && room == null)
+                if (session.UserInfo.Member.RoomID != -1 && room == null)
                 {
-                    throw new exception($"[GM::Visible] Player[UID={session.UserInfo.uid}] está marcado na sala {session.UserInfo.Member.sala_numero}, mas a sala não existe.",
+                    throw new exception($"[GM::Visible] Player[UID={session.UserInfo.UID}] está marcado na sala {session.UserInfo.Member.RoomID}, mas a sala não existe.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0x5700100));
                 }
 
                 // 4. Atualização de Estado
-                // Atualiza tanto a flag de GM quanto a flag de estado que vai no pacote de Info
+                // Atualiza tanto a ServerFlag de GM quanto a ServerFlag de estado que vai no pacote de Info
                 session.m_gi.visible = state;
-                session.UserInfo.Member.state_flag.visible = state;
+                session.UserInfo.Member.State.Visible = state;
 
                 // 5. Sincronização de Rede
                 // Atualiza os dados locais e envia o broadcast para os outros jogadores
@@ -52,16 +52,16 @@ namespace Pangya_GameServer.Feature.GM
                     room.SendPlayerInfo(session, 3);
                 }
 
-                Debug.WriteLine(session.UserInfo.Member.state_flag.ToString());
+                Debug.WriteLine(session.UserInfo.Member.State.ToString());
 
                 // Log de Auditoria de GM
-                _smp.message_pool.getInstance().push(new message(
-                    $"[GM::Command] {session.UserInfo.nickname} alterou visibilidade para: {(state == 1 ? "VISÍVEL" : "INVISÍVEL")}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[GM::Command] {session.UserInfo.NickName} alterou visibilidade para: {(state == 1 ? "VISÍVEL" : "INVISÍVEL")}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[VisibleCommand][Error] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

@@ -41,6 +41,6 @@ namespace Pangya_LoginServer.Repository
         private uint m_uid = new uint();
         private bool m_check;
 
-        private const string m_szConsulta = "SELECT FIRST_LOGIN FROM pangya.account WHERE uid = ";
+        private const string m_szConsulta = "SELECT FIRST_LOGIN FROM pangya.account WHERE UID = ";
     }
 }

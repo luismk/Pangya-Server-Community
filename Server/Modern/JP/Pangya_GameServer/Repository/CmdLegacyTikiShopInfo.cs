@@ -50,7 +50,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid));
 
-            checkResponse(r, "Nao conseguiu pegar o Legacy Tiki Points do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "Nao conseguiu pegar o Legacy Tiki Points do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

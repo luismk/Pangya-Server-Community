@@ -39,7 +39,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_gmp.guild_uid == 0u)
             {
-                throw new exception("[CmdUpdateGuildMemberPoints::prepareConsulta][Error] m_gmp.guild_uid is invalid(zero). Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdUpdateGuildMemberPoints::prepareConsulta][Error] m_gmp.GuildIndex is invalid(zero). Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
@@ -52,7 +52,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_gmp.guild_uid) + ", " + Convert.ToString(m_gmp.member_uid) + ", " + Convert.ToString(m_gmp.point) + ", " + Convert.ToString(m_gmp.pang));
 
-            checkResponse(r, "nao conseguiu atualizar o Guild[UID=" + Convert.ToString(m_gmp.guild_uid) + "] POINTS[POINT=" + Convert.ToString(m_gmp.point) + ", PANG=" + Convert.ToString(m_gmp.pang) + "] do PLAYER[UID=" + Convert.ToString(m_gmp.member_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o Guild[UID=" + Convert.ToString(m_gmp.guild_uid) + "] POINTS[POINT=" + Convert.ToString(m_gmp.point) + ", PANG=" + Convert.ToString(m_gmp.pang) + "] do Normal[UID=" + Convert.ToString(m_gmp.member_uid) + "]");
 
             return r;
         }

@@ -80,7 +80,7 @@ namespace Pangya_GameServer.Repository
     m_server_uid + ", " +
     makeText(m_msg)
 );
-            checkResponse(r, "nao conseguiu adicionar um Ticker[MESSAGE=" + m_msg + "] para o PLAYER[UID=" + Convert.ToString(m_uid) + "] no Server[UID=" + Convert.ToString(m_server_uid) + "]");
+            checkResponse(r, "nao conseguiu adicionar um Ticker[MESSAGE=" + m_msg + "] para o Normal[UID=" + Convert.ToString(m_uid) + "] no Server[UID=" + Convert.ToString(m_server_uid) + "]");
 
             return r;
         }

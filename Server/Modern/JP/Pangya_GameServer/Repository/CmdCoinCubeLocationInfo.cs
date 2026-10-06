@@ -38,7 +38,7 @@ namespace Pangya_GameServer.Repository
 
             if (course != Course)
             {
-                throw new exception("[CmdCoinCubeLocationInfo::lineResult][Error] course retornado é diferento do requisitado[REQ=" + Convert.ToString((byte)Course) + ", RET=" + Convert.ToString(course) + "].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdCoinCubeLocationInfo::lineResult][Error] CourseIndex retornado é diferento do requisitado[REQ=" + Convert.ToString((byte)Course) + ", RET=" + Convert.ToString(course) + "].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     3, 0));
             }
 
@@ -64,7 +64,7 @@ namespace Pangya_GameServer.Repository
 
                 if (!m_coin_cube.ContainsKey(hole))
                 {
-                    _smp.message_pool.getInstance().push(new message("[CmdCoinCubeLocationInfo::lineResult][Warning] nao conseguiu inserir hole[NUMBER=" + Convert.ToString((ushort)hole) + "] e cube no map<>", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[CmdCoinCubeLocationInfo::lineResult][Warning] nao conseguiu inserir hole[NUMBER=" + Convert.ToString((ushort)hole) + "] e cube no map<>", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -77,9 +77,9 @@ namespace Pangya_GameServer.Repository
                 m_coin_cube.Clear();
             }
 
-            var r = consulta($"SELECT {makeEscapeKeyword("index")}, course, hole, tipo, tipo_location, rate, x, y, z FROM pangya.pangya_coin_cube_location WHERE course = {Course} ORDER BY course, hole");
+            var r = consulta($"SELECT {makeEscapeKeyword("index")}, CourseIndex, hole, Type, tipo_location, Rate, X, Y, Z FROM pangya.pangya_coin_cube_location WHERE CourseIndex = {Course} ORDER BY CourseIndex, hole");
 
-            checkResponse(r, "nao conseguiu pegar os coin, cube do course[ID=" + Convert.ToString((ushort)Course) + "]");
+            checkResponse(r, "nao conseguiu pegar os coin, cube do CourseIndex[ID=" + Convert.ToString((ushort)Course) + "]");
 
             return r;
         }

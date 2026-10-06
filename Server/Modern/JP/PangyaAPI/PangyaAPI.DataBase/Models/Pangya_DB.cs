@@ -115,18 +115,18 @@ namespace PangyaAPI.DataBase
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[Pangya_DB::" + _getName + "::exec][Error] return prepareConsulta is null.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Pangya_DB::" + _getName + "::exec][Error] return prepareConsulta is null.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (exception e)
             {
                 m_exception = e;
-                _smp.message_pool.getInstance().push(new message("[pangya_db::" + _getName + "::exec][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[pangya_db::" + _getName + "::exec][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
 
             if (logExecuteCmds(_getName))
-                _smp.message_pool.getInstance().push(new message($"[{_getName}::exec][Sucess] {(this.executed == true ? "was" : "No")} Executed.", type_msg.CL_ONLY_CONSOLE_DEBUG));
+                _smp.LogManager.Instance.push(new AppMessage($"[{_getName}::exec][Sucess] {(this.executed == true ? "was" : "No")} Executed.", type_msg.CL_ONLY_CONSOLE_DEBUG));
 
             _db.disconnect();
         }

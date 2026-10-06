@@ -26,9 +26,9 @@ namespace Pangya_GameServer.Handles
             var p = new Packet();
             try
             {
-                if (Player.UserInfo.block_flag.m_flag.buy_and_gift_shop)
+                if (Player.UserInfo.BlockFlag.Flag.BuyShopAndGift)
                 {
-                    throw new exception("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar item no shop, mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x790001));
+                    throw new exception("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar item no ShopRoom, mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x790001));
                 }
 
                 // Log Gastos de CP
@@ -55,7 +55,7 @@ namespace Pangya_GameServer.Handles
                         bi = new BuyItem().ToRead(Packet);
 
                         // Verifica se o item pode ser comprado
-                        if (sIff.getInstance().IsBuyItem(bi._typeid) && !sIff.getInstance().IsOnlyGift(bi._typeid))
+                        if (sIff.Instance.IsBuyItem(bi._typeid) && !sIff.Instance.IsOnlyGift(bi._typeid))
                         {
                             // Inicializa o item que o Player vai comprar
                             if (bi.pang > 0)
@@ -74,7 +74,7 @@ namespace Pangya_GameServer.Handles
 
                             if (item._typeid == 0)
                             {
-                                _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] ao inicializar item from buyItem, item typeid: " + bi._typeid + " bug. para o PLAYER [UID=" + Player.UserInfo.uid + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] ao inicializar item from buyItem, item typeid: " + bi._typeid + " bug. para o Normal [UID=" + Player.UserInfo.UID + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 p = new Packet((ushort)0x68);
                                 p.WriteUInt32(1);
@@ -85,7 +85,7 @@ namespace Pangya_GameServer.Handles
                             if (item.is_cash == 1 ? (option != 1 && item.desconto != 0 ? bi.cookie != (item.desconto * item.qntd) : bi.cookie != (item.price * item.qntd)) :
                               (option != 1 && item.desconto != 0 ? bi.pang != (item.desconto * item.qntd) : bi.pang != (item.price * item.qntd)))
                             {
-                                _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um item com preco[server=" + (item.desconto != 0 ? (item.desconto * item.qntd) : (item.price * item.qntd)) + ", cliente=" + (item.is_cash.IsTrue() ? bi.cookie : bi.pang) + "] diferente, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um item com preco[server=" + (item.desconto != 0 ? (item.desconto * item.qntd) : (item.price * item.qntd)) + ", cliente=" + (item.is_cash.IsTrue() ? bi.cookie : bi.pang) + "] diferente, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 p.init_plain(0x68);
                                 p.WriteUInt32(2);
@@ -96,7 +96,7 @@ namespace Pangya_GameServer.Handles
                             if (!ItemManager.isTimeItem(item.date) || ItemManager.betweenTimeSystem(ref item.date))
                             {
                                 // Verifica se já possui o item
-                                if ((sIff.getInstance().IsCanOverlapped(item._typeid) && sIff.getInstance().getItemGroupIdentify(item._typeid) != IFF_GROUP.CAD_ITEM) || !Player.Inventory.ownerItem(item._typeid))
+                                if ((sIff.Instance.IsCanOverlapped(item._typeid) && sIff.Instance.getItemGroupIdentify(item._typeid) != IFF_GROUP.CAD_ITEM) || !Player.Inventory.ownerItem(item._typeid))
                                 {
                                     if (ItemManager.isSetItem(item._typeid))
                                     {
@@ -112,7 +112,7 @@ namespace Pangya_GameServer.Handles
                                         {
                                             foreach (var el in v_stItem)
                                             {
-                                                if ((sIff.getInstance().IsCanOverlapped(el._typeid) && sIff.getInstance().getItemGroupIdentify(el._typeid) != IFF_GROUP.CAD_ITEM) || !Player.Inventory.ownerItem(el._typeid))
+                                                if ((sIff.Instance.IsCanOverlapped(el._typeid) && sIff.Instance.getItemGroupIdentify(el._typeid) != IFF_GROUP.CAD_ITEM) || !Player.Inventory.ownerItem(el._typeid))
                                                 {
                                                     v_item.Add(new stItem(el));
                                                 }
@@ -120,7 +120,7 @@ namespace Pangya_GameServer.Handles
                                         }
                                         else
                                         {
-                                            _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um set item que nao tem item, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                            _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um set item que nao tem item, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                             p.init_plain(0x68);
                                             p.WriteUInt32(3);
                                             Player.Send(p);
@@ -138,9 +138,9 @@ namespace Pangya_GameServer.Handles
                                         }
                                     }
                                 }
-                                else if (sIff.getInstance().getItemGroupIdentify(item._typeid) == IFF_GROUP.CAD_ITEM)
+                                else if (sIff.Instance.getItemGroupIdentify(item._typeid) == IFF_GROUP.CAD_ITEM)
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um CaddieItem que ele nao tem o caddie, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um CaddieItem que ele nao tem o caddie, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                     p.init_plain(0x68);
                                     p.WriteUInt32(11);
                                     Player.Send(p);
@@ -148,7 +148,7 @@ namespace Pangya_GameServer.Handles
                                 }
                                 else
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um item que ele ja tem, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um item que ele ja tem, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                     p.init_plain(0x68);
                                     p.WriteUInt32(4);
                                     Player.Send(p);
@@ -157,7 +157,7 @@ namespace Pangya_GameServer.Handles
                             }
                             else
                             {
-                                _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um item que nao pode comprar, nao esta na data, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um item que nao pode comprar, nao esta na data, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 p.init_plain(0x68);
                                 p.WriteUInt32(5);
                                 Player.Send(p);
@@ -166,7 +166,7 @@ namespace Pangya_GameServer.Handles
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um item que nao pode ser comprado, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um item que nao pode ser comprado, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             p = new Packet((ushort)0x68);
                             p.WriteUInt32(6);
                             Player.Send(p);
@@ -182,7 +182,7 @@ namespace Pangya_GameServer.Handles
                         var wi_coupon = Player.Inventory.FindWarehouseItemById(coupon.id);
                         if (wi_coupon == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um item com coupon de descontou, mas ele nao tem o coupon[ID=" + coupon.id + "], item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um item com coupon de descontou, mas ele nao tem o coupon[ID=" + coupon.id + "], item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             p.init_plain(0x68);
                             p.WriteUInt32(6);
                             Player.Send(p);
@@ -197,8 +197,8 @@ namespace Pangya_GameServer.Handles
                         ulong old_price = cookie;
                         string type_desconto = "5%";
 
-                        var cmd_guai = new CmdCouponShop(Player.UserInfo.uid, coupon.id, true);
-                        NormalManagerDB.getInstance().add(0, cmd_guai, null, null);
+                        var cmd_guai = new CmdCouponShop(Player.UserInfo.UID, coupon.id, true);
+                        NormalManagerDB.Instance.add(0, cmd_guai, null, null);
 
                         if (cmd_guai.getException().getCodeError() != 0)
                             throw cmd_guai.getException();
@@ -224,7 +224,7 @@ namespace Pangya_GameServer.Handles
 
                     if (Player.UserInfo.Cookie < cookie || Player.UserInfo.Statistics.pang < pang)
                     {
-                        _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um item, mas nao tem moedas(Pang ou Cookie) suficiente, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um item, mas nao tem moedas(Pang ou Cookie) suficiente, item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         p.init_plain(0x68);
                         p.WriteUInt32(7);
                         Player.Send(p);
@@ -237,7 +237,7 @@ namespace Pangya_GameServer.Handles
                     }
                     catch (exception e)
                     {
-                        _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                         if (ExceptionError.STDA_ERROR_CHECK_SOURCE_AND_ERROR_TYPE(e.getCodeError(), STDA_ERROR_TYPE.PLAYER_INFO, 200))
                         {
                             p.init_plain(0x68);
@@ -255,8 +255,8 @@ namespace Pangya_GameServer.Handles
                     {
                         if (ItemManager.removeItem(coupon, Player) <= 0)
                         {
-                            _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um item com coupon de descontou, mas nao conseguiu remove o coupon[TYPEID=" + coupon._typeid + ", ID=" + coupon.id + "], item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
-                            _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Warning] devolve as moedas gasta deu erro no add itens no db para o Player.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um item com coupon de descontou, mas nao conseguiu remove o coupon[TYPEID=" + coupon._typeid + ", ID=" + coupon.id + "], item typeid: " + bi._typeid + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Warning] devolve as moedas gasta deu erro no add itens no db para o Player.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             Player.UserInfo.addMoeda(pang, cookie);
                             p.init_plain(0x68);
                             p.WriteUInt32(8);
@@ -291,8 +291,8 @@ namespace Pangya_GameServer.Handles
                                 str += ", [TYPEID=" + rai.fails[i]._typeid + ", ID=" + rai.fails[i].id + ", QNTD=" + ((rai.fails[i].qntd > 0xFFu) ? rai.fails[i].qntd : rai.fails[i].STDA_C_ITEM_QNTD) + (rai.fails[i].STDA_C_ITEM_TIME > 0 ? ", TEMPO=" + rai.fails[i].STDA_C_ITEM_TIME : "") + "]";
                         }
 
-                        _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] Itens que falhou ao add os itens que o PLAYER [UID=" + Player.UserInfo.uid + "] comprou item(ns){" + str + "}. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
-                        _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Warning] devolve as moedas gasta deu erro no add itens no db para o Player.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Itens que falhou ao add os itens que o Normal [UID=" + Player.UserInfo.UID + "] comprou item(ns){" + str + "}. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Warning] devolve as moedas gasta deu erro no add itens no db para o Player.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         Player.UserInfo.addMoeda(pang, cookie);
                         p.init_plain(0x68);
                         p.WriteUInt32(8);
@@ -324,11 +324,11 @@ namespace Pangya_GameServer.Handles
                     p.WriteUInt64(Player.UserInfo.Cookie);
                     Player.Send(p);
 
-                    NormalManagerDB.getInstance().add(0, new CmdItemBuyShopLog(Player.UserInfo.uid, bi), null, null);
+                    NormalManagerDB.Instance.add(0, new CmdItemBuyShopLog(Player.UserInfo.UID, bi), null, null);
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou comprar um item, mas nao enviou nenhum item no Request. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou comprar um item, mas nao enviou nenhum item no Request. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     p.init_plain(0x68);
                     p.WriteUInt32(9);
                     Player.Send(p);
@@ -336,7 +336,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestBuyItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] error desconhecido: " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestBuyItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] error desconhecido: " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 p.init_plain(0x68);
                 p.WriteUInt32(10);
                 Player.Send(p);

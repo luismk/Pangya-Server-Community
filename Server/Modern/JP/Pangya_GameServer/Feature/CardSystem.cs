@@ -212,11 +212,11 @@ namespace Pangya_GameServer.Feature
             {
 
                 // Load Card from IFF_STRUCT
-                var card = sIff.getInstance().getCard();
+                var card = sIff.Instance.getCard();
 
                 foreach (var el in card)
                 {
-                    switch (sIff.getInstance().getItemSubGroupIdentify22(el.ID))
+                    switch (sIff.Instance.getItemSubGroupIdentify22(el.ID))
                     {
                         case 0: // Character
                         case 1: // Caddie
@@ -261,12 +261,12 @@ namespace Pangya_GameServer.Feature
                 // Carregado com sucesso
                 m_load = true;
                 if (m_card.Count == 0 || m_card_pack.Count == 0 || m_box_card_pack.Count == 0)
-                    _smp.message_pool.getInstance().push(new message("[CardSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[CardSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[CardSystem::initialize][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[CardSystem::initialize][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                 throw;
             } 
         }

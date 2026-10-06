@@ -15,7 +15,7 @@ namespace Pangya_GameServer.Handles
             try
             { 
                 p.WriteUInt32(0);
-                p.WriteInt64(Player.UserInfo.Member.PapelShop.limit_count); 
+                p.WriteInt64(Player.UserInfo.Member.PapelShop.LimitCount); 
                 Player.Send(p);
             }
             catch (Exception e)

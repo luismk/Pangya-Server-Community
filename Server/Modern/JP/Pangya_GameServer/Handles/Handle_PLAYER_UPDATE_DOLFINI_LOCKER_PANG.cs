@@ -33,7 +33,7 @@ namespace Pangya_GameServer.Handles
                 {
                     if (pang > Player.UserInfo.Statistics.pang)
                     {
-                        throw new exception("[Handle_PLAYER_UPDATE_DOLFINI_LOCKER_PANG][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou depositar pangs[" + pang + "] que não possui.",
+                        throw new exception("[Handle_PLAYER_UPDATE_DOLFINI_LOCKER_PANG][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou depositar pangs[" + pang + "] que não possui.",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 451, 5100352));
                     }
 
@@ -44,7 +44,7 @@ namespace Pangya_GameServer.Handles
                 {
                     if (pang > Player.Inventory.DolfineLocker.pang)
                     {
-                        throw new exception("[Handle_PLAYER_UPDATE_DOLFINI_LOCKER_PANG][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou retirar pangs[" + pang + "] que não estão no Dolfini Locker.",
+                        throw new exception("[Handle_PLAYER_UPDATE_DOLFINI_LOCKER_PANG][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou retirar pangs[" + pang + "] que não estão no Dolfini Locker.",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 452, 5100353));
                     }
 
@@ -53,15 +53,15 @@ namespace Pangya_GameServer.Handles
                 }
                 else
                 {
-                    throw new exception("[Handle_PLAYER_UPDATE_DOLFINI_LOCKER_PANG][Error] PLAYER [UID=" + Player.UserInfo.uid + "] enviou opção inválida[" + opt + "].",
+                    throw new exception("[Handle_PLAYER_UPDATE_DOLFINI_LOCKER_PANG][Error] Normal [UID=" + Player.UserInfo.UID + "] enviou opção inválida[" + opt + "].",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 450, 5100351));
                 }
 
-                _smp.message_pool.getInstance().push(new message("[Dolfini Locker::Update pang][Success] PLAYER [UID=" + Player.UserInfo.uid + "] Atualizou Pang[value=" + pang + ", OPT=" + opt + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Dolfini Locker::Update Pang][Success] Normal [UID=" + Player.UserInfo.UID + "] Atualizou Pang[value=" + pang + ", OPT=" + opt + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // 2. Atualização persistente no Banco de Dados
-                NormalManagerDB.getInstance().add(3,
-                     new CmdUpdateDolfiniLockerPang(Player.UserInfo.uid, Player.Inventory.DolfineLocker.pang));
+                NormalManagerDB.Instance.add(3,
+                     new CmdUpdateDolfiniLockerPang(Player.UserInfo.UID, Player.Inventory.DolfineLocker.pang));
 
                 // 3. Sincronização de Pacotes com o Cliente
 
@@ -83,7 +83,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_UPDATE_DOLFINI_LOCKER_PANG][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_UPDATE_DOLFINI_LOCKER_PANG][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x171);
                 uint errorCode = (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL)

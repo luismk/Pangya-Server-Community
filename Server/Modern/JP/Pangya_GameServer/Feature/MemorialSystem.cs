@@ -29,8 +29,8 @@ namespace Pangya_GameServer.Feature
             try
             {
                 // Carrega as Coin e os Itens
-                var coins = sIff.getInstance().getMemorialShopCoinItem().ToArray();
-                var rares = sIff.getInstance().getMemorialShopRareItem().ToArray();
+                var coins = sIff.Instance.getMemorialShopCoinItem().ToArray();
+                var rares = sIff.Instance.getMemorialShopRareItem().ToArray();
 
                 ctx_coin c = new ctx_coin();
                 ctx_coin_item_ex ci = new ctx_coin_item_ex();
@@ -61,7 +61,7 @@ namespace Pangya_GameServer.Feature
                                 };
                                 //if (el2.RareType == MemorialRareType.Super_Rare2)
                                 //{
-                                //    _smp.message_pool.getInstance().push(new message($"[MemorialSystem::Test] Raro->{(int)el2.RareType}, ID->{el2.ID} ", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                //    _smp.LogManager.Instance.push(new AppMessage($"[MemorialSystem::Test] Raro->{(int)el2.RareType}, ID->{el2.ID} ", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 //}
 
@@ -81,7 +81,7 @@ namespace Pangya_GameServer.Feature
                                         ci.qntd = 1;
                                         //if (el2.RareType == MemorialRareType.Super_Rare2)
                                         //{
-                                        //    _smp.message_pool.getInstance().push(new message($"[MemorialSystem::Test] Raro->{(int)el2.RareType}, ID->{el2.ID} ", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                        //    _smp.LogManager.Instance.push(new AppMessage($"[MemorialSystem::Test] Raro->{(int)el2.RareType}, ID->{el2.ID} ", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                         //}
                                         c.item.Add(ci);
 
@@ -108,7 +108,7 @@ namespace Pangya_GameServer.Feature
             // Add os Itens Padr�es, para quando n�o ganha o rare item
             var cmd_mnii = new CmdMemorialNormalItemInfo();  
 
-            NormalManagerDB.getInstance().add(0, cmd_mnii);
+            NormalManagerDB.Instance.add(0, cmd_mnii);
 
             if (cmd_mnii.getException().getCodeError() != 0)
                 throw cmd_mnii.getException();
@@ -118,7 +118,7 @@ namespace Pangya_GameServer.Feature
             // Levels
             var cmd_mli = new CmdMemorialLevelInfo();
 
-            NormalManagerDB.getInstance().add(0, cmd_mli);
+            NormalManagerDB.Instance.add(0, cmd_mli);
 
             if (cmd_mli.getException().getCodeError() != 0)
                 throw cmd_mli.getException();
@@ -246,14 +246,14 @@ namespace Pangya_GameServer.Feature
                 }
             }
 
-            // Pega limite de probabilidade e ajusta com o rate
+            // Pega limite de probabilidade e ajusta com o Rate
             ulong limit_prob = lottery.getLimitProbilidade();
 
-            // Pega quantidade de itens comuns disponíveis para este tipo de coin
+            // Pega quantidade de itens comuns disponíveis para este Type de coin
             var count_item = m_consolo_premio.Values.Count(el => el.tipo == (_ctx_c.tipo == MEMORIAL_COIN_TYPE.MCT_PREMIUM ? 1 : 0));
 
-            // Calcula rate memorial (exemplo seu)
-            var rate_memorial = (float)GameServer.getInstance().getInfo().rate.memorial_shop / 100.0f;
+            // Calcula Rate memorial (exemplo seu)
+            var rate_memorial = (float)GameServer.Instance.getInfo().Rate.MemorialShop / 100.0f;
 
             if (_ctx_c.probabilidade > 0)
             {
@@ -349,7 +349,7 @@ namespace Pangya_GameServer.Feature
                 switch (_ctx_c.tipo)
                 {
                     case MEMORIAL_COIN_TYPE.MCT_NORMAL:
-                        shouldAdd = true;//el.gacha_number < 0 || (uint)el.gacha_number <= m_level[level].gacha_number;
+                        shouldAdd = true;//el.gacha_number < 0 || (uint)el.gacha_number <= m_level[Level].gacha_number;
                         break;
                     case MEMORIAL_COIN_TYPE.MCT_PREMIUM:
                         shouldAdd = true;//el.gacha_number < 0 || (uint)el.gacha_number <= m_level[MEMORIAL_LEVEL_MAX - 1].gacha_number;
@@ -371,14 +371,14 @@ namespace Pangya_GameServer.Feature
                 }
             }
 
-            // Pega limite de probabilidade e ajusta com o rate
+            // Pega limite de probabilidade e ajusta com o Rate
             ulong limit_prob = lottery.getLimitProbilidade();
 
-            // Pega quantidade de itens comuns disponíveis para este tipo de coin
+            // Pega quantidade de itens comuns disponíveis para este Type de coin
             var count_item = m_consolo_premio.Values.Count(el => el.tipo == (_ctx_c.tipo == MEMORIAL_COIN_TYPE.MCT_PREMIUM ? 1 : 0));
 
-            // Calcula rate memorial
-            var rate_memorial = GameServer.getInstance().getInfo().rate.memorial_shop / 100.0f;
+            // Calcula Rate memorial
+            var rate_memorial = GameServer.Instance.getInfo().Rate.MemorialShop / 100.0f;
 
             if (_ctx_c.probabilidade > 0)
             {
@@ -394,7 +394,7 @@ namespace Pangya_GameServer.Feature
             // Adiciona itens comuns na roleta com peso aumentado
             foreach (var el in m_consolo_premio.Values)
             {
-                if (el.tipo == (_ctx_c.tipo == MEMORIAL_COIN_TYPE.MCT_PREMIUM ? 1 : 0))//são dois tipos, o premium vem set item, eo normal, vem somente 1 item
+                if (el.tipo == (_ctx_c.tipo == MEMORIAL_COIN_TYPE.MCT_PREMIUM ? 1 : 0))//são dois tipos, o premium vem set item, eo Normal, vem somente 1 item
                 {
                     // Peso aleatório + multiplicador para garantir chance maior
                     lottery.Add((uint)count_item, el);
@@ -423,7 +423,7 @@ namespace Pangya_GameServer.Feature
                     foreach (var el in csi.item)
                     {
                         // Contianua que o player j� tem esse item, e n�o pode ter duplicatas dele 
-                        if ((!sIff.getInstance().IsCanOverlapped(el._typeid, true) || sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.CAD_ITEM) && !_session.Inventory.ownerItem(el._typeid))
+                        if ((!sIff.Instance.IsCanOverlapped(el._typeid, true) || sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.CAD_ITEM) && !_session.Inventory.ownerItem(el._typeid))
                             continue;
 
                         v_item.Add(el);
@@ -434,8 +434,8 @@ namespace Pangya_GameServer.Feature
                 {
                     ci = (ctx_coin_item_ex)lc.Value;
 
-                    if ((!sIff.getInstance().IsCanOverlapped(ci._typeid, true) ||
-                         sIff.getInstance().getItemGroupIdentify(ci._typeid) == IFF_GROUP.CAD_ITEM)
+                    if ((!sIff.Instance.IsCanOverlapped(ci._typeid, true) ||
+                         sIff.Instance.getItemGroupIdentify(ci._typeid) == IFF_GROUP.CAD_ITEM)
                         && _session.Inventory.ownerItem(ci._typeid))
                     {
                         continue; // Item não elegível, tenta novamente

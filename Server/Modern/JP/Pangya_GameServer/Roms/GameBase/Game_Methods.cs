@@ -25,11 +25,11 @@ namespace Pangya_GameServer.Roms.GameBase
             try
             { 
                 if (Timer != null)
-                   GameServer.getInstance().DeleteTimer(Timer);
+                   GameServer.Instance.DeleteTimer(Timer);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::GameStop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::GameStop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             Timer = null;
@@ -44,7 +44,7 @@ namespace Pangya_GameServer.Roms.GameBase
             {
                 Timer.Pause(); 
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::pauseTime][Log] pausou o Timer[Tempo=" + Timer.getTimeLog() + "" + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::pauseTime][Log] pausou o Timer[Tempo=" + Timer.getTimeLog() + "" + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                  
                 return true;
             }
@@ -67,7 +67,7 @@ namespace Pangya_GameServer.Roms.GameBase
             {
                 Timer.Resume();
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::resumerTime][Log] Retomou o Timer[Tempo=" + Timer.getTimeLog() + "" + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::resumerTime][Log] Retomou o Timer[Tempo=" + Timer.getTimeLog() + "" + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return true;
             }
@@ -95,11 +95,11 @@ namespace Pangya_GameServer.Roms.GameBase
             {
 
                 if (Timer != null)
-                    GameServer.getInstance().DeleteTimer(Timer);
+                    GameServer.Instance.DeleteTimer(Timer);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::clear_time][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::clear_time][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             Timer = null;
@@ -116,13 +116,13 @@ namespace Pangya_GameServer.Roms.GameBase
                 // Course
                 p.init_plain(0x52);
 
-                p.WriteByte((byte)RoomInfo.course);
-                p.WriteByte(RoomInfo.tipo_show);
-                p.WriteByte(RoomInfo.modo);
-                p.WriteByte(RoomInfo.qntd_hole);
-                p.WriteUInt32(RoomInfo.trofel);
-                p.WriteUInt32(RoomInfo.time_vs);
-                p.WriteUInt32(RoomInfo.time_30s);
+                p.WriteByte((byte)RoomInfo.CourseIndex);
+                p.WriteByte(RoomInfo.RoomType);
+                p.WriteByte(RoomInfo.HoleMode);
+                p.WriteByte(RoomInfo.HoleCount);
+                p.WriteUInt32(RoomInfo.TrophyID);
+                p.WriteUInt32(RoomInfo.TimeSec);
+                p.WriteUInt32(RoomInfo.TimeMin);
                 // Hole Info, Hole Spinning Cube, end Seed Random Course
                 Course.makePacketHoleInfo(p);
                 session.Send(p);
@@ -131,7 +131,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::sendInitialData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::sendInitialData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -143,14 +143,14 @@ namespace Pangya_GameServer.Roms.GameBase
 
         protected Player FindSessionByUID(uint uid)
         {
-            return Players.FirstOrDefault(el => el.UserInfo.uid == uid);
+            return Players.FirstOrDefault(el => el.UserInfo.UID == uid);
         }
 
         protected Player FindSessionByNickname(string nickname)
         {
             return Players.FirstOrDefault(el =>
             {
-                return (string.CompareOrdinal(nickname, el.UserInfo.nickname) == 0);
+                return (string.CompareOrdinal(nickname, el.UserInfo.NickName) == 0);
             });
         }
 
@@ -159,7 +159,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
             if (pgi == null)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::FindSessionByPlayerGameInfo][Error] PlayerGameInfo* _pgi is invalid(null)", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::FindSessionByPlayerGameInfo][Error] PlayerGameInfo* _pgi is invalid(null)", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return null;
             }
@@ -197,7 +197,7 @@ namespace Pangya_GameServer.Roms.GameBase
             {
                 if (el != null
                     && el.getState()
-                    && el.UserInfo.Member.sala_numero != -1
+                    && el.UserInfo.Member.RoomID != -1
                     && (session == null || session != el))
                 {
                     v_sessions.Add(el);
@@ -226,14 +226,14 @@ namespace Pangya_GameServer.Roms.GameBase
 
                 // Bloqueia o OID para ninguém pegar ele até o torneio acabar
                 //fazer isso depois luis
-                /// GameServer.getInstance().blockOID(session.ConnectionID);
+                /// GameServer.Instance.blockOID(session.ConnectionID);
 
                 // Update Place player
                 session.UserInfo.Place = 0;   // Jogando
 
-                pgi.uid = session.UserInfo.uid;
+                pgi.uid = session.UserInfo.UID;
                 pgi.oid = session.ConnectionID;
-                pgi.level = session.UserInfo.Member.level;
+                pgi.level = session.UserInfo.Member.GameLevel;
 
                 // Entrou no Jogo depois de ele ter começado
                 if (State)
@@ -244,17 +244,17 @@ namespace Pangya_GameServer.Roms.GameBase
                     pgi.mascot_typeid = session.Inventory.UserEquippedItem.MascotEquiped._typeid;
 
                 // Premium User
-                if (session.UserInfo.UserCapabilities.premium_user)
+                if (session.UserInfo.UserCapabilities.UserPremium)
                     pgi.premium_flag = true;
 
-                // Card Wind Flag
+                // Card Wind ServerFlag
                 pgi.card_wind_flag = getPlayerWindFlag(session);
 
                 // Treasure Hunter Points Card Player Initialize Data
-                // Não pode ser chamado depois do Init Item Used Game, por que ele vai add os pontos dos itens que dá Drop rate e treasure hunter point
+                // Não pode ser chamado depois do Init Item Used Game, por que ele vai add os pontos dos itens que dá Drop Rate e Treasure hunter point
                 pgi.thi = getPlayerTreasureInfo(session);
 
-                // Flag Assist 
+                // ServerFlag Assist 
                 if (session.UserInfo.AssistFlag)
                     pgi.assist_flag = 1;
 
@@ -281,7 +281,7 @@ namespace Pangya_GameServer.Roms.GameBase
                         PlayerInfo[session] = pgi;
 
                         // Log de que trocou o PlayerGameInfo da session
-                        _smp.message_pool.getInstance().push(new message("[GameBase::makePlayerInfo][Warning][Log] PLAYER[UID=" + (session.UserInfo.uid)
+                        _smp.LogManager.Instance.push(new AppMessage("[GameBase::makePlayerInfo][Warning][Log] Normal[UID=" + (session.UserInfo.UID)
                                 + "] esta trocando o PlayerGameInfo[UID=" + (pgi_ant.uid) + "] do player anterior que estava conectado com essa session, pelo o PlayerGameInfo[UID="
                                 + (pgi.uid) + "] do player atual da session.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -289,7 +289,7 @@ namespace Pangya_GameServer.Roms.GameBase
                     }
                     catch (ArgumentOutOfRangeException)
                     {
-                        _smp.message_pool.getInstance().push(new message("[GameBase::makePlayerInfo][Error][Warning] PLAYER[UID=" + (session.UserInfo.uid)
+                        _smp.LogManager.Instance.push(new AppMessage("[GameBase::makePlayerInfo][Error][Warning] Normal[UID=" + (session.UserInfo.UID)
                                 + "], nao conseguiu atualizar o PlayerGameInfo da session para o novo PlayerGameInfo do player atual da session. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
@@ -336,7 +336,7 @@ namespace Pangya_GameServer.Roms.GameBase
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return false;
@@ -357,7 +357,7 @@ namespace Pangya_GameServer.Roms.GameBase
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[SendBroadCast(byte[])] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[SendBroadCast(byte[])] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -375,13 +375,13 @@ namespace Pangya_GameServer.Roms.GameBase
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message("Error byte[] p is null, Game::SendBroadCast()", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("Error byte[] p is null, Game::SendBroadCast()", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[SendBroadCast(List)] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[SendBroadCast(List)] Exception: " + e.ToString(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -392,13 +392,13 @@ namespace Pangya_GameServer.Roms.GameBase
                 return null;
 
             for (int i = 0; i < buffer.Length; i++)
-                buffer[i] = (byte)(buffer[i] ^ RoomInfo.key[i % 16]);
+                buffer[i] = (byte)(buffer[i] ^ RoomInfo.GameKey[i % 16]);
 
             //decrypt shot
             var reader = new Packet(buffer);
             var ssd = new ShotSyncData
             {
-                oid = reader.ReadInt32(), //oid
+                oid = reader.ReadInt32(), //OID
                 location = new ShotSyncData.Location()
                 {
                     x = reader.ReadFloat(),
@@ -438,11 +438,11 @@ namespace Pangya_GameServer.Roms.GameBase
 
             if (info == null)
             {
-                // Get the class name dynamically for the log
+                // Get the class Name dynamically for the log
                 string className = GetType().Name;
 
                 throw new exception(
-                    $"[{className}::{method}][Error] PLAYER[UID={session.UserInfo.uid}] {msg}, " +
+                    $"[{className}::{method}][Error] Normal[UID={session.UserInfo.UID}] {msg}, " +
                     "mas o game nao tem o info dele guardado. Bug",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 4)
                 );
@@ -473,15 +473,15 @@ namespace Pangya_GameServer.Roms.GameBase
 
             try
             {
-                if (!GameServer.getInstance().getActiveRoomLog())//nao vai logar os dados, melhor reiniciar 
+                if (!GameServer.Instance.getActiveRoomLog())//nao vai logar os dados, melhor reiniciar 
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameBase::UpdateRoomLogSql][Log] not actived", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::UpdateRoomLogSql][Log] not actived", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return;
                 }
 
                 if (RoomLog == null)//nao vai logar os dados, melhor reiniciar 
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameBase::UpdateRoomLogSql][Error] RoomLog is null", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::UpdateRoomLogSql][Error] RoomLog is null", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return;
                 }
 
@@ -492,13 +492,13 @@ namespace Pangya_GameServer.Roms.GameBase
                     return; // Se não encontrou, sai da função
 
                 //evento do world tour...
-                if (sWorldTourSystem.getInstance().isLoad() &&
-     GameServer.getInstance().getInfo().rate.world_tour_event == 1 &&
-     RoomInfo.qntd_hole == 18 &&
-     RoomInfo.special_flag_mod.short_game == false &&
-     (RoomInfo.tipo == 2 || RoomInfo.tipo == 4) && pgi.finish_game == 1)
+                if (sWorldTourSystem.Instance.isLoad() &&
+     GameServer.Instance.getInfo().Rate.WorldTourEvent == 1 &&
+     RoomInfo.HoleCount == 18 &&
+     RoomInfo.SpecialModeRoom.IsShotMode == false &&
+     (RoomInfo.RealRoomType == 2 || RoomInfo.RealRoomType == 4) && pgi.finish_game == 1)
                 {
-                    sWorldTourSystem.getInstance().MarkCourseCompleted((int)session.UserInfo.uid, (int)RoomInfo.course);
+                    sWorldTourSystem.Instance.MarkCourseCompleted((int)session.UserInfo.UID, (int)RoomInfo.CourseIndex);
                 }
 
                 // Obtém o buraco atual no campo (se existir)
@@ -517,7 +517,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 int cad_info_typeid = (int)((ei.CaddieEquiped != null) ? ei.CaddieEquiped._typeid : 0);
 
                 // Se o sistema de log de sala estiver desativado, sai
-                //if (!GameServer.getInstance().getActiveRoomLog())
+                //if (!GameServer.Instance.getActiveRoomLog())
                 //    return;
 
                 var tacada_num = pgi.data.tacada_num;
@@ -529,7 +529,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                 // Preenche as informações do jogador no objeto de log da sala
                 RoomLog.UpdateInfo(
-                    session.UserInfo.uid,                      // UID do jogador
+                    session.UserInfo.UID,                      // UID do jogador
                     char_info_typeid,                        // Tipo do personagem
                     clubset_typeid,                          // Tipo do taco
                     mascot_info_typeid,                      // Tipo do mascote
@@ -564,35 +564,35 @@ namespace Pangya_GameServer.Roms.GameBase
                 if (RoomLog.roomId == Guid.Empty)
                     GenerateRoomLogGuid();
 
-                // Se o tipo da sala for de interesse, salva no banco de dados
-                if (isLoggableRoomType(RoomInfo.tipo))
-                    NormalManagerDB.getInstance().add(44, new CmdInsertOrUpdateRoomLog(RoomLog, CmdInsertOrUpdateRoomLog.TYPE.UPDATE), OnDatabaseResponse, session);
+                // Se o Type da sala for de interesse, salva no banco de dados
+                if (isLoggableRoomType(RoomInfo.RealRoomType))
+                    NormalManagerDB.Instance.add(44, new CmdInsertOrUpdateRoomLog(RoomLog, CmdInsertOrUpdateRoomLog.TYPE.UPDATE), OnDatabaseResponse, session);
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::UpdateRoomLogSql][ErrorSystem] Exceção capturada: " + (e.Message), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::UpdateRoomLogSql][ErrorSystem] Exceção capturada: " + (e.Message), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
         bool isLoggableRoomType(byte tipo)
         {
 
-            switch ((ROOM_INFO_TYPE)tipo)
+            switch ((RoomTypeFlags)tipo)
             {
-                case ROOM_INFO_TYPE.GUILD_BATTLE:
-                case ROOM_INFO_TYPE.TOURNEY_TEAM:
-                case ROOM_INFO_TYPE.STROKE:
-                case ROOM_INFO_TYPE.MATCH:
-                case ROOM_INFO_TYPE.PANG_BATTLE:
-                case ROOM_INFO_TYPE.APPROCH:
-                case ROOM_INFO_TYPE.TOURNEY:
-                case ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE:
-                //aqui deve ser outro tipo de log, identificado por 1 ou 0
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_INT:
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_ADV:
-                case ROOM_INFO_TYPE.GRAND_PRIX:
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE:
-                case ROOM_INFO_TYPE.PRACTICE:
+                case RoomTypeFlags.GUILD_BATTLE:
+                case RoomTypeFlags.TOURNEY_TEAM:
+                case RoomTypeFlags.STROKE:
+                case RoomTypeFlags.MATCH:
+                case RoomTypeFlags.PANG_BATTLE:
+                case RoomTypeFlags.APPROCH:
+                case RoomTypeFlags.TOURNEY:
+                case RoomTypeFlags.SPECIAL_SHUFFLE_COURSE:
+                //aqui deve ser outro Type de log, identificado por 1 ou 0
+                case RoomTypeFlags.GRAND_ZODIAC_INT:
+                case RoomTypeFlags.GRAND_ZODIAC_ADV:
+                case RoomTypeFlags.GRAND_PRIX:
+                case RoomTypeFlags.GRAND_ZODIAC_PRACTICE:
+                case RoomTypeFlags.PRACTICE:
                     return true;
                 default:
                     return false;
@@ -604,7 +604,7 @@ namespace Pangya_GameServer.Roms.GameBase
         {
             if (RoomLog == null)
             {
-                _smp.message_pool.getInstance().push(new message("[Game::GenerateRoomLogGuid][Warning] RoomLog é null — GUID não gerado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Game::GenerateRoomLogGuid][Warning] RoomLog é null — GUID não gerado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
             RoomLog.roomId = Guid.NewGuid();
@@ -613,53 +613,53 @@ namespace Pangya_GameServer.Roms.GameBase
 
         string GetNameMap(uint map)
         {
-            switch ((ROOM_INFO_COURSE)map)
+            switch ((RoomCourseFlags)map)
             {
-                case ROOM_INFO_COURSE.BLUE_LAGOON:
+                case RoomCourseFlags.BLUE_LAGOON:
                     return "Blue Lagoon";
-                case ROOM_INFO_COURSE.BLUE_WATER:
+                case RoomCourseFlags.BLUE_WATER:
                     return "Blue Water";
-                case ROOM_INFO_COURSE.SEPIA_WIND:
+                case RoomCourseFlags.SEPIA_WIND:
                     return "Sepia Wind";
-                case ROOM_INFO_COURSE.WIND_HILL:
+                case RoomCourseFlags.WIND_HILL:
                     return "Wind Hill";
-                case ROOM_INFO_COURSE.WIZ_WIZ:
+                case RoomCourseFlags.WIZ_WIZ:
                     return "Wiz Wiz";
-                case ROOM_INFO_COURSE.WEST_WIZ:
+                case RoomCourseFlags.WEST_WIZ:
                     return "West Wiz";
-                case ROOM_INFO_COURSE.BLUE_MOON:
+                case RoomCourseFlags.BLUE_MOON:
                     return "Blue Moon";
-                case ROOM_INFO_COURSE.SILVIA_CANNON:
+                case RoomCourseFlags.SILVIA_CANNON:
                     return "Silvia Cannon";
-                case ROOM_INFO_COURSE.ICE_CANNON:
+                case RoomCourseFlags.ICE_CANNON:
                     return "Ice Cannon";
-                case ROOM_INFO_COURSE.WHITE_WIZ:
+                case RoomCourseFlags.WHITE_WIZ:
                     return "White Wiz";
-                case ROOM_INFO_COURSE.SHINNING_SAND:
+                case RoomCourseFlags.SHINNING_SAND:
                     return "Shinning Sand";
-                case ROOM_INFO_COURSE.PINK_WIND:
+                case RoomCourseFlags.PINK_WIND:
                     return "Pink Wind";
-                case ROOM_INFO_COURSE.DEEP_INFERNO:
+                case RoomCourseFlags.DEEP_INFERNO:
                     return "Deep Inferno";
-                case ROOM_INFO_COURSE.ICE_SPA:
+                case RoomCourseFlags.ICE_SPA:
                     return "Ice Spa";
-                case ROOM_INFO_COURSE.LOST_SEAWAY:
+                case RoomCourseFlags.LOST_SEAWAY:
                     return "Lost Seaway";
-                case ROOM_INFO_COURSE.EASTERN_VALLEY:
+                case RoomCourseFlags.EASTERN_VALLEY:
                     return "Eastern Valley";
-                case ROOM_INFO_COURSE.ICE_INFERNO:
+                case RoomCourseFlags.ICE_INFERNO:
                     return "Ice Inferno";
-                case ROOM_INFO_COURSE.WIZ_CITY:
+                case RoomCourseFlags.WIZ_CITY:
                     return "Wiz City";
-                case ROOM_INFO_COURSE.ABBOT_MINE:
+                case RoomCourseFlags.ABBOT_MINE:
                     return "Abbot Mine";
-                case ROOM_INFO_COURSE.MYSTIC_RUINS:
+                case RoomCourseFlags.MYSTIC_RUINS:
                     return "Mystic Ruins";
                 default:
                     return "Unknown";
             }
         }
-        //retorna o tipo da tacada = 0(HIO), 1(ALBA), 2(EAGLE),3(BIRDIE), 4(PAR), -1(tacadas não feitas )
+        //retorna o Type da tacada = 0(HIO), 1(ALBA), 2(EAGLE),3(BIRDIE), 4(PAR), -1(tacadas não feitas )
         public int GetScore(int tacadaNum, int parHole)
         {
             int tipo = Convert.ToInt32(tacadaNum - parHole);
@@ -763,7 +763,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                     if (s.Inventory.UserEquippedItem.CharacterEquiped == null)
                     { // Player não está com character equipado, kika dele do jogo
-                        _smp.message_pool.getInstance().push(new message("[GameBase::initPlayersItemRainRate][Log] PLAYER[UID=" + Convert.ToString(s.UserInfo.uid) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GameBase::initPlayersItemRainRate][Log] Normal[UID=" + Convert.ToString(s.UserInfo.UID) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         continue;
                     }
 
@@ -802,10 +802,10 @@ namespace Pangya_GameServer.Roms.GameBase
                     }
 
 
-                    // Card Efeito 19 rate chuva
+                    // Card Efeito 19 Rate Rain
                     var it = s.Inventory.CardEquipment.FirstOrDefault(el =>
                     {
-                        return sIff.getInstance().getItemSubGroupIdentify22(el._typeid) == 2 && el.efeito == 19;
+                        return sIff.Instance.getItemSubGroupIdentify22(el._typeid) == 2 && el.efeito == 19;
                     });
 
                     if (it != null)
@@ -842,7 +842,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                     if (s.Inventory.UserEquippedItem.CharacterEquiped == null)
                     { // Player não está com character equipado, kika dele do jogo
-                        _smp.message_pool.getInstance().push(new message("[GameBase::initPlayersItemRainPersistNextHole][Log] PLAYER[UID=" + Convert.ToString(s.UserInfo.uid) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GameBase::initPlayersItemRainPersistNextHole][Log] Normal[UID=" + Convert.ToString(s.UserInfo.UID) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         continue;
                     }
 
@@ -891,11 +891,11 @@ namespace Pangya_GameServer.Roms.GameBase
                     }
 
 
-                    // Card Efeito 31 Persist chuva para o proximo hole
+                    // Card Efeito 31 Persist Rain para o proximo hole
 
                     var it = s.Inventory.CardEquipment.FirstOrDefault(el =>
                     {
-                        return sIff.getInstance().getItemSubGroupIdentify22(el._typeid) == 2 && el.efeito == 31;
+                        return sIff.Instance.getItemSubGroupIdentify22(el._typeid) == 2 && el.efeito == 31;
                     });
 
                     if (it != null)
@@ -909,12 +909,12 @@ namespace Pangya_GameServer.Roms.GameBase
         }
 
         /// <summary>
-        /// gerar o item do artefato, pode dar exp, pang, e etc...
+        /// gerar o item do artefato, pode dar Experience, Pang, e etc...
         /// </summary>
         private void initArtefact()
         {
 
-            switch (RoomInfo.typeid_artefatic)
+            switch (RoomInfo.ItemIDArtifact)
             {
                 // Artefact of EXP
                 case ART_LUMINESCENT_CORAL:
@@ -952,7 +952,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
             if (session.Inventory.UserEquippedItem.CharacterEquiped == null)
             { // Player n�o est� com character equipado, kika dele do jogo
-                _smp.message_pool.getInstance().push(new message("[GameBase::getPlayerWindFlag][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::getPlayerWindFlag][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return PlayerGameInfo.eCARD_WIND_FLAG.NONE;
             }
 
@@ -960,7 +960,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
             var it = session.Inventory.CardEquipment.FirstOrDefault(el =>
             {
-                return (session.Inventory.UserEquippedItem.CharacterEquiped.id == el.parts_id && session.Inventory.UserEquippedItem.CharacterEquiped._typeid == el.parts_typeid) && sIff.getInstance().getItemSubGroupIdentify22(el._typeid) == 1 && (el.efeito == 3 || el.efeito == 17 || el.efeito == 13 || el.efeito == 12);
+                return (session.Inventory.UserEquippedItem.CharacterEquiped.id == el.parts_id && session.Inventory.UserEquippedItem.CharacterEquiped._typeid == el.parts_typeid) && sIff.Instance.getItemSubGroupIdentify22(el._typeid) == 1 && (el.efeito == 3 || el.efeito == 17 || el.efeito == 13 || el.efeito == 12);
             });
 
             if (it != null)
@@ -1032,7 +1032,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
             if (session.Inventory.UserEquippedItem.CharacterEquiped == null)
             { // Player não está com character equipado, kika dele do jogo
-                _smp.message_pool.getInstance().push(new message("[GameBase::getPlayerTreasureInfo][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::getPlayerTreasureInfo][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return pti;
             }
 
@@ -1042,7 +1042,7 @@ namespace Pangya_GameServer.Roms.GameBase
             session.Inventory.CardEquipment.ToList().ForEach(el =>
             {
                 if ((session.Inventory.UserEquippedItem.CharacterEquiped.id == el.parts_id && session.Inventory.UserEquippedItem.CharacterEquiped._typeid == el.parts_typeid)
-                    && sIff.getInstance().getItemSubGroupIdentify22(el._typeid) == 1
+                    && sIff.Instance.getItemSubGroupIdentify22(el._typeid) == 1
                     && (el.efeito == 8 || el.efeito == 9 || el.efeito == 10 || el.efeito == 14))
                 {
                     v_cei.Add(el);
@@ -1071,11 +1071,11 @@ namespace Pangya_GameServer.Roms.GameBase
                 }
             }
 
-            // Card Efeito 18 Aumenta o treasure point para qualquer score por 2 horas
+            // Card Efeito 18 Aumenta o Treasure point para qualquer score por 2 horas
 
             var it = session.Inventory.CardEquipment.FirstOrDefault(el =>
             {
-                return sIff.getInstance().getItemSubGroupIdentify22(el._typeid) == 2 && el.efeito == 18;
+                return sIff.Instance.getItemSubGroupIdentify22(el._typeid) == 2 && el.efeito == 18;
             });
 
             if (it != null)
@@ -1083,7 +1083,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 pti.all_score += (byte)it.efeito_qntd;
             }
 
-            // Verifica se está com asa de anjo equipada (shop ou gacha), aumenta 30 treasure hunter point para todos scores
+            // Verifica se está com asa de anjo equipada (ShopRoom ou gacha), aumenta 30 Treasure hunter point para todos scores
             if (session.Inventory.UserEquippedItem.CharacterEquiped.AngelEquiped() == 1 && session.UserInfo.Statistics.getQuitRate() < GOOD_PLAYER_ICON)
             {
                 pti.all_score += 30; // +30 all score
@@ -1098,7 +1098,7 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo((session));
             if (pgi == null)
             {
-                throw new exception("[GameBase::" + "updatePlayerAssist][Error] PLAYER[UID=" + Convert.ToString((session).UserInfo.uid) + "] " + "tentou atualizar assist pang no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::" + "updatePlayerAssist][Error] Normal[UID=" + Convert.ToString((session).UserInfo.UID) + "] " + "tentou atualizar assist Pang no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
 
@@ -1117,7 +1117,7 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo((session));
             if (pgi == null)
             {
-                throw new exception("[GameBase::" + "GetRankPlace][Error] PLAYER[UID=" + Convert.ToString((session).UserInfo.uid) + "] " + "tentou pegar o lugar no rank do jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::" + "GetRankPlace][Error] Normal[UID=" + Convert.ToString((session).UserInfo.UID) + "] " + "tentou pegar o lugar no RankPosition do jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
             return PlayerOrder.IndexOf(pgi);
@@ -1126,7 +1126,7 @@ namespace Pangya_GameServer.Roms.GameBase
         public int SortPlayerRank(PlayerGameInfo pgi1, PlayerGameInfo pgi2)
         {
             if (pgi1.data.score == pgi2.data.score)
-                return pgi2.data.pang.CompareTo(pgi1.data.pang); // decrescente de pang (maior pang primeiro)
+                return pgi2.data.pang.CompareTo(pgi1.data.pang); // decrescente de Pang (maior Pang primeiro)
 
             return pgi1.data.score.CompareTo(pgi2.data.score); // crescente de score (menor score primeiro)
         }
@@ -1145,7 +1145,7 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception("[GameBase::InitAchievement][Error] PLAYER[UID=" + Convert.ToString((session).UserInfo.uid) + "] " + "tentou inicializar o achievemento do player no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::InitAchievement][Error] Normal[UID=" + Convert.ToString((session).UserInfo.UID) + "] " + "tentou inicializar o achievemento do player no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
 
@@ -1156,14 +1156,14 @@ namespace Pangya_GameServer.Roms.GameBase
                 // Initialize Achievement Player
                 pgi.sys_achieve.incrementCounter(0x6C400002u/*Normal Game*/);
 
-                if (RoomInfo.special_flag_mod.short_game)
+                if (RoomInfo.SpecialModeRoom.IsShotMode)
                     pgi.sys_achieve.incrementCounter(0x6C4000BBu/*Short Game*/);
 
-                if (RoomInfo.master == session.UserInfo.uid)
+                if (RoomInfo.OwnerUID == session.UserInfo.UID)
                 {
                     pgi.sys_achieve.incrementCounter(0x6C400098u/*Master da Sala*/);
 
-                    if (RoomInfo.typeid_artefatic > 0)
+                    if (RoomInfo.ItemIDArtifact > 0)
                         pgi.sys_achieve.incrementCounter(0x6C400099u/*Master da Sala com Artefact*/);
                 }
 
@@ -1199,7 +1199,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 if (ct > 0)
                     pgi.sys_achieve.incrementCounter(ct/*Course Counter Item*/);
 
-                ct = AchievementSystem.getQntdHoleCounterTypeId(RoomInfo.qntd_hole);
+                ct = AchievementSystem.getQntdHoleCounterTypeId(RoomInfo.HoleCount);
 
                 if (ct > 0)
                     pgi.sys_achieve.incrementCounter(ct/*Qntd Hole Counter Item*/);
@@ -1210,7 +1210,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::initAchievement][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::initAchievement][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.SYS_ACHIEVEMENT)
                     throw;  // relança exception
@@ -1263,7 +1263,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::records_player_achievement][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::records_player_achievement][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.SYS_ACHIEVEMENT)
                     throw;  // relança exception
@@ -1343,7 +1343,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::update_sync_shot_achievement][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::update_sync_shot_achievement][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.SYS_ACHIEVEMENT)
                     throw;  // relança exception
@@ -1355,7 +1355,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
             var chr = Course.getConsecutivesHolesRain();
 
-            InitPlayerInfo("rain_hole_consecutivos_count", "tentou atualizar o achievement count de chuva em holes consecutivos do player no jogo", session, out PlayerGameInfo pgi);
+            InitPlayerInfo("rain_hole_consecutivos_count", "tentou atualizar o achievement count de Rain em holes consecutivos do player no jogo", session, out PlayerGameInfo pgi);
 
             try
             {
@@ -1379,7 +1379,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::rain_hole_consecutivos_count][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::rain_hole_consecutivos_count][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.SYS_ACHIEVEMENT)
                     throw;  // relança exception
@@ -1396,12 +1396,12 @@ namespace Pangya_GameServer.Roms.GameBase
             try
             {
                 int count = 0;
-                for (var i = 0; i < RoomInfo.qntd_hole; ++i)
+                for (var i = 0; i < RoomInfo.HoleCount; ++i)
                 {
                     score = AchievementSystem.getScoreNum(pgi.progress.tacada[i], pgi.progress.par_hole[i]);
 
                     // Change Score, Soma o Count do Score
-                    if ((score != last_score || i == (RoomInfo.qntd_hole - 1)/*Ultimo hole*/) && last_score != -2/*Primeiro Hole*/)
+                    if ((score != last_score || i == (RoomInfo.HoleCount - 1)/*Ultimo hole*/) && last_score != -2/*Primeiro Hole*/)
                     {
 
                         // 1 == 2, 2 ou mais Holes com o mesmo score
@@ -1449,7 +1449,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::score_consecutivos_count][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::score_consecutivos_count][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.SYS_ACHIEVEMENT)
                     throw;  // relança exception
@@ -1464,7 +1464,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 // Recovery, Chuva, Neve/*Tempo Ruim*/
                 if (Course.countHolesRain() > 0)
                 {
-                    InitPlayerInfo("rain_count", "tentou atualizar o achievement contador de chuva do player no jogo", session, out PlayerGameInfo pgi);
+                    InitPlayerInfo("rain_count", "tentou atualizar o achievement contador de Rain do player no jogo", session, out PlayerGameInfo pgi);
 
                     // Pega pela quantidade de holes jogados
                     int seq = Course.findHoleSeq(pgi.hole);
@@ -1478,7 +1478,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::rain_count][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::rain_count][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.SYS_ACHIEVEMENT)
                     throw;  // relança exception
@@ -1497,7 +1497,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::setEffectActiveInShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::setEffectActiveInShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1517,7 +1517,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::clearDataEndShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::clearDataEndShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1528,7 +1528,7 @@ namespace Pangya_GameServer.Roms.GameBase
             try
             {
 
-                var ability = sIff.getInstance().findAbility(_typeid);
+                var ability = sIff.Instance.findAbility(_typeid);
 
                 if (ability != null)
                 {
@@ -1543,7 +1543,7 @@ namespace Pangya_GameServer.Roms.GameBase
                         {
 
                             // find item setEffectTable
-                            var effectTable = sIff.getInstance().findSetEffectTable((uint)ability.Efeito.Rate[i]);
+                            var effectTable = sIff.Instance.findSetEffectTable((uint)ability.Efeito.Rate[i]);
 
                             if (effectTable != null)
                             {
@@ -1582,7 +1582,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::checkEffectitemAndSet][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::checkEffectitemAndSet][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1591,14 +1591,14 @@ namespace Pangya_GameServer.Roms.GameBase
 
             if (arg == null)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::SQLDBResponse][Warning] _arg is null com msg_id = " + (msgId), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::SQLDBResponse][Warning] _arg is null com msg_id = " + (msgId), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
-            // Por Hora só sai, depois faço outro tipo de tratamento se precisar
+            // Por Hora só sai, depois faço outro Type de tratamento se precisar
             if (pangyaDb.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::SQLDBResponse][Error] " + pangyaDb.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::SQLDBResponse][Error] " + pangyaDb.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 

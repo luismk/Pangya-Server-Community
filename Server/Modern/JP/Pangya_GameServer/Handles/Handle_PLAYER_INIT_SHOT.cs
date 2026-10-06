@@ -24,14 +24,14 @@ namespace Pangya_GameServer.Handles
         {
             try
             {
-                var r = Player.GetGameRoom() ?? throw new exception("[Lobby.Room::RequestInitShot][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou inicializar shot no jogo na sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas ele nao esta em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                var r = Player.GetGameRoom() ?? throw new exception("[Lobby.Room::RequestInitShot][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou inicializar shot no jogo na sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas ele nao esta em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         1, 0x5901501));
 
                 r.RequestInitShot(Player, Packet);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby.Room::RequestInitShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby.Room::RequestInitShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

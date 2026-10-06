@@ -23,7 +23,7 @@ namespace Pangya_GameServer.Repository
             var m_config = new ctx_personal_shop
             {
                 index = IFNULL<uint>(_result.data[0]),
-                // name = IFNULL_Long(_result.data[1]), // descomente se necessário
+                // Name = IFNULL_Long(_result.data[1]), // descomente se necessário
                 id = IFNULL<uint>(_result.data[2]),
                 price = IFNULL<uint>(_result.data[3])
             };
@@ -40,7 +40,7 @@ namespace Pangya_GameServer.Repository
         {
             var r = consulta(m_szConsulta);
 
-            checkResponse(r, "nao conseguiu pegar o personal shop config.");
+            checkResponse(r, "nao conseguiu pegar o personal ShopRoom config.");
 
             return r;
         }

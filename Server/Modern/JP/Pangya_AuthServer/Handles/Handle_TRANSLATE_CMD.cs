@@ -25,7 +25,7 @@ namespace Pangya_AuthServer.Handles
         { 
             // Check Commands
             CmdCommandInfo cmd_ci = new();
-            snmdb.NormalManagerDB.getInstance().add(0, cmd_ci);
+            snmdb.NormalManagerDB.Instance.add(0, cmd_ci);
 
             if (cmd_ci.getException().getCodeError() != 0)
             {
@@ -48,17 +48,17 @@ namespace Pangya_AuthServer.Handles
                     {
                         await handler.Execute(el);
                           
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[Handle_{(COMMAND_ID)el.id}][Sucess] TARGET[UID: {el.target}, FROM: {el.arg[0]}]",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         el.valid = 0;
-                        snmdb.NormalManagerDB.getInstance().add(1, new CmdUpdateCommand(el), AuthServer.getInstance().DBResponse, AuthServer.getInstance());
+                        snmdb.NormalManagerDB.Instance.add(1, new CmdUpdateCommand(el), AuthServer.Instance.DBResponse, AuthServer.Instance);
 
                     }
                     else
                     { 
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[TranslateCmd][Log] Comando não mapeado: {(COMMAND_ID)el.id}",
                             type_msg.CL_ONLY_FILE_LOG));
                     }
@@ -66,7 +66,7 @@ namespace Pangya_AuthServer.Handles
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[TranslateCmd][ErrorSystem] {e.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

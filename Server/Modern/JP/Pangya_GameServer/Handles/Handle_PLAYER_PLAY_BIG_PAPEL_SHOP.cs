@@ -21,29 +21,29 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // --- 1. VALIDAÇÕES ORIGINAIS ---
-                if (Player.UserInfo.block_flag.m_flag.papel_shop)
-                    throw new exception("[Lobby::HandleBigPlay][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou jogar no Papel Shop, mas ele nao pode. Hacker ou Bug",
+                if (Player.UserInfo.BlockFlag.Flag.PapelShop)
+                    throw new exception("[Lobby::HandleBigPlay][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou jogar no Papel Shop, mas ele nao pode. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3, 0x790001));
 
-                if (Player.UserInfo.Member.level < 1)
-                    throw new exception("[Lobby::HandleBigPlay][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou jogar o Papel Shop Big, mas nao tem o level necessario.",
+                if (Player.UserInfo.Member.GameLevel < 1)
+                    throw new exception("[Lobby::HandleBigPlay][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou jogar o Papel Shop Big, mas nao tem o Level necessario.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 8, 0x5900108));
 
-                var shopSystem = sPapelShopSystem.getInstance();
+                var shopSystem = sPapelShopSystem.Instance;
                 if (!shopSystem.isLoad()) shopSystem.load();
 
-                if (shopSystem.isLimittedPerDay() && Player.UserInfo.Member.PapelShop.remain_count <= 0)
-                    throw new exception("[Lobby::HandleBigPlay][Warning] PLAYER [UID=" + Player.UserInfo.uid + "] atingiu o limite diario.",
+                if (shopSystem.isLimittedPerDay() && Player.UserInfo.Member.PapelShop.RemainCount <= 0)
+                    throw new exception("[Lobby::HandleBigPlay][Warning] Normal [UID=" + Player.UserInfo.UID + "] atingiu o limite diario.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x5900101));
 
                 if (Player.UserInfo.Statistics.pang < shopSystem.getPriceBig())
-                    throw new exception("[Lobby::HandleBigPlay][Error] PLAYER [UID=" + Player.UserInfo.uid + "] nao tem Pangs suficiente.",
+                    throw new exception("[Lobby::HandleBigPlay][Error] Normal [UID=" + Player.UserInfo.UID + "] nao tem Pangs suficiente.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 2, 0x5900102));
 
                 // --- 2. SORTEIO E PROCESSAMENTO DE ITENS ---
                 var balls = shopSystem.dropBigBall(Player);
                 if (balls == null || !balls.Any())
-                    throw new exception("[Lobby::HandleBigPlay][Error] PLAYER [UID=" + Player.UserInfo.uid + "] falha ao sortear bolas Big. Bug",
+                    throw new exception("[Lobby::HandleBigPlay][Error] Normal [UID=" + Player.UserInfo.UID + "] falha ao sortear bolas Big. Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3, 0x5900103));
 
                 // Processamento dos itens sorteados
@@ -63,7 +63,7 @@ namespace Pangya_GameServer.Handles
                 foreach (var el in balls.Where(b => b.ctx_psi.tipo == PAPEL_SHOP_TYPE.PST_RARE))
                 {
                     sys_achieve.incrementCounter(0x6C400081u); // Rare Win
-                    NormalManagerDB.getInstance().add(19, new CmdInsertPapelShopRareWinLog(Player.UserInfo.uid, el), null, null);
+                    NormalManagerDB.Instance.add(19, new CmdInsertPapelShopRareWinLog(Player.UserInfo.UID, el), null, null);
                 }
                 sys_achieve.incrementCounter(0x6C40004Au); // Play Papel Shop
 
@@ -74,8 +74,8 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                // Log via message_pool original
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestPlayBigPapelShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                // Log via LogManager original
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestPlayBigPapelShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x26C);
                 uint errorCode = (ExceptionError.STDA_SOURCE_ERROR_DECODE(e.getCodeError()) == (uint)STDA_ERROR_TYPE.CHANNEL)
@@ -143,10 +143,10 @@ namespace Pangya_GameServer.Handles
 
             // 0xFB - Update Count
             p.init_plain(0xFB);
-            if (sPapelShopSystem.getInstance().isLimittedPerDay())
+            if (sPapelShopSystem.Instance.isLimittedPerDay())
             {
-                p.WriteInt32(Player.UserInfo.Member.PapelShop.remain_count);
-                p.WriteInt32(Player.UserInfo.Member.PapelShop.current_count);
+                p.WriteInt32(Player.UserInfo.Member.PapelShop.RemainCount);
+                p.WriteInt32(Player.UserInfo.Member.PapelShop.CurrentCount);
             }
             else
             {

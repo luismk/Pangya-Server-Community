@@ -80,7 +80,7 @@ namespace Pangya_GameServer.Repository
 
             if (guai.club_uid != m_guild_uid)
             {
-                throw new exception("[CmdGuildUpdateActivityInfo::lineResult][Error] guild_uid requisitado é diferente do retornado pela consulta. QUERY_VALUES[GUILD_UID_REQ=" + Convert.ToString(m_guild_uid) + ", GUILD_UID_RET=" + Convert.ToString(guai.club_uid) + "].", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdGuildUpdateActivityInfo::lineResult][Error] GuildIndex requisitado é diferente do retornado pela consulta. QUERY_VALUES[GUILD_UID_REQ=" + Convert.ToString(m_guild_uid) + ", GUILD_UID_RET=" + Convert.ToString(guai.club_uid) + "].", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                     3, 0));
             }
 

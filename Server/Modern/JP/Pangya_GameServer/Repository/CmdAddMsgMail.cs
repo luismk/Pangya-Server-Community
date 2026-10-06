@@ -63,7 +63,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_uid_to == 0 || m_msg.Length == 0)
             {
-                throw new exception("[CmdAddMsgMail::prepareConsulta][Error] uid[value=" + Convert.ToString(m_uid_to) + "] to send is invalid or msg is emtpy", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdAddMsgMail::prepareConsulta][Error] UID[value=" + Convert.ToString(m_uid_to) + "] to send is invalid or msg is emtpy", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
@@ -73,7 +73,7 @@ namespace Pangya_GameServer.Repository
 
 
 
-            checkResponse(r, "PLAYER[UID=" + Convert.ToString(m_uid_from) + "] nao conseguiu adicionar msg[value=" + m_msg + "] no mail do PLAYER[UID=" + Convert.ToString(m_uid_to) + "]");
+            checkResponse(r, "Normal[UID=" + Convert.ToString(m_uid_from) + "] nao conseguiu adicionar msg[value=" + m_msg + "] no mail do Normal[UID=" + Convert.ToString(m_uid_to) + "]");
 
             return r;
         }

@@ -58,7 +58,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_ue.skin_typeid[0]) + ", " + Convert.ToString(m_ue.skin_typeid[1]) + ", " + Convert.ToString(m_ue.skin_typeid[2]) + ", " + Convert.ToString(m_ue.skin_typeid[3]) + ", " + Convert.ToString(m_ue.skin_typeid[4]) + ", " + Convert.ToString(m_ue.skin_typeid[5]));
 
-            checkResponse(r, "nao conseguiu atualizar o skin equipado do player: " + Convert.ToString(m_uid));
+            checkResponse(r, "nao conseguiu atualizar o ItemSkin equipado do player: " + Convert.ToString(m_uid));
 
             return r;
         }

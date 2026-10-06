@@ -3,7 +3,7 @@ using Pangya_GameServer.Engine;
 using Pangya_GameServer.Feature;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Server;
 using Pangya_GameServer.Session;
@@ -32,7 +32,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
         // Singleton-like de instâncias
         protected static List<RoomGrandZodiacInstanciaCtx> GameList;
         protected static object m_cs_game = new object();
-        public RoomGrandZodiac(Channel _channel_owner, RoomInfo _ri) : base(_channel_owner, _ri)
+        public RoomGrandZodiac(Channel _channel_owner, GameRoomInfoModel _ri) : base(_channel_owner, _ri)
         {
             //room logs
             RoomInfoLog.roomId = Guid.Empty;//seta toda vez que inicia sala
@@ -89,36 +89,36 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                 // Verifica se j  tem um jogo inicializado e lan a error se tiver, para o cliente receber uma resposta
                 if (CurrentGame != null)
                 {
-                    throw new exception("[RoomGrandZodiac::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "], mas ja tem um jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_BOT_GM_EVENT,
+                    throw new exception("[RoomGrandZodiac::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "], mas ja tem um jogo inicializado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_BOT_GM_EVENT,
                         8, 0x5900202));
                 }
 
                 // Verifica se todos est o prontos se n o da erro
                 if (!IsAllReady())
                 {
-                    throw new exception("[RoomGrandZodiac::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + ", MASTER=" + Convert.ToString(RoomInfo.master) + "], mas nem todos jogadores estao prontos. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_BOT_GM_EVENT,
+                    throw new exception("[RoomGrandZodiac::startGame][Error] Server tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + ", MASTER=" + Convert.ToString(RoomInfo.OwnerUID) + "], mas nem todos jogadores estao prontos. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM_BOT_GM_EVENT,
                     8, 0x5900202));
                 }
 
-                if (RoomInfo.course >= ROOM_INFO_COURSE.UNK)
+                if (RoomInfo.CourseIndex >= RoomCourseFlags.UNK)
                 {
 
                     // Special Shuffle Course
-                    if (RoomInfo.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE && RoomInfo.GetModo() == ROOM_INFO_MODO.M_SHUFFLE_COURSE)
+                    if (RoomInfo.GetRoomType() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE && RoomInfo.GetHoleType() == RoomHoleType.M_SHUFFLE_COURSE)
                     {
 
-                        RoomInfo.course = (ROOM_INFO_COURSE)(0x80 | (byte)ROOM_INFO_COURSE.CHRONICLE_1_CHAOS);
+                        RoomInfo.CourseIndex = (RoomCourseFlags)(0x80 | (byte)RoomCourseFlags.CHRONICLE_1_CHAOS);
 
                     }
                     else
-                    { // Random normal
+                    { // Random Normal
 
                         var lottery = new LotterySystem();
 
-                        foreach (var el in sIff.getInstance().getCourse())
+                        foreach (var el in sIff.Instance.getCourse())
                         {
 
-                            var course_id = sIff.getInstance().getItemIdentify(el.ID);
+                            var course_id = sIff.Instance.getItemIdentify(el.ID);
 
                             if (course_id != 17 && course_id != 0x40)
                             {
@@ -139,7 +139,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                     SendBroadCast(Handle_PACKET_RESPONSE.pacote049(null, TGAME_CREATE_RESULT.CREATE_GAME_CREATE_FAILED));
 
                 // Update Room State
-                RoomInfo.state = 0; // IN GAME
+                RoomInfo.StateRoom = 0; // IN GAME
 
                 p.init_plain(0x230);
                 SendBroadCast(p);
@@ -148,7 +148,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                 SendBroadCast(p); 
 
                 p.init_plain(0x77); 
-                p.WriteInt32(GameServer.getInstance().getInfo().rate.pang); // Rate Pang
+                p.WriteInt32(GameServer.Instance.getInfo().Rate.Pang); // Rate Pang
                 SendBroadCast(p);
 
                 RoomInfoLog.roomId = Guid.Empty;//seta toda vez que inicia sala
@@ -161,7 +161,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[RoomGrandZodiac::startGame][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomGrandZodiac::startGame][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 ret = false; // Error ao inicializar o Jogo
             }
@@ -173,7 +173,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
         {
             try
             {
-                _smp.message_pool.getInstance().push(new message($"[RoomGrandZodiac::waitTimeStart][Log] Sala [ID: {RoomInfo.numero}] waitTimeStart iniciado com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[RoomGrandZodiac::waitTimeStart][Log] Sala [ID: {RoomInfo.RoomID}] waitTimeStart iniciado com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 uint retWait = WAIT_TIMEOUT;
                 IntPtr[] wait_events = { GameEventWaitStart, GameEventWaitStartPulse };
@@ -199,8 +199,8 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                                             InitCountDown(10);
                                             GameState.SetState(GrandZodiacStateFlag.WAIT_10_SECONDS_START);
                                         }
-                                        // Ou começa imediatamente se a sala lotar (max_player)
-                                        else if (GetCountPlayersWithoutInvited() == RoomInfo.max_player)
+                                        // Ou começa imediatamente se a sala lotar (MaxUsers)
+                                        else if (GetCountPlayersWithoutInvited() == RoomInfo.MaxUsers)
                                         {
                                             using (var p = new Packet(0x40))
                                             {
@@ -224,7 +224,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                                     {
                                         GameState.SetState(GrandZodiacStateFlag.WAIT_TIME_START);
 
-                                        _smp.message_pool.getInstance().push(new message($"[GrandZodiac] Sala {RoomInfo.numero} ficou vazia. Cancelando contagem.", 1));
+                                        _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiac] Sala {RoomInfo.RoomID} ficou vazia. Cancelando contagem.", 1));
                                     }
                                 }
                                 break;
@@ -240,13 +240,13 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                     catch (Exception e)
                     {
                         GameState.Unlock();
-                        _smp.message_pool.getInstance().push(new message("[RoomGrandZodiac::waitTimeStart][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[RoomGrandZodiac::waitTimeStart][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RoomGrandZodiac::waitTimeStart][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomGrandZodiac::waitTimeStart][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -262,7 +262,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
                     clear_timer_count_down();
                     if (Players.Count >= 1 && StartGame())
-                        GameServer.getInstance().sendUpdateRoomInfo(this, 3);
+                        GameServer.Instance.sendUpdateRoomInfo(this, 3);
                     else if (Players.Count >= 1)
                         InitCountDown(10);
                     else
@@ -347,7 +347,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
                     long next_sec = _sec_to_start - (interval / 1000);
 
-                    TimerCountDown = GameServer.getInstance().MakeTimer(
+                    TimerCountDown = GameServer.Instance.MakeTimer(
                         wait,
                         new List<long> { interval },
                         () => CountDownTime(this, next_sec)
@@ -356,7 +356,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RoomGrandZodiac::count_down][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomGrandZodiac::count_down][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             finally
             {
@@ -399,7 +399,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[RoomGrandZodiac::finish_thread_sync_wait_time_start][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RoomGrandZodiac::finish_thread_sync_wait_time_start][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (GameStartThread != null)
                 {
@@ -443,7 +443,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             {
                 if (!GameList.Any(x => x.m_rgze.GetRoomId() == _rgze.GetRoomId()))
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         "[RoomGrandZodiac::Add][Log] Adicionou Room Grand Zodiac Event no list.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE
                     ));
@@ -468,7 +468,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             {
                 if (GameList != null && GameList.Count == 0)
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         "[RoomGrandZodiac::initFirstInstance][Log] Criou primeira instance do Singleton da classe Room Grand Zodiac Event static vector.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE
                     ));

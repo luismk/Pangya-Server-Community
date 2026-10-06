@@ -65,7 +65,7 @@ namespace Pangya_GameServer.Repository
 
             var r = _update(m_szConsula[0] + Convert.ToString(m_uid) + m_szConsula[1] + Convert.ToString(m_id));
 
-            checkResponse(r, "nao conseguiu deletat Furniture[ID=" + Convert.ToString(m_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu deletat Furniture[ID=" + Convert.ToString(m_id) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

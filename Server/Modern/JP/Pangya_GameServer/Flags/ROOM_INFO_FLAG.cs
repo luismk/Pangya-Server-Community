@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Pangya_GameServer.Flags
 { 
-    public enum ROOM_INFO_COURSE : byte
+    public enum RoomCourseFlags : byte
     {
         BLUE_LAGOON,
         BLUE_WATER,
@@ -33,7 +33,7 @@ namespace Pangya_GameServer.Flags
         UNK = 0x7F
     }
 
-    public enum ROOM_INFO_TYPE : byte
+    public enum RoomTypeFlags : byte
     {
         STROKE,
         MATCH,
@@ -58,7 +58,7 @@ namespace Pangya_GameServer.Flags
         GRAND_PRIX,
     }
 
-    public enum ROOM_INFO_MODO : byte
+    public enum RoomHoleType : byte
     {
         M_FRONT,
         M_BACK,

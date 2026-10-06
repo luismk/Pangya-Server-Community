@@ -211,7 +211,7 @@ namespace Pangya_GameServer.Feature
 
             float rate_course = getCourseRate(_course);
 
-            float rate = _point * GameServer.getInstance().getInfo().rate.treasure * rate_course / 100.0f;
+            float rate = _point * GameServer.Instance.getInfo().Rate.Treasure * rate_course / 100.0f;
 
             int box = GetBoxCount(_point);
 
@@ -233,16 +233,16 @@ namespace Pangya_GameServer.Feature
                 // Sorteia item
                 if ((ctx = lottery.SpinRoleta()) == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[TreasureHunterSystem::drawItem][Warning] nao conseguiu sortear o item. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[TreasureHunterSystem::drawItem][Warning] nao conseguiu sortear o item. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     continue;
                 }
 
                 pThi = (TreasureHunterItem)ctx.Value;
 
                 // Verifica se o item existe no IFF_STRUCT do server, para n�o da erro mais tarde
-                if (sIff.getInstance().findCommomItem(pThi._typeid) == null)
+                if (sIff.Instance.findCommomItem(pThi._typeid) == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[TreasureHunterSystem::drawItem][Warning] nao conseguiu encontrar o Item[TYPEID=" + Convert.ToString(pThi._typeid) + "] no IFF_STRUCT do server. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[TreasureHunterSystem::drawItem][Warning] nao conseguiu encontrar o Item[TYPEID=" + Convert.ToString(pThi._typeid) + "] no IFF_STRUCT do server. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     continue;
                 }
 
@@ -276,7 +276,7 @@ namespace Pangya_GameServer.Feature
 
             float rate_course = getCourseRate(_course);
 
-            uint box = (uint)(_num_box * GameServer.getInstance().getInfo().rate.treasure * rate_course / 100.0f);
+            uint box = (uint)(_num_box * GameServer.Instance.getInfo().Rate.Treasure * rate_course / 100.0f);
 
             // _num box � maior que zero, box n�o pode ser 0, tem que ser pelo menos 1
             if (box == 0u)
@@ -299,16 +299,16 @@ namespace Pangya_GameServer.Feature
                 // Sorteia item
                 if ((ctx = lottery.SpinRoleta()) == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[TreasureHunterSystem::drawApproachBox][Warning] nao conseguiu sortear o item. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[TreasureHunterSystem::drawApproachBox][Warning] nao conseguiu sortear o item. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     continue;
                 }
 
                 pThi = (TreasureHunterItem)ctx.Value;
 
                 // Verifica se o item existe no IFF_STRUCT do server, para n�o da erro mais tarde
-                if (sIff.getInstance().findCommomItem(pThi._typeid) == null)
+                if (sIff.Instance.findCommomItem(pThi._typeid) == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[TreasureHunterSystem::drawApprochBox][Warning] nao conseguiu encontrar o Item[TYPEID=" + Convert.ToString(pThi._typeid) + "] no IFF_STRUCT do server. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[TreasureHunterSystem::drawApprochBox][Warning] nao conseguiu encontrar o Item[TYPEID=" + Convert.ToString(pThi._typeid) + "] no IFF_STRUCT do server. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     continue;
                 }
 
@@ -340,7 +340,7 @@ namespace Pangya_GameServer.Feature
                     }
                 }
 
-                _smp.message_pool.getInstance().push(new message("[TreasureHunterSystem][Log] Atualizou Pontos dos course.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[TreasureHunterSystem][Log] Atualizou Pontos dos CourseIndex.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 m_time = DateTime.Now;
 
@@ -361,7 +361,7 @@ namespace Pangya_GameServer.Feature
                 _thi.point = ((_thi.point + _point > TREASURE_HUNTER_LIMIT_POINT_COURSE) ? TREASURE_HUNTER_LIMIT_POINT_COURSE : _thi.point + _point);
             }
 
-            NormalManagerDB.getInstance().add(1,
+            NormalManagerDB.Instance.add(1,
                   new CmdUpdateTreasureHunterCoursePoint(_thi),
                   SQLDBResponse,
                   null);
@@ -372,7 +372,7 @@ namespace Pangya_GameServer.Feature
         {
             CmdTreasureHunterInfo cmd_thi = new CmdTreasureHunterInfo(); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_thi, null, null);
 
             if (cmd_thi.getException().getCodeError() != 0)
@@ -390,7 +390,7 @@ namespace Pangya_GameServer.Feature
             // Item Treasure Hunter
             CmdTreasureHunterItem cmd_thItem = new CmdTreasureHunterItem(); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_thItem, null, null);
 
             if (cmd_thItem.getException().getCodeError() != 0)
@@ -404,7 +404,7 @@ namespace Pangya_GameServer.Feature
             m_time = DateTime.Now;
 
             if (m_thItem.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[TreasureHunterSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[TreasureHunterSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // Carregado com sucesso
             m_load = true;
@@ -455,10 +455,10 @@ namespace Pangya_GameServer.Feature
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[TreasureHunterSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[TreasureHunterSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 

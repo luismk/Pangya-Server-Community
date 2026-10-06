@@ -61,9 +61,9 @@ namespace Pangya_LoginServer.Handles
             catch (exception e)
             {
 
-                LoginServer.getInstance().Disconnect(Player);
+                LoginServer.Instance.Disconnect(Player);
 
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_LOGIN][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_LOGIN][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;
@@ -113,16 +113,16 @@ namespace Pangya_LoginServer.Handles
         private bool CheckServerStatus(Player Player)
         {
             // Aqui você move a lógica de m_access_flag e IsUnderMaintenance
-            if (LoginServer.getInstance().IsUnderMaintenance && !Player.IsGM())
+            if (LoginServer.Instance.IsUnderMaintenance && !Player.IsGM())
             {
                 Player.Send(Handle_PACKET_RESPONSE.pacote001(Player, 0x01, 7));
                 return false;
             }
 
-            if (LoginServer.getInstance().haveBanList(Player.GetIP(), Player.UserInfo.MacAddress))
+            if (LoginServer.Instance.haveBanList(Player.GetIP(), Player.UserInfo.MacAddress))
             {
                 Player.Send(Handle_PACKET_RESPONSE.pacote001(Player, 16)); 
-                _smp.message_pool.getInstance().push("[HANDLE_PLAYER_LOGIN::CheckServerStatus][Log] Block por Regiao o IP/MAC: " + Player.GetIP() + "/" + Player.UserInfo.MacAddress, type_msg.CL_FILE_LOG_AND_CONSOLE);
+                _smp.LogManager.Instance.push("[HANDLE_PLAYER_LOGIN::CheckServerStatus][Log] Block por Regiao o IP/MAC: " + Player.GetIP() + "/" + Player.UserInfo.MacAddress, type_msg.CL_FILE_LOG_AND_CONSOLE);
                   
                 return false;
             }
@@ -144,7 +144,7 @@ namespace Pangya_LoginServer.Handles
  if (uid > 0 && !CommandDB.AccountConfirm(id))//verifica antes
             {
                 Player.Send(Handle_PACKET_RESPONSE.pacote001(Player, 0x07, 0, "Confirm you accout in Email"));
-                _smp.message_pool.getInstance().push(new message($"[HANDLE_PLAYER_LOGIN::Authenticate][Log] PLAYER[ID: {id}, BETA ACCOUNT: FALSE]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[HANDLE_PLAYER_LOGIN::Authenticate][Log] PLAYER[ID: {id}, BETA ACCOUNT: FALSE]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return 0;
             }
 #endif
@@ -162,12 +162,12 @@ namespace Pangya_LoginServer.Handles
 
         private bool HandleDuplicateLogin(Player Player, uint uid)
         { 
-            var manager = LoginServer.getInstance().HasLoggedWithOuterSocket(Player);
+            var manager = LoginServer.Instance.HasLoggedWithOuterSocket(Player);
             if (manager != null)
             {
-                if (!LoginServer.getInstance().canSameIDLogin())
+                if (!LoginServer.Instance.canSameIDLogin())
                 {
-                    LoginServer.getInstance().Disconnect(manager);
+                    LoginServer.Instance.Disconnect(manager);
                     return true;
                 }
                 return false;
@@ -222,7 +222,7 @@ namespace Pangya_LoginServer.Handles
         {
             Player.UserInfo.m_state = 1;
 
-            _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_LOGIN][Log] PLAYER[UID: {Player.UserInfo.uid}, ID: {Player.UserInfo.id}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_LOGIN][Log] PLAYER[UID: {Player.UserInfo.UID}, ID: {Player.UserInfo.Login}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // Inicializamos as variáveis para evitar null reference
             List<ServerInfo> sis = new List<ServerInfo>();
@@ -234,17 +234,17 @@ namespace Pangya_LoginServer.Handles
             {  
                 sis = CommandDB.GetGame();
                 msns = CommandDB.GetMsn();
-                auth_key_login = CommandDB.GetAuthKeyLogin(Player.UserInfo.uid);
+                auth_key_login = CommandDB.GetAuthKeyLogin(Player.UserInfo.UID);
 
                 if (option == 0)
-                    _cmu = CommandDB.GetMacroUser(Player.UserInfo.uid);
+                    _cmu = CommandDB.GetMacroUser(Player.UserInfo.UID);
 
                 // Registro de Login (Pode ser await ou não, dependendo se você precisa confirmar o sucesso)
-                CommandDB.RegisterPlayerLogin(Player.UserInfo.uid, Player.GetIP(), LoginServer.getInstance().getUID());
+                CommandDB.RegisterPlayerLogin(Player.UserInfo.UID, Player.GetIP(), LoginServer.Instance.getUID());
             }
             catch (Exception e) // Use Exception padrão do sistema ou a sua customizada
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     "[Handle_PLAYER_LOGIN][Log][ErrorSystem] " + e.Message,
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 

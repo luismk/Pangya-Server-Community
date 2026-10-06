@@ -42,7 +42,7 @@ namespace Pangya_GameServer.Repository
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"{_getName}::[ErrorSt] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"{_getName}::[ErrorSt] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 

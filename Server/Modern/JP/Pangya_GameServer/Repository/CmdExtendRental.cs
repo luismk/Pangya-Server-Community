@@ -83,7 +83,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_item_id) + ", " + (m_date));
 
-            checkResponse(r, "nao conseguiu extender o Part Rental[ID=" + Convert.ToString(m_item_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu extender o Part Rental[ID=" + Convert.ToString(m_item_id) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

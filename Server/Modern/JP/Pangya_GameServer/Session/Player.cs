@@ -2,6 +2,7 @@
 using Pangya_GameServer.Engine;
 using Pangya_GameServer.Feature;
 using Pangya_GameServer.Feature.Security;
+using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
 using Pangya_GameServer.Models;
 using Pangya_GameServer.PacketFunc;
@@ -21,49 +22,47 @@ using PangyaAPI.Utilities.Log;
 using snmdb;
 using System.Net.Sockets;
 using static Pangya_GameServer.Models.DefineConstants;
+using static PangyaAPI.DataBase.Models.NormalDB;
 namespace Pangya_GameServer.Session
 {
     public class Player : AppSession
     {  
         public HeartBeat m_HeartBeat { get; set; }
         public ChatPenaltyManager ChatPenalty { get; } = new();
-        public InventoryInfo? Inventory { get; set; }// inventorio de itens do jogador....
-        public PlayerInfo? UserInfo { get; set; }// info do jogador....
-        public GMInfo m_gi { get; set; }// info de GM se for GM
-        public Game CurrentGame { get; set; }//nao tive ideia de como usar isso, mas vai ser util quando eu for usar _player.getCurrentGame() pra pegar o jogo que o player esta jogando, ai da pra usar isso pra pegar o numero do hole, o score do player, etc...
-        public Room? CurrentRoom { get; set; } //sala onde esta o jogador....
+        public InventoryInfo? Inventory { get; set; } = new();// inventorio de itens do jogador....
+        public PlayerInfo? UserInfo { get; set; } = new();// info do jogador....
+        public GMInfo m_gi { get; set; } = new();// info de GM se for GM
+        public Game CurrentGame { get; set; } //nao tive ideia de como usar isso, mas vai ser util quando eu for usar _player.getCurrentGame() pra pegar o jogo que o player esta jogando, ai da pra usar isso pra pegar o RoomID do hole, o score do player, etc...
+        public Room? CurrentRoom { get; set; }//sala onde esta o jogador....
         public Channel? CurrentChannel { get; set; } //onde esta o jogador....  
         public string MacAdress { get; set; } = string.Empty;
-        private Dictionary<uint/*key*/, TitleMapCallBack> BonusTitle { get; set; }
+        private Dictionary<uint/*GameKey*/, TitleMapCallBack> BonusTitle { get; set; } = new();
 
         public Player(GameService game, Socket socket, int id) : base(game, socket, id)
         {
-            UserInfo = new PlayerInfo();
-            m_gi = new GMInfo();
-
             InitTitleCallbacks();
         } 
 
         public override string GetNickname()
         {
-            return UserInfo.nickname;
+            return UserInfo.NickName;
         }
 
         public override uint GetUID()
         {
-            return UserInfo.uid;
+            return UserInfo.UID;
         }
 
         public override string GetID()
         {
-            return UserInfo.id;
+            return UserInfo.Login;
         }
 
-        public override uint GetCapability() { return (uint)UserInfo.UserCapabilities.ulCapability; }
+        public override uint GetCapability() { return (uint)UserInfo.UserCapabilities.Value; }
 
         public override byte GetStateLogged()
         {
-            return UserInfo.m_state_logged;
+            return UserInfo.StateLogged;
         }
 
         public bool getState()
@@ -90,14 +89,13 @@ namespace Pangya_GameServer.Session
             }
         }
 
-        public void Load()
+        public bool Load()
         {
-            uint uid = UserInfo.uid;
+            uint uid = UserInfo.UID;
 
             try
             {
-                Inventory = new InventoryInfo(uid);
-                Inventory.Load(); // Iniciamos a Task aqui 
+                Inventory.Load(UserInfo.UID); // Iniciamos a Task aqui 
                 var sucess = UserInfo.Load();
                 var tCaddies = CommandDB.LoadCaddie(uid, CmdCaddieInfo.TYPE.FERIAS);
                 var tMsgOff = CommandDB.LoadMsgOff(uid);
@@ -110,7 +108,7 @@ namespace Pangya_GameServer.Session
                         UserInfo.CharacterLoungeStates.Add(characters.Key, new StateCharacterLounge());
                     }
                     // 6. Envio de Pacotes Iniciais
-                    int ttl = GameServer.getInstance().getBotTTL();
+                    int ttl = GameServer.Instance.getBotTTL();
                     this.Send(Handle_PACKET_RESPONSE.pacote1A9(ttl));
 
                     Inventory.SetPremiumSys();
@@ -142,23 +140,26 @@ namespace Pangya_GameServer.Session
 
                     for (int i = 0; i < 39; i++)
                     {
-                        LoginManager.SendReply(this, i);
+                        var p = new Packet(0x44);
+                        p.WriteByte(eLoginAck.ACK_UPDATE_LOGIN_UNIT);
+                        p.WriteInt32(i);
+                        this.Send(p);
                         Thread.Sleep(12);//so dar pra uma imppressao bacanada hahah
                     }
-
-                    LoginManager.SendCompleteData(this);
+                    return true;
                 }
                 else
-                    GameServer.getInstance().Disconnect(this);
+                    return false;
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Player::Load][Error] UID {uid}: {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                GameServer.getInstance().Disconnect(this);
+                GameServer.Instance.Disconnect(this);
             }
+            return false;
         }
 
         //ainda vou terminar..
@@ -175,7 +176,7 @@ namespace Pangya_GameServer.Session
                 return CurrentChannel;
 
             if (UserInfo.Channel >= 0)
-                return GameServer.getInstance().FindChannel(UserInfo.Channel);
+                return GameServer.Instance.FindChannel(UserInfo.Channel);
             return null;
         }
 
@@ -219,10 +220,10 @@ namespace Pangya_GameServer.Session
                 return CurrentRoom;
             }
             //verifica se realmente esta em sala, por que as vezes o player pode estar na sala, mas o jogo ainda nao ter comecado, entao tem que verificar se tem um jogo nessa sala.
-            if (UserInfo.Member.sala_numero >= 0)//verifica segundo no objeto
+            if (UserInfo.Member.RoomID >= 0)//verifica segundo no objeto
             {
                 //atualiza a memoria rotativa, por que as vezes o player pode estar na sala, mas o jogo ainda nao ter comecado, entao tem que verificar se tem um jogo nessa sala.
-                var room = GameServer.getInstance().FindRoom(UserInfo.Member.sala_numero);
+                var room = GameServer.Instance.FindRoom(UserInfo.Member.RoomID);
 
                 if (CurrentGame == null && room != null && room.CurrentGame != null)
                 {
@@ -252,7 +253,7 @@ namespace Pangya_GameServer.Session
             CurrentGame = null;
             CurrentRoom = null;
             // remove da sala.
-            UserInfo.Member.sala_numero = -1;
+            UserInfo.Member.RoomID = -1;
             UserInfo.Place = 0; 
         }
          
@@ -263,7 +264,7 @@ namespace Pangya_GameServer.Session
 
             CurrentRoom = room;
             CurrentGame = room.CurrentGame;
-            UserInfo.Member.sala_numero = room.GetRoomId();
+            UserInfo.Member.RoomID = room.GetRoomId();
             UserInfo.Place = (sbyte)(Invited ? 70 : 10);
         }
 
@@ -281,9 +282,9 @@ namespace Pangya_GameServer.Session
                 return CurrentRoom.CurrentGame;
             }
 
-            if (UserInfo.Member.sala_numero >= 0)
+            if (UserInfo.Member.RoomID >= 0)
             {
-                var game = GameServer.getInstance().FindRoom(UserInfo.Member.sala_numero);
+                var game = GameServer.Instance.FindRoom(UserInfo.Member.RoomID);
                 if (game != null && game.CurrentGame != null)//verifcar se realmente tem um jogo nessa sala, por que as vezes o player pode estar na sala, mas o jogo ainda nao ter comecado, entao tem que verificar se tem um jogo nessa sala.
                 {
                     CurrentGame = game.CurrentGame; 
@@ -301,12 +302,12 @@ namespace Pangya_GameServer.Session
             BuyItem bi = new BuyItem { id = -1, _typeid = DEFAULT_COMET_TYPEID, qntd = 1 };
             stItem newItem = new stItem();
 
-            // Inicializa a estrutura do item (ignora level)
+            // Inicializa a estrutura do item (ignora Level)
             ItemManager.initItemFromBuyItem(UserInfo, newItem, bi, false, 0, 0, 1);
 
             if (newItem._typeid == 0)
             {
-                throw new exception($"[SQLDB::Error] Falha ao inicializar struct da Comet para UID: {UserInfo.uid}");
+                throw new exception($"[SQLDB::Error] Falha ao inicializar struct da Comet para UID: {UserInfo.UID}");
             }
 
             // Adiciona ao Banco de Dados/Memória
@@ -322,12 +323,12 @@ namespace Pangya_GameServer.Session
             BuyItem bi = new BuyItem { id = -1, _typeid = DEFAULT_CLUB_TYPEID, qntd = 1 };
             stItem newItem = new stItem();
 
-            // Inicializa a estrutura do item (ignora level)
+            // Inicializa a estrutura do item (ignora Level)
             ItemManager.initItemFromBuyItem(UserInfo, newItem, bi, false, 0, 0, 1);
 
             if (newItem._typeid == 0)
             {
-                throw new exception($"[SQLDB::Error] Falha ao inicializar struct da Club para UID: {UserInfo.uid}");
+                throw new exception($"[SQLDB::Error] Falha ao inicializar struct da Club para UID: {UserInfo.UID}");
             }
 
             // Adiciona ao Banco de Dados/Memória
@@ -343,12 +344,12 @@ namespace Pangya_GameServer.Session
             BuyItem bi = new BuyItem { id = -1, _typeid = DEFAULT_CLUB_TYPEID, qntd = 1 };
             stItem newItem = new stItem();
 
-            // Inicializa a estrutura do item (ignora level)
+            // Inicializa a estrutura do item (ignora Level)
             ItemManager.initItemFromBuyItem(UserInfo, newItem, bi, false, 0, 0, 1);
 
             if (newItem._typeid == 0)
             {
-                throw new exception($"[SQLDB::Error] Falha ao inicializar struct da Character para UID: {UserInfo.uid}");
+                throw new exception($"[SQLDB::Error] Falha ao inicializar struct da Character para UID: {UserInfo.UID}");
             }
 
             // Adiciona ao Banco de Dados/Memória
@@ -401,24 +402,24 @@ namespace Pangya_GameServer.Session
                 {
 
                     if (ret > 0)
-                    { // Player Upou de level 
+                    { // Player Upou de Level 
                         List<stItem> v_item = new List<stItem>();
                         stItem item = new stItem();
                         BuyItem bi = new BuyItem();
 
-                        var level_prize = sIff.getInstance().getLevelUpPrizeItem();
+                        var level_prize = sIff.Instance.getLevelUpPrizeItem();
 
-                        for (var i = (UserInfo.Member.level - ret + 1); i <= UserInfo.Member.level; ++i)
+                        for (var i = (UserInfo.Member.GameLevel - ret + 1); i <= UserInfo.Member.GameLevel; ++i)
                         {
 
-                            // Zera o vector de item que vai ser enviado por level UP! para o mail box do player
+                            // Zera o vector de item que vai ser enviado por Level UP! para o mail box do player
                             v_item.Clear();
 
                             var it = level_prize.FirstOrDefault(c => c.Level == i);
 
                             if (it == null)
                             {
-                                throw new exception("[player::addExp][ErrorSystem] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] addExp, mas nao encontrou o level up prize[level=" + Convert.ToString(i) + "] no IFF_STRUCT do server", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                                throw new exception("[player::addExp][ErrorSystem] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] addExp, mas nao encontrou o Level up prize[Level=" + Convert.ToString(i) + "] no IFF_STRUCT do server", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                                     2, 0));
                             }
 
@@ -441,7 +442,7 @@ namespace Pangya_GameServer.Session
 
                                     if (item._typeid == 0)
                                     {
-                                        throw new exception("[player::addExp][ErrorSystem] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] addExp, mas nao conseguiu inicializar o item[TYPEID=" + Convert.ToString(bi._typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                                        throw new exception("[player::addExp][ErrorSystem] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] addExp, mas nao conseguiu inicializar o item[TYPEID=" + Convert.ToString(bi._typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                                             3, 0));
                                     }
 
@@ -453,16 +454,16 @@ namespace Pangya_GameServer.Session
 
                             // Envia Prêmio de Level UP! para o Mail Box do player
                             MailManager.SendMailWithItem(0,
-                                  UserInfo.uid, msg, v_item);
+                                  UserInfo.UID, msg, v_item);
                         }
 
-                        // Mostra msg que o player Upou de level
+                        // Mostra msg que o player Upou de Level
                         var p = new Packet(0x10F);
 
                         p.WriteUInt32(0); // OK
 
-                        p.WriteByte((byte)ret); // Qntd de level(s) que ele upou
-                        p.WriteByte((byte)UserInfo.Member.level); // Novo level que o player ficou
+                        p.WriteByte((byte)ret); // Qntd de Level(s) que ele upou
+                        p.WriteByte((byte)UserInfo.Member.GameLevel); // Novo Level que o player ficou
 
                         Send(p);
                     }
@@ -470,10 +471,10 @@ namespace Pangya_GameServer.Session
 
                 // Att Level e Exp do player IN GAME
                 if (_upt_on_game)
-                { // Só att se for pegando do mail ou ticket report esses negocio, por que jogando vs/tourney, nao precisa desse pacote
+                { // Só att se for pegando do mail ou ticket report esses negocio, por que jogando vs/Tourney, nao precisa desse pacote
                     var p = new Packet(0x1D9);
 
-                    p.WriteUInt32(UserInfo.Member.level);
+                    p.WriteUInt32(UserInfo.Member.GameLevel);
                     p.WriteInt32(UserInfo.Statistics.exp);
                     this.Send(p);
                 }
@@ -482,7 +483,7 @@ namespace Pangya_GameServer.Session
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::addExp][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::addExp][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.PLAYER_INFO)
                 {
@@ -497,18 +498,18 @@ namespace Pangya_GameServer.Session
 
             if (_exp == 0 || _exp < 0)
             {
-                throw new exception("[player::addCaddieExp][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou adicionar mais exp[VALUE=" + Convert.ToString(_exp) + "] ao caddie equipado, mas exp is invalid(zero).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                throw new exception("[player::addCaddieExp][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou adicionar mais Experience[VALUE=" + Convert.ToString(_exp) + "] ao caddie equipado, mas Experience is invalid(zero).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                     300, 0));
             }
 
             if (Inventory.UserEquippedItem.CaddieEquiped == null)
             {
-                throw new exception("[player::addCaddieExp][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou adicionar mais exp[VALUE=" + Convert.ToString(_exp) + "] ao caddie equipado, mas ele nao esta com nenhum caddie equipado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                throw new exception("[player::addCaddieExp][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou adicionar mais Experience[VALUE=" + Convert.ToString(_exp) + "] ao caddie equipado, mas ele nao esta com nenhum caddie equipado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                     301, 0));
             }
 
 
-            // Só add Exp se não estiver no ultimo level do Caddie
+            // Só add Exp se não estiver no ultimo Level do Caddie
             if (Inventory.UserEquippedItem.CaddieEquiped.level < LIMIT_LEVEL_CADDIE)
             {
 
@@ -526,8 +527,8 @@ namespace Pangya_GameServer.Session
                 }
 
                 // UPDATE ON DB
-                NormalManagerDB.getInstance().add(1,
-                     new CmdUpdateCaddieInfo(UserInfo.uid, Inventory.UserEquippedItem.CaddieEquiped),
+                NormalManagerDB.Instance.add(1,
+                     new CmdUpdateCaddieInfo(UserInfo.UID, Inventory.UserEquippedItem.CaddieEquiped),
                      SQLDBResponse, this);
 
                 // LOG
@@ -539,13 +540,13 @@ namespace Pangya_GameServer.Session
 
             if (_exp == 0 || _exp < 0)
             {
-                throw new exception("[player::addMascotExp][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou adicionar mais exp[VALUE=" + Convert.ToString(_exp) + "] ao mascot equipado, mas exp is invalid(zero).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                throw new exception("[player::addMascotExp][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou adicionar mais Experience[VALUE=" + Convert.ToString(_exp) + "] ao mascot equipado, mas Experience is invalid(zero).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                     400, 0));
             }
 
             if (Inventory.UserEquippedItem.MascotEquiped == null)
             {
-                throw new exception("[player::addMascotExp][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou adicionar mais exp[VALUE=" + Convert.ToString(_exp) + "] ao mascot equipado, mas ele nao esta com nenhum mascot equipado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                throw new exception("[player::addMascotExp][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou adicionar mais Experience[VALUE=" + Convert.ToString(_exp) + "] ao mascot equipado, mas ele nao esta com nenhum mascot equipado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                     401, 0));
             }
 
@@ -554,7 +555,7 @@ namespace Pangya_GameServer.Session
 
             // Progressão aritmética de segunda ordem
 
-            // Só add Exp se não estiver no ultimo level do Mascot
+            // Só add Exp se não estiver no ultimo Level do Mascot
             if (Inventory.UserEquippedItem.MascotEquiped.level < LIMIT_LEVEL_MASCOT)
             {
 
@@ -572,8 +573,8 @@ namespace Pangya_GameServer.Session
                 }
 
                 // UPDATE ON DB
-                NormalManagerDB.getInstance().add(2,
-                      new CmdUpdateMascotInfo(UserInfo.uid, Inventory.UserEquippedItem.MascotEquiped),
+                NormalManagerDB.Instance.add(2,
+                      new CmdUpdateMascotInfo(UserInfo.UID, Inventory.UserEquippedItem.MascotEquiped),
                       SQLDBResponse, this);
 
             }
@@ -597,7 +598,7 @@ namespace Pangya_GameServer.Session
 
                 CmdPlayerInfo cmd_pi = new CmdPlayerInfo(_uid); // Waiter
 
-                NormalManagerDB.getInstance().add(0, cmd_pi);
+                NormalManagerDB.Instance.add(0, cmd_pi);
                  
                 if (cmd_pi.getException().getCodeError() != 0)
                 {
@@ -612,25 +613,25 @@ namespace Pangya_GameServer.Session
                 {
 
                     if (ret > 0)
-                    { // Player Upou de level
+                    { // Player Upou de Level
 
                         List<stItem> v_item = new List<stItem>();
                         stItem item = new stItem();
                         BuyItem bi = new BuyItem();
 
-                        var level_prize = sIff.getInstance().getLevelUpPrizeItem();
+                        var level_prize = sIff.Instance.getLevelUpPrizeItem();
 
-                        for (var i = (pi.Member.level - ret + 1); i <= pi.Member.level; ++i)
+                        for (var i = (pi.Member.GameLevel - ret + 1); i <= pi.Member.GameLevel; ++i)
                         {
 
-                            // Zera o vector de item que vai ser enviado por level UP! para o mail box do player
+                            // Zera o vector de item que vai ser enviado por Level UP! para o mail box do player
                             v_item.Clear();
 
                             var it = level_prize.FirstOrDefault(c => c.Level == i);
 
                             if (it == null)
                             {
-                                throw new exception("[player::addExp][ErrorSystem] PLAYER[UID=" + Convert.ToString(pi.uid) + "] addExp, mas nao encontrou o level up prize[level=" + i + "] no IFF_STRUCT do server", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                                throw new exception("[player::addExp][ErrorSystem] Normal[UID=" + Convert.ToString(pi.UID) + "] addExp, mas nao encontrou o Level up prize[Level=" + i + "] no IFF_STRUCT do server", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                                     2, 0));
                             }
 
@@ -653,7 +654,7 @@ namespace Pangya_GameServer.Session
 
                                     if (item._typeid == 0)
                                     {
-                                        throw new exception("[player::addExp][ErrorSystem] PLAYER[UID=" + Convert.ToString(pi.uid) + "] addExp, mas nao conseguiu inicializar o item[TYPEID=" + Convert.ToString(bi._typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                                        throw new exception("[player::addExp][ErrorSystem] Normal[UID=" + Convert.ToString(pi.UID) + "] addExp, mas nao conseguiu inicializar o item[TYPEID=" + Convert.ToString(bi._typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                                             3, 0));
                                     }
 
@@ -665,7 +666,7 @@ namespace Pangya_GameServer.Session
 
                             // Envia Prêmio de Level UP! para o Mail Box do player
                             MailManager.SendMailWithItem(0,
-                                  pi.uid, msg, v_item);
+                                  pi.UID, msg, v_item);
                         }
                     }
                 }
@@ -674,7 +675,7 @@ namespace Pangya_GameServer.Session
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::addExp][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::addExp][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Clean
                 if (pi != null)
@@ -736,15 +737,15 @@ namespace Pangya_GameServer.Session
                 {
                     long log_id = -1;
 
-                    var cmd_icpl = new CmdInsertCPLog(UserInfo.uid, _cp_log); // Waiter
+                    var cmd_icpl = new CmdInsertCPLog(UserInfo.UID, _cp_log); // Waiter
 
-                    NormalManagerDB.getInstance().add(0, cmd_icpl);
+                    NormalManagerDB.Instance.add(0, cmd_icpl);
 
                     if (cmd_icpl.getException().getCodeError() != 0)
                         throw cmd_icpl.getException();
 
                     if ((log_id = cmd_icpl.getId()) <= 0)
-                        throw new exception($"[player::saveCPLog][Error] PLAYER[UID={UserInfo.uid}] nao conseguiu salvar o CPLog[{_cp_log.toString()}] do player. Bug",
+                        throw new exception($"[player::saveCPLog][Error] Normal[UID={UserInfo.UID}] nao conseguiu salvar o CPLog[{_cp_log.toString()}] do player. Bug",
                              ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER, 1300, 0));
 
                     if ((_cp_log.getType() == CPLog.TYPE.BUY_SHOP || _cp_log.getType() == CPLog.TYPE.GIFT_SHOP)
@@ -754,14 +755,14 @@ namespace Pangya_GameServer.Session
                         // Tem item(ns), salva o log do(s) item(ns)
                         foreach (var el in _cp_log.getItens())
                         {
-                            NormalManagerDB.getInstance().add(3, new CmdInsertCPLogItem(UserInfo.uid, log_id, el), SQLDBResponse, this);
+                            NormalManagerDB.Instance.add(3, new CmdInsertCPLogItem(UserInfo.UID, log_id, el), SQLDBResponse, this);
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[player::saveCPLog][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[player::saveCPLog][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -781,13 +782,13 @@ namespace Pangya_GameServer.Session
 
                     CmdInsertCPLog cmd_icpl = new CmdInsertCPLog(_uid, _cp_log, true); // Waiter
 
-                    NormalManagerDB.getInstance().add(0, cmd_icpl);
+                    NormalManagerDB.Instance.add(0, cmd_icpl);
 
                     if (cmd_icpl.getException().getCodeError() != 0)
                         throw cmd_icpl.getException();
 
                     if ((log_id = cmd_icpl.getId()) <= 0)
-                        throw new exception($"[player::saveCPLog(static)][Error] PLAYER[UID={_uid}] nao conseguiu salvar o CPLog[{_cp_log.toString()}] do player. Bug",
+                        throw new exception($"[player::saveCPLog(static)][Error] Normal[UID={_uid}] nao conseguiu salvar o CPLog[{_cp_log.toString()}] do player. Bug",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER, 1300, 0));
 
                     if ((_cp_log.getType() == CPLog.TYPE.BUY_SHOP || _cp_log.getType() == CPLog.TYPE.GIFT_SHOP)
@@ -797,14 +798,14 @@ namespace Pangya_GameServer.Session
                         // Tem item(ns), salva o log do(s) item(ns)
                         foreach (var el in _cp_log.getItens())
                         {
-                            NormalManagerDB.getInstance().add(3, new CmdInsertCPLogItem(_uid, log_id, el), SQLDBResponse, null);
+                            NormalManagerDB.Instance.add(3, new CmdInsertCPLogItem(_uid, log_id, el), SQLDBResponse, null);
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[player::saveCPLog(static)][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[player::saveCPLog(static)][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -860,10 +861,10 @@ namespace Pangya_GameServer.Session
                 {
 
                     // Esse AuxPartNumber é o 0x0 anel que consome(só mão direita), 0x1 mão direita, 0x21 mão esquerda
-                    if (sIff.getInstance().getItemGroupIdentify(ci.auxparts[i]) == IFF_GROUP.AUX_PART)
+                    if (sIff.Instance.getItemGroupIdentify(ci.auxparts[i]) == IFF_GROUP.AUX_PART)
                     {
 
-                        var aux = sIff.getInstance().findAuxPart(ci.auxparts[i]);
+                        var aux = sIff.Instance.findAuxPart(ci.auxparts[i]);
                         var pAux = Inventory.FindWarehouseItemByTypeid(ci.auxparts[i]);
 
                         if (aux != null
@@ -871,7 +872,7 @@ namespace Pangya_GameServer.Session
                             && pAux != null)
                         {
 
-                            if (aux.Level.GoodLevel((byte)UserInfo.level))
+                            if (aux.Level.GoodLevel((byte)UserInfo.Level))
                             {
 
                                 if (aux.slot[0] == 0 || pAux.c[0] > 0)
@@ -947,15 +948,15 @@ namespace Pangya_GameServer.Session
 
                         upt_on_db = true;
 
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckCharacterEquipedCutin][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Character[TYPEID=" + Convert.ToString(ci._typeid) + ", ID=" + Convert.ToString(ci.id) + "] Not Have Cutin[ID=" + Convert.ToString(ci.cut_in[i]) + ", SLOT=" + Convert.ToString(i) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCharacterEquipedCutin][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Character[TYPEID=" + Convert.ToString(ci._typeid) + ", ID=" + Convert.ToString(ci.id) + "] Not Have Cutin[ID=" + Convert.ToString(ci.cut_in[i]) + ", SLOT=" + Convert.ToString(i) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     }
                     else
                     {
 
-                        var cutin = sIff.getInstance().findSkin(pCutin._typeid);
+                        var cutin = sIff.Instance.findSkin(pCutin._typeid);
 
-                        if (cutin != null && !cutin.Level.GoodLevel((byte)UserInfo.level))
+                        if (cutin != null && !cutin.Level.GoodLevel((byte)UserInfo.Level))
                         {
 
                             // Zera (Desequipa)
@@ -963,8 +964,8 @@ namespace Pangya_GameServer.Session
 
                             upt_on_db = true;
 
-                            // Não tem o level necessário para equipar esse Cutin
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckCharacterEquipedCutin][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Character[TYPEID=" + Convert.ToString(ci._typeid) + ", ID=" + Convert.ToString(ci.id) + "] Cutin[TYPEID=" + Convert.ToString(pCutin._typeid) + " ID=" + Convert.ToString(pCutin.id) + ", SLOT=" + Convert.ToString(i) + "]  PLAYER[Lv=" + Convert.ToString(UserInfo.level) + "] nao tem o level[is_max=" + Convert.ToString(cutin.Level.is_max) + ", Lv=" + Convert.ToString((ushort)cutin.Level.level) + "] para equipar esse item. Hacker ou bug..", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            // Não tem o Level necessário para equipar esse Cutin
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCharacterEquipedCutin][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Character[TYPEID=" + Convert.ToString(ci._typeid) + ", ID=" + Convert.ToString(ci.id) + "] Cutin[TYPEID=" + Convert.ToString(pCutin._typeid) + " ID=" + Convert.ToString(pCutin.id) + ", SLOT=" + Convert.ToString(i) + "]  Normal[Lv=" + Convert.ToString(UserInfo.Level) + "] nao tem o Level[is_max=" + Convert.ToString(cutin.Level.is_max) + ", Lv=" + Convert.ToString((ushort)cutin.Level.level) + "] para equipar esse item. Hacker ou bug..", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         }
                         else if (cutin == null)
@@ -976,7 +977,7 @@ namespace Pangya_GameServer.Session
                             upt_on_db = true;
 
                             // Não tem esse Cutin no IFF_STRUCT do server desequipa ele
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckCharacterEquipedCutin][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Character[TYPEID=" + Convert.ToString(ci._typeid) + ", ID=" + Convert.ToString(ci.id) + "] Not Have Cutin[TYPEID=" + Convert.ToString(pCutin._typeid) + " ID=" + Convert.ToString(pCutin.id) + ", SLOT=" + Convert.ToString(i) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCharacterEquipedCutin][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Character[TYPEID=" + Convert.ToString(ci._typeid) + ", ID=" + Convert.ToString(ci.id) + "] Not Have Cutin[TYPEID=" + Convert.ToString(pCutin._typeid) + " ID=" + Convert.ToString(pCutin.id) + ", SLOT=" + Convert.ToString(i) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                 }
@@ -997,8 +998,8 @@ namespace Pangya_GameServer.Session
             // Atualiza os parts equipados do player no banco de dados, que tinha parts errados
             if (ret)
             {
-                NormalManagerDB.getInstance().add(5,
-                      new CmdUpdateCharacterAllPartEquiped(UserInfo.uid, ci),
+                NormalManagerDB.Instance.add(5,
+                      new CmdUpdateCharacterAllPartEquiped(UserInfo.UID, ci),
                       SQLDBResponse, this);
             }
         }
@@ -1008,10 +1009,10 @@ namespace Pangya_GameServer.Session
 
             uint def_part = 0;
 
-            // Angel Part of character 3% quit rate para equipar o Normal angel wings
-            var angel_wings_typeid = Global.angel_wings.FirstOrDefault(el => sIff.getInstance().getItemCharIdentify(el) == (ci._typeid & 0x000000FF));
+            // Angel Part of character 3% quit Rate para equipar o Normal angel wings
+            var angel_wings_typeid = Global.angel_wings.FirstOrDefault(el => sIff.Instance.getItemCharIdentify(el) == (ci._typeid & 0x000000FF));
 
-            int angel_wings_part_num = (Global.angel_wings.Any(el => el == angel_wings_typeid) ? -1 : (int)sIff.getInstance().getItemCharPartNumber(angel_wings_typeid));
+            int angel_wings_part_num = (Global.angel_wings.Any(el => el == angel_wings_typeid) ? -1 : (int)sIff.Instance.getItemCharPartNumber(angel_wings_typeid));
 
             bool upt_on_db = false;
 
@@ -1022,10 +1023,10 @@ namespace Pangya_GameServer.Session
                 if (ci.parts_typeid[i] != 0)
                 {
 
-                    if (sIff.getInstance().getItemGroupIdentify(ci.parts_typeid[i]) == IFF_GROUP.PART && (sIff.getInstance().getItemCharPartNumber(ci.parts_typeid[i]) == i || (ci.parts_typeid[i] & 0x08000400/*def part*/) == 0x8000400))
+                    if (sIff.Instance.getItemGroupIdentify(ci.parts_typeid[i]) == IFF_GROUP.PART && (sIff.Instance.getItemCharPartNumber(ci.parts_typeid[i]) == i || (ci.parts_typeid[i] & 0x08000400/*def part*/) == 0x8000400))
                     {
 
-                        var part = sIff.getInstance().findPart(ci.parts_typeid[i]);
+                        var part = sIff.Instance.findPart(ci.parts_typeid[i]);
 
                         if (part != null && part.Active)
                         {
@@ -1033,7 +1034,7 @@ namespace Pangya_GameServer.Session
                             if (ci.parts_id[i] == 0)
                             {
 
-                                def_part = ((sIff.getInstance().getItemCharPartNumber(ci.parts_typeid[i]) | (uint)(ci._typeid << 5)) << 13) | 0x8000400;
+                                def_part = ((sIff.Instance.getItemCharPartNumber(ci.parts_typeid[i]) | (uint)(ci._typeid << 5)) << 13) | 0x8000400;
 
                                 if ((ci.parts_typeid[i] & def_part) == def_part)
                                 {
@@ -1068,7 +1069,7 @@ namespace Pangya_GameServer.Session
                                     else if (slot)
                                     {
 
-                                        if (part.Level.GoodLevel((byte)UserInfo.level))
+                                        if (part.Level.GoodLevel((byte)UserInfo.Level))
                                         {
 
                                             if (angel_wings_part_num == -1 || parts._typeid != angel_wings_typeid || UserInfo.Statistics.getQuitRate() < 3.0f)
@@ -1111,7 +1112,7 @@ namespace Pangya_GameServer.Session
                                 ci.unequipPart(part);
                             else
                             {
-                                part = sIff.getInstance().findPart(_typeid: (def_part = ((i | (uint)(ci._typeid << 5)) << 13) | 0x8000400));
+                                part = sIff.Instance.findPart(_typeid: (def_part = ((i | (uint)(ci._typeid << 5)) << 13) | 0x8000400));
                                 ci.parts_typeid[i] = (part != null) ? def_part : 0;
                                 ci.parts_id[i] = 0;
                             }
@@ -1122,7 +1123,7 @@ namespace Pangya_GameServer.Session
                     else
                     {
 
-                        var part = sIff.getInstance().findPart(ci.parts_typeid[i]);
+                        var part = sIff.Instance.findPart(ci.parts_typeid[i]);
 
                         // Deseequipa o Part do character e coloca os Parts Default do Character no lugar
                         if (part != null)
@@ -1130,7 +1131,7 @@ namespace Pangya_GameServer.Session
                         else
                         {
 
-                            part = sIff.getInstance().findPart((def_part = ((i | (uint)(ci._typeid << 5)) << 13) | 0x8000400));
+                            part = sIff.Instance.findPart((def_part = ((i | (uint)(ci._typeid << 5)) << 13) | 0x8000400));
                             ci.parts_typeid[i] = (part != null) ? def_part : 0;
                             ci.parts_id[i] = 0;
                         }
@@ -1191,17 +1192,17 @@ namespace Pangya_GameServer.Session
 
                         upt_on_db = true;
 
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckSkinEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Skin[TYPEID=" + Convert.ToString(tmp_typeid) + ", ID=" + Convert.ToString(tmp_id) + ", SLOT=" + Convert.ToString(i) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckSkinEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Skin[TYPEID=" + Convert.ToString(tmp_typeid) + ", ID=" + Convert.ToString(tmp_id) + ", SLOT=" + Convert.ToString(i) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     }
                     else
                     {
 
-                        var skin = sIff.getInstance().findSkin(pSkin._typeid);
+                        var skin = sIff.Instance.findSkin(pSkin._typeid);
 
-                        // Aqui tem que verificar as condições dos Title, uns só com 3% de quit rate, % de acerto de pangya e etc
+                        // Aqui tem que verificar as condições dos Title, uns só com 3% de quit Rate, % de acerto de pangya e etc
 
-                        if (skin != null && !skin.Level.GoodLevel((byte)UserInfo.level))
+                        if (skin != null && !skin.Level.GoodLevel((byte)UserInfo.Level))
                         {
 
                             // Zera (Desequipa)
@@ -1210,20 +1211,20 @@ namespace Pangya_GameServer.Session
 
                             upt_on_db = true;
 
-                            // Não tem o level necessário para equipar esse Skin
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckSkinEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Skin[TYPEID=" + Convert.ToString(pSkin._typeid) + " ID=" + Convert.ToString(pSkin.id) + ", SLOT=" + Convert.ToString(i) + "]  PLAYER[Lv=" + Convert.ToString(UserInfo.level) + "] nao tem o level[is_max=" + Convert.ToString(skin.Level.is_max) + ", Lv=" + Convert.ToString((ushort)skin.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            // Não tem o Level necessário para equipar esse Skin
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckSkinEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Skin[TYPEID=" + Convert.ToString(pSkin._typeid) + " ID=" + Convert.ToString(pSkin.id) + ", SLOT=" + Convert.ToString(i) + "]  Normal[Lv=" + Convert.ToString(UserInfo.Level) + "] nao tem o Level[is_max=" + Convert.ToString(skin.Level.is_max) + ", Lv=" + Convert.ToString((ushort)skin.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         }
-                        else if (skin != null && sIff.getInstance().IsTitle(pSkin._typeid))
+                        else if (skin != null && sIff.Instance.IsTitle(pSkin._typeid))
                         {
                             //verifica se ele pode ter, silver, golden, bronze, e etc. sao titulos especiais, que precisam ter um, Check
                             //eu vou explicar melhor em outra parte
-                            // Verifica se o title tem condição e atualiza se tiver
-                            uint title_num = sIff.getInstance().getItemTitleNum(pSkin._typeid);
+                            // Verifica se o TitleSkin tem condição e atualiza se tiver
+                            uint title_num = sIff.Instance.getItemTitleNum(pSkin._typeid);
 
                             var Check_title = getTitleCallBack(title_num);
 
-                            // Check_title == null, title não tem condição
+                            // Check_title == null, TitleSkin não tem condição
                             if (Check_title != null && !Check_title.Exec())
                             {
 
@@ -1233,8 +1234,8 @@ namespace Pangya_GameServer.Session
 
                                 upt_on_db = true;
 
-                                // Não passa na condição do title, desequipa ele
-                                _smp.message_pool.getInstance().push(new message("[Player::CheckSkinEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Skin[TYPEID=" + Convert.ToString(pSkin._typeid) + " ID=" + Convert.ToString(pSkin.id) + ", SLOT=" + Convert.ToString(i) + "] nao passou na condition TITLE[NUM=" + Convert.ToString(title_num) + "], para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                // Não passa na condição do TitleSkin, desequipa ele
+                                _smp.LogManager.Instance.push(new AppMessage("[Player::CheckSkinEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Skin[TYPEID=" + Convert.ToString(pSkin._typeid) + " ID=" + Convert.ToString(pSkin.id) + ", SLOT=" + Convert.ToString(i) + "] nao passou na condition TITLE[NUM=" + Convert.ToString(title_num) + "], para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             }
 
                         }
@@ -1248,7 +1249,7 @@ namespace Pangya_GameServer.Session
                             upt_on_db = true;
 
                             // Não tem o Skin no IFF_STRUCT do server desequipa ele
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckSkinEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Skin[TYPEID=" + Convert.ToString(pSkin._typeid) + ", ID=" + Convert.ToString(pSkin.id) + ", SLOT=" + Convert.ToString(i) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckSkinEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Skin[TYPEID=" + Convert.ToString(pSkin._typeid) + ", ID=" + Convert.ToString(pSkin.id) + ", SLOT=" + Convert.ToString(i) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                 }
@@ -1282,15 +1283,15 @@ namespace Pangya_GameServer.Session
 
                         upt_on_db = true;
 
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckPosterEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Poster[TYPEID=" + Convert.ToString(tmp_typeid) + ", SLOT=" + Convert.ToString(i) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckPosterEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Poster[TYPEID=" + Convert.ToString(tmp_typeid) + ", SLOT=" + Convert.ToString(i) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     }
                     else
                     {
 
-                        var poster = sIff.getInstance().findFurniture(pPoster._typeid);
+                        var poster = sIff.Instance.findFurniture(pPoster._typeid);
 
-                        if (poster != null && !poster.Level.GoodLevel((byte)UserInfo.level))
+                        if (poster != null && !poster.Level.GoodLevel((byte)UserInfo.Level))
                         {
 
                             // Zera (Desequipa)
@@ -1298,8 +1299,8 @@ namespace Pangya_GameServer.Session
 
                             upt_on_db = true;
 
-                            // Não tem o level necessário para equipar esse Poster
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckPosterEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Poster[TYPEID=" + Convert.ToString(pPoster._typeid) + " ID=" + Convert.ToString(pPoster.id) + ", SLOT=" + Convert.ToString(i) + "]  PLAYER[Lv=" + Convert.ToString(UserInfo.level) + "] nao tem o level[is_max=" + Convert.ToString(poster.Level.is_max) + ", Lv=" + Convert.ToString((ushort)poster.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            // Não tem o Level necessário para equipar esse Poster
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckPosterEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Poster[TYPEID=" + Convert.ToString(pPoster._typeid) + " ID=" + Convert.ToString(pPoster.id) + ", SLOT=" + Convert.ToString(i) + "]  Normal[Lv=" + Convert.ToString(UserInfo.Level) + "] nao tem o Level[is_max=" + Convert.ToString(poster.Level.is_max) + ", Lv=" + Convert.ToString((ushort)poster.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         }
                         else if (poster == null)
@@ -1311,7 +1312,7 @@ namespace Pangya_GameServer.Session
                             upt_on_db = true;
 
                             // Não tem esse Poster no IFF_STRUCT do Server desequipa ele
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckPosterEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Poster[TYPEID=" + Convert.ToString(pPoster._typeid) + ", ID=" + Convert.ToString(pPoster.id) + ", SLOT=" + Convert.ToString(i) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckPosterEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Poster[TYPEID=" + Convert.ToString(pPoster._typeid) + ", ID=" + Convert.ToString(pPoster.id) + ", SLOT=" + Convert.ToString(i) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                 }
@@ -1345,14 +1346,14 @@ namespace Pangya_GameServer.Session
                     catch (exception e)
                     {
 
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckCharacterEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCharacterEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
                     upt_on_db = true;
 
-                    _smp.message_pool.getInstance().push(new message("[Player::CheckCharacterEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Character[ID=" + Convert.ToString(tmp_id) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCharacterEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Character[ID=" + Convert.ToString(tmp_id) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                } //else Character não tem tempo ou level para equipar, então não precisa verificar o character se o player tiver ele
+                } //else Character não tem tempo ou Level para equipar, então não precisa verificar o character se o player tiver ele
 
             }
             else
@@ -1368,13 +1369,13 @@ namespace Pangya_GameServer.Session
                 catch (exception e)
                 {
 
-                    _smp.message_pool.getInstance().push(new message("[Player::CheckCharacterEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCharacterEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 upt_on_db = true;
 
-                // Não tem nenhum character normal ou padrão equipado, equipado o character padrão
-                _smp.message_pool.getInstance().push(new message("[Player::CheckCharacterEquiped][Error][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao tem um character equipado. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                // Não tem nenhum character Normal ou padrão equipado, equipado o character padrão
+                _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCharacterEquiped][Error][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao tem um character equipado. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return upt_on_db;
@@ -1402,15 +1403,15 @@ namespace Pangya_GameServer.Session
 
                     upt_on_db = true;
 
-                    _smp.message_pool.getInstance().push(new message("[Player::CheckCaddieEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Caddie[ID=" + Convert.ToString(tmp_id) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCaddieEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Caddie[ID=" + Convert.ToString(tmp_id) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 }
                 else
                 {
 
-                    var caddie = sIff.getInstance().findCaddie(pCaddie._typeid);
+                    var caddie = sIff.Instance.findCaddie(pCaddie._typeid);
 
-                    if (caddie != null && !caddie.Level.GoodLevel((byte)UserInfo.level))
+                    if (caddie != null && !caddie.Level.GoodLevel((byte)UserInfo.Level))
                     {
 
                         // Zera (Desequipa)
@@ -1419,8 +1420,8 @@ namespace Pangya_GameServer.Session
 
                         upt_on_db = true;
 
-                        // Não tem o level necessário para equipar esse caddie
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckCaddieEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Caddie[TYPEID=" + Convert.ToString(pCaddie._typeid) + " ID=" + Convert.ToString(pCaddie.id) + " PLAYER[Lv=" + Convert.ToString(UserInfo.level) + "] nao tem o level[is_max=" + Convert.ToString(caddie.Level.is_max) + ", Lv=" + Convert.ToString((ushort)caddie.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        // Não tem o Level necessário para equipar esse caddie
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCaddieEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Caddie[TYPEID=" + Convert.ToString(pCaddie._typeid) + " ID=" + Convert.ToString(pCaddie.id) + " Normal[Lv=" + Convert.ToString(UserInfo.Level) + "] nao tem o Level[is_max=" + Convert.ToString(caddie.Level.is_max) + ", Lv=" + Convert.ToString((ushort)caddie.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     }
                     else if (caddie != null && pCaddie.rent_flag == 2 && (DateTime.Now >= pCaddie.end_date.ConvertTime())) // tempo acabou
@@ -1432,8 +1433,8 @@ namespace Pangya_GameServer.Session
                         upt_on_db = true;
 
                         // Log do caddie expirado
-                        _smp.message_pool.getInstance().push(new message(
-                            $"[Player::CheckCaddieEquiped][Error] PLAYER[UID={UserInfo.uid}] Caddie[TYPEID={pCaddie._typeid} ID={pCaddie.id}, END_DATE={pCaddie.end_date.ConvertTime()}] expirou e não pode ser equipado. Hacker ou bug.",
+                        _smp.LogManager.Instance.push(new AppMessage(
+                            $"[Player::CheckCaddieEquiped][Error] Normal[UID={UserInfo.UID}] Caddie[TYPEID={pCaddie._typeid} ID={pCaddie.id}, END_DATE={pCaddie.end_date.ConvertTime()}] expirou e não pode ser equipado. Hacker ou bug.",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else if (caddie == null)
@@ -1446,7 +1447,7 @@ namespace Pangya_GameServer.Session
                         upt_on_db = true;
 
                         // Não tem esse caddie no IFF_STRUCT do server, desequipa ele
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckCaddieEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Caddie[TYPEID=" + Convert.ToString(pCaddie._typeid) + ", ID=" + Convert.ToString(pCaddie.id) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckCaddieEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Caddie[TYPEID=" + Convert.ToString(pCaddie._typeid) + ", ID=" + Convert.ToString(pCaddie.id) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
             }
@@ -1476,15 +1477,15 @@ namespace Pangya_GameServer.Session
 
                     upt_on_db = true;
 
-                    _smp.message_pool.getInstance().push(new message("[Player::CheckMascotEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Mascot[ID=" + Convert.ToString(tmp_id) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Player::CheckMascotEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Mascot[ID=" + Convert.ToString(tmp_id) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 }
                 else
                 {
 
-                    var mascot = sIff.getInstance().findMascot(pMascot._typeid);
+                    var mascot = sIff.Instance.findMascot(pMascot._typeid);
 
-                    if (mascot != null && !mascot.Level.GoodLevel((byte)UserInfo.level))
+                    if (mascot != null && !mascot.Level.GoodLevel((byte)UserInfo.Level))
                     {
 
                         // Zera (Desequipa)
@@ -1493,8 +1494,8 @@ namespace Pangya_GameServer.Session
 
                         upt_on_db = true;
 
-                        // Não tem o level necessário para equipar esse mascot, desequipa
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckMascotEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Mascot[TYPEID=" + Convert.ToString(pMascot._typeid) + " ID=" + Convert.ToString(pMascot.id) + " PLAYER[Lv=" + Convert.ToString(UserInfo.level) + "] nao tem o level[is_max=" + Convert.ToString(mascot.Level.is_max) + ", Lv=" + Convert.ToString((ushort)mascot.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        // Não tem o Level necessário para equipar esse mascot, desequipa
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckMascotEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Mascot[TYPEID=" + Convert.ToString(pMascot._typeid) + " ID=" + Convert.ToString(pMascot.id) + " Normal[Lv=" + Convert.ToString(UserInfo.Level) + "] nao tem o Level[is_max=" + Convert.ToString(mascot.Level.is_max) + ", Lv=" + Convert.ToString((ushort)mascot.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     }
                     else if (mascot != null && pMascot.tipo == 1 && (DateTime.Now >= pMascot.data.ConvertTime()))
@@ -1507,7 +1508,7 @@ namespace Pangya_GameServer.Session
                         upt_on_db = true;
 
                         // O tempo do mascot acabou, desequipa
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckMascotEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Mascot[TYPEID=" + Convert.ToString(pMascot._typeid) + " ID=" + Convert.ToString(pMascot.id) + ", END_DATE=" + (pMascot.data.ConvertTime()) + "] acabou o tempo do mascot, nao pode equipar esse mascot. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckMascotEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Mascot[TYPEID=" + Convert.ToString(pMascot._typeid) + " ID=" + Convert.ToString(pMascot.id) + ", END_DATE=" + (pMascot.data.ConvertTime()) + "] acabou o tempo do mascot, nao pode equipar esse mascot. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     }
                     else if (mascot == null)
@@ -1520,7 +1521,7 @@ namespace Pangya_GameServer.Session
                         upt_on_db = true;
 
                         // Não tem esse mascot no IFF_STRUCT do server, desequipa
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckMascotEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Mascot[TYPEID=" + Convert.ToString(pMascot._typeid) + ", ID=" + Convert.ToString(pMascot.id) + "] in IFF_STRCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckMascotEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Mascot[TYPEID=" + Convert.ToString(pMascot._typeid) + ", ID=" + Convert.ToString(pMascot.id) + "] in IFF_STRCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
             }
@@ -1556,20 +1557,20 @@ namespace Pangya_GameServer.Session
                     catch (exception e)
                     {
 
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckClubSetEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckClubSetEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
                     upt_on_db = true;
 
-                    _smp.message_pool.getInstance().push(new message("[Player::CheckClubSetEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have ClubSet[ID=" + Convert.ToString(tmp_id) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Player::CheckClubSetEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have ClubSet[ID=" + Convert.ToString(tmp_id) + "], but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 }
                 else
                 {
 
-                    var clubset = sIff.getInstance().findClubSet(pClubSet._typeid);
+                    var clubset = sIff.Instance.findClubSet(pClubSet._typeid);
 
-                    if (clubset != null && !clubset.Level.GoodLevel((byte)UserInfo.level))
+                    if (clubset != null && !clubset.Level.GoodLevel((byte)UserInfo.Level))
                     {
 
                         try
@@ -1582,13 +1583,13 @@ namespace Pangya_GameServer.Session
                         catch (exception e)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckClubSetEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckClubSetEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                         upt_on_db = true;
 
-                        // Não tem o level necessário para equipar esse clubset, equipa o clubset padrão
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckClubSetEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] ClubSet[TYPEID=" + Convert.ToString(pClubSet._typeid) + " ID=" + Convert.ToString(pClubSet.id) + " PLAYER[Lv=" + Convert.ToString(UserInfo.level) + "] nao tem o level[is_max=" + Convert.ToString(clubset.Level.is_max) + ", Lv=" + Convert.ToString((ushort)clubset.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        // Não tem o Level necessário para equipar esse clubset, equipa o clubset padrão
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckClubSetEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] ClubSet[TYPEID=" + Convert.ToString(pClubSet._typeid) + " ID=" + Convert.ToString(pClubSet.id) + " Normal[Lv=" + Convert.ToString(UserInfo.Level) + "] nao tem o Level[is_max=" + Convert.ToString(clubset.Level.is_max) + ", Lv=" + Convert.ToString((ushort)clubset.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     }
                     else if (clubset == null)
@@ -1605,13 +1606,13 @@ namespace Pangya_GameServer.Session
                         catch (exception e)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckClubSetEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckClubSetEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                         upt_on_db = true;
 
                         // Não tem esse clubset no IFF_STRUCT do server, equipa clubset padrão
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckClubSetEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have ClubSet[TYPEID=" + Convert.ToString(pClubSet._typeid) + ", ID=" + Convert.ToString(pClubSet.id) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckClubSetEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have ClubSet[TYPEID=" + Convert.ToString(pClubSet._typeid) + ", ID=" + Convert.ToString(pClubSet.id) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
 
@@ -1629,13 +1630,13 @@ namespace Pangya_GameServer.Session
                 catch (exception e)
                 {
 
-                    _smp.message_pool.getInstance().push(new message("[Player::CheckClubSetEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Player::CheckClubSetEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 upt_on_db = true;
 
-                // Não está com um clubset normal ou padrão equipado, equipa o clubset padrão
-                _smp.message_pool.getInstance().push(new message("[Player::CheckClubSetEquiped][Error][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao esta com um ClubSet equipado. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                // Não está com um clubset Normal ou padrão equipado, equipa o clubset padrão
+                _smp.LogManager.Instance.push(new AppMessage("[Player::CheckClubSetEquiped][Error][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao esta com um ClubSet equipado. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return upt_on_db;
@@ -1661,7 +1662,7 @@ namespace Pangya_GameServer.Session
                     catch (exception e)
                     {
 
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckBallEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckBallEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
                     upt_on_db = true;
@@ -1669,9 +1670,9 @@ namespace Pangya_GameServer.Session
                 else
                 {
 
-                    var ball = sIff.getInstance().findBall(pBall._typeid);
+                    var ball = sIff.Instance.findBall(pBall._typeid);
 
-                    if (ball != null && !ball.Level.GoodLevel((byte)UserInfo.level))
+                    if (ball != null && !ball.Level.GoodLevel((byte)UserInfo.Level))
                     {
 
                         try
@@ -1684,13 +1685,13 @@ namespace Pangya_GameServer.Session
                         catch (exception e)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckBallEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckBallEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                         upt_on_db = true;
 
-                        // Não tem o level necessário para equipar a bola
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckBallEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Ball[TYPEID=" + Convert.ToString(pBall._typeid) + " ID=" + Convert.ToString(pBall.id) + " PLAYER[Lv=" + Convert.ToString(UserInfo.level) + "] nao tem o level[is_max=" + Convert.ToString(ball.Level.is_max) + ", Lv=" + Convert.ToString((ushort)ball.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        // Não tem o Level necessário para equipar a bola
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckBallEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Ball[TYPEID=" + Convert.ToString(pBall._typeid) + " ID=" + Convert.ToString(pBall.id) + " Normal[Lv=" + Convert.ToString(UserInfo.Level) + "] nao tem o Level[is_max=" + Convert.ToString(ball.Level.is_max) + ", Lv=" + Convert.ToString((ushort)ball.Level.level) + "] para equipar esse item. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     }
                     else if (ball == null)
@@ -1706,13 +1707,13 @@ namespace Pangya_GameServer.Session
                         catch (exception e)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[Player::CheckBallEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Player::CheckBallEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                         upt_on_db = true;
 
                         // Não tem essa bola no IFF_STRUCT do server, equipa a bola padrão
-                        _smp.message_pool.getInstance().push(new message("[Player::CheckBallEquiped][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] Not Have Ball[TYPEID=" + Convert.ToString(pBall._typeid) + ", ID=" + Convert.ToString(pBall.id) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Player::CheckBallEquiped][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] Not Have Ball[TYPEID=" + Convert.ToString(pBall._typeid) + ", ID=" + Convert.ToString(pBall.id) + "] in IFF_STRUCT of server, but it is equiped. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
 
@@ -1730,13 +1731,13 @@ namespace Pangya_GameServer.Session
                 catch (exception e)
                 {
 
-                    _smp.message_pool.getInstance().push(new message("[Player::CheckBallEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Player::CheckBallEquiped][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 upt_on_db = true;
 
-                // Não está com nenhuma bola normal ou padrão equipada, equipa a bola padrão
-                _smp.message_pool.getInstance().push(new message("[Player::CheckBallEquiped][Error][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao esta com uma Ball equipada. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                // Não está com nenhuma bola Normal ou padrão equipada, equipa a bola padrão
+                _smp.LogManager.Instance.push(new AppMessage("[Player::CheckBallEquiped][Error][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao esta com uma Ball equipada. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return upt_on_db;
@@ -1747,55 +1748,55 @@ namespace Pangya_GameServer.Session
 
             if (CheckSkinEquiped(_ue))
             {
-                NormalManagerDB.getInstance().add(0,
-                      new CmdUpdateSkinEquiped(UserInfo.uid, _ue),
+                NormalManagerDB.Instance.add(0,
+                      new CmdUpdateSkinEquiped(UserInfo.UID, _ue),
                       SQLDBResponse, this);
             }
 
             if (CheckPosterEquiped(_ue))
             {
-                NormalManagerDB.getInstance().add(0,
-                      new CmdUpdatePosterEquiped(UserInfo.uid, _ue),
+                NormalManagerDB.Instance.add(0,
+                      new CmdUpdatePosterEquiped(UserInfo.UID, _ue),
                       SQLDBResponse, this);
             }
 
             if (CheckCharacterEquiped(_ue))
             {
-                NormalManagerDB.getInstance().add(0,
-                      new CmdUpdateCharacterEquiped(UserInfo.uid, (int)_ue.character_id),
+                NormalManagerDB.Instance.add(0,
+                      new CmdUpdateCharacterEquiped(UserInfo.UID, (int)_ue.character_id),
                       SQLDBResponse, this);
             }
 
             if (CheckCaddieEquiped(_ue))
             {
-                NormalManagerDB.getInstance().add(0,
-                      new CmdUpdateCaddieEquiped(UserInfo.uid, (int)_ue.caddie_id),
+                NormalManagerDB.Instance.add(0,
+                      new CmdUpdateCaddieEquiped(UserInfo.UID, (int)_ue.caddie_id),
                       SQLDBResponse, this);
             }
 
             if (CheckMascotEquiped(_ue))
             {
-                NormalManagerDB.getInstance().add(0,
-                      new CmdUpdateMascotEquiped(UserInfo.uid, (int)_ue.mascot_id),
+                NormalManagerDB.Instance.add(0,
+                      new CmdUpdateMascotEquiped(UserInfo.UID, (int)_ue.mascot_id),
                       SQLDBResponse, this);
             }
 
             if (Inventory.CheckItemEquiped(_ue.item_slot))
             {
-                NormalManagerDB.getInstance().add(0, new CmdUpdateItemSlot(UserInfo.uid, _ue.item_slot), SQLDBResponse, this);
+                NormalManagerDB.Instance.add(0, new CmdUpdateItemSlot(UserInfo.UID, _ue.item_slot), SQLDBResponse, this);
             }
 
             if (CheckClubSetEquiped(_ue))
             {
-                NormalManagerDB.getInstance().add(0,
-                      new CmdUpdateClubsetEquiped(UserInfo.uid, (int)_ue.clubset_id),
+                NormalManagerDB.Instance.add(0,
+                      new CmdUpdateClubsetEquiped(UserInfo.UID, (int)_ue.clubset_id),
                       SQLDBResponse, this);
             }
 
             if (CheckBallEquiped(_ue))
             {
-                NormalManagerDB.getInstance().add(0,
-                      new CmdUpdateBallEquiped(UserInfo.uid, _ue.ball_typeid),
+                NormalManagerDB.Instance.add(0,
+                      new CmdUpdateBallEquiped(UserInfo.UID, _ue.ball_typeid),
                       SQLDBResponse, this);
             }
         }
@@ -1812,7 +1813,7 @@ namespace Pangya_GameServer.Session
             if (Inventory.Characters.Count() > 0)
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::equipDefaultCharacter][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou verificar o Character[ID=" + Convert.ToString(tmp_id) + "] para comecar o jogo, colocando o primeiro character do player. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultCharacter][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou verificar o Character[ID=" + Convert.ToString(tmp_id) + "] para comecar o jogo, colocando o primeiro character do player. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 Inventory.UserEquippedItem.CharacterEquiped = Inventory.Characters.First().Value;
                 _ue.character_id = Inventory.UserEquippedItem.CharacterEquiped.id;
@@ -1821,14 +1822,14 @@ namespace Pangya_GameServer.Session
             else
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::equipDefaultCharacter][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou verificar o Character[ID=" + Convert.ToString(tmp_id) + "] para comecar o jogo, ele nao tem nenhum character. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultCharacter][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou verificar o Character[ID=" + Convert.ToString(tmp_id) + "] para comecar o jogo, ele nao tem nenhum character. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 BuyItem bi = new BuyItem();
                 stItem item = new stItem();
                 int item_id = 0;
 
                 bi.id = -1;
-                bi._typeid = (uint)(sIff.getInstance().CHARACTER << 26); // Nuri
+                bi._typeid = (uint)(sIff.Instance.CHARACTER << 26); // Nuri
                 bi.qntd = 1;
 
                 ItemManager.initItemFromBuyItem(UserInfo,
@@ -1842,14 +1843,14 @@ namespace Pangya_GameServer.Session
                     if ((item_id = ItemManager.addItem(item, this, 2, 0)) == RetAddItem.ERROR)
 
                     {
-                        throw new exception("[player::equipDefaultCharacter][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao conseguiu adicionar o Character[TYPEID=" + Convert.ToString(item._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                        throw new exception("[player::equipDefaultCharacter][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao conseguiu adicionar o Character[TYPEID=" + Convert.ToString(item._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                         2500, 2));
                     }
 
                 }
                 else
                 {
-                    throw new exception("[player::equipDefaultCharacter][Log][Warning][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao conseguiu inicializar o Character[TYPEID=" + Convert.ToString(bi._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                    throw new exception("[player::equipDefaultCharacter][Log][Warning][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao conseguiu inicializar o Character[TYPEID=" + Convert.ToString(bi._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                         2500, 1));
                 }
             }
@@ -1866,7 +1867,7 @@ namespace Pangya_GameServer.Session
             Inventory.UserEquippedItem.Club_WI = null;
             Inventory.UserEquippedItem.ClubEquiped = new ClubSetInfo();
 
-            _smp.message_pool.getInstance().push(new message("[player::equipDefaultClubSet][Error] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou verificar o Clubset[ID=" + Convert.ToString(tmp_id) + "] equipado, mas ClubSet Not exists on IFF structure. Equipa o ClubSet padrao. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultClubSet][Error] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou verificar o Clubset[ID=" + Convert.ToString(tmp_id) + "] equipado, mas ClubSet Not exists on IFF structure. Equipa o ClubSet padrao. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // Coloca o ClubSet CV1 no lugar do ClubSet que acabou o tempo
             var pWi = Inventory.FindWarehouseItemByTypeid(DEFAULT_CLUB_TYPEID);
@@ -1874,13 +1875,13 @@ namespace Pangya_GameServer.Session
             if (pWi != null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::equipDefaultClubSet][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou verificar o ClubSet[ID=" + Convert.ToString(tmp_id) + "], mas acabou o tempo do ClubSet[ID=" + Convert.ToString(tmp_id) + @"], colocando o ClubSet Padrao""CV1"" do player. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultClubSet][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou verificar o ClubSet[ID=" + Convert.ToString(tmp_id) + "], mas acabou o tempo do ClubSet[ID=" + Convert.ToString(tmp_id) + @"], colocando o ClubSet Padrao""CV1"" do player. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Esse C do WarehouseItem, que pega do DB, não é o ja updado inicial da taqueira é o que fica tabela enchant, 
                 // que no original fica no warehouse msm, eu só confundi quando fiz
                 Inventory.UserEquippedItem.ClubEquiped.setValues(pWi.id, pWi._typeid, pWi.c);
 
-                var cs = sIff.getInstance().findClubSet(pWi._typeid);
+                var cs = sIff.Instance.findClubSet(pWi._typeid);
 
                 if (cs != null)
                 {
@@ -1897,7 +1898,7 @@ namespace Pangya_GameServer.Session
             else
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::equipDefaultClubSet][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou verificar o ClubSet[ID=" + Convert.ToString(tmp_id) + "], mas acabou o tempo do ClubSet[ID=" + Convert.ToString(tmp_id) + @"], ele nao tem o ClubSet Padrao""CV1"". Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultClubSet][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou verificar o ClubSet[ID=" + Convert.ToString(tmp_id) + "], mas acabou o tempo do ClubSet[ID=" + Convert.ToString(tmp_id) + @"], ele nao tem o ClubSet Padrao""CV1"". Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 BuyItem bi = new BuyItem();
                 stItem item = new stItem();
@@ -1927,7 +1928,7 @@ namespace Pangya_GameServer.Session
                             // que no original fica no warehouse msm, eu só confundi quando fiz
                             Inventory.UserEquippedItem.ClubEquiped.setValues(pWi.id, pWi._typeid, pWi.c);
 
-                            var cs = sIff.getInstance().findClubSet(pWi._typeid);
+                            var cs = sIff.Instance.findClubSet(pWi._typeid);
 
                             if (cs != null)
                             {
@@ -1941,28 +1942,28 @@ namespace Pangya_GameServer.Session
                             Inventory.UserEquipment.clubset_id = pWi.id;
 
                             // Update ON DB
-                            NormalManagerDB.getInstance().add(0,
-                                 new CmdUpdateClubsetEquiped(UserInfo.uid, item_id),
+                            NormalManagerDB.Instance.add(0,
+                                 new CmdUpdateClubsetEquiped(UserInfo.UID, item_id),
                                  SQLDBResponse, this);
 
                         }
                         else
                         {
-                            throw new exception("[player::equipDefaultClubSet][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + @"] nao conseguiu achar o ClubSet""CV1""[ID=" + Convert.ToString(item.id) + "] padrao que acabou de adicionar para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                            throw new exception("[player::equipDefaultClubSet][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + @"] nao conseguiu achar o ClubSet""CV1""[ID=" + Convert.ToString(item.id) + "] padrao que acabou de adicionar para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                                 2501, 3));
                         }
 
                     }
                     else
                     {
-                        throw new exception("[player::equipDefaultClubSet][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao conseguiu adicionar o ClubSet[TYPEID=" + Convert.ToString(item._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                        throw new exception("[player::equipDefaultClubSet][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao conseguiu adicionar o ClubSet[TYPEID=" + Convert.ToString(item._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                             2501, 2));
                     }
 
                 }
                 else
                 {
-                    throw new exception("[player::equipDefaultClubSet][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao conseguiu inicializar o ClubSet[TYPEID=" + Convert.ToString(bi._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                    throw new exception("[player::equipDefaultClubSet][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao conseguiu inicializar o ClubSet[TYPEID=" + Convert.ToString(bi._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                         2501, 1));
                 }
             }
@@ -1975,7 +1976,7 @@ namespace Pangya_GameServer.Session
             try
             {
 
-                if (UserInfo.UserCapabilities.premium_user)
+                if (UserInfo.UserCapabilities.UserPremium)
                 {
 
                     // Equipa a Ball Premium User Padrão
@@ -1988,7 +1989,7 @@ namespace Pangya_GameServer.Session
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::equipDefaultBall][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultBall][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             // Guarda para usar no Log
@@ -2003,7 +2004,7 @@ namespace Pangya_GameServer.Session
             if (pWi != null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::equipDefaultBall][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou verificar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, colocando a Ball Padrao do player. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultBall][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou verificar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, colocando a Ball Padrao do player. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 Inventory.UserEquippedItem.Ball_WI = pWi;
                 _ue.ball_typeid = pWi._typeid;
@@ -2012,7 +2013,7 @@ namespace Pangya_GameServer.Session
             else
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::equipDefaultBall][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou trocar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, ele nao tem a Ball Padrao. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultBall][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou trocar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, ele nao tem a Ball Padrao. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 BuyItem bi = new BuyItem();
                 stItem item = new stItem();
@@ -2042,28 +2043,28 @@ namespace Pangya_GameServer.Session
                             Inventory.UserEquipment.ball_typeid = pWi._typeid;
 
                             // Update ON DB
-                            NormalManagerDB.getInstance().add(0,
-                                  new CmdUpdateBallEquiped(UserInfo.uid, (uint)item_id),
+                            NormalManagerDB.Instance.add(0,
+                                  new CmdUpdateBallEquiped(UserInfo.UID, (uint)item_id),
                                   SQLDBResponse, this);
 
                         }
                         else
                         {
-                            throw new exception("[player::equipDefaultBall][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao conseguiu achar a Ball[ID=" + Convert.ToString(item.id) + "] padrao que acabou de adicionar para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                            throw new exception("[player::equipDefaultBall][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao conseguiu achar a Ball[ID=" + Convert.ToString(item.id) + "] padrao que acabou de adicionar para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                                 2502, 3));
                         }
 
                     }
                     else
                     {
-                        throw new exception("[player::equipDefaultBall][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao conseguiu adicionar a Ball[TYPEID=" + Convert.ToString(item._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                        throw new exception("[player::equipDefaultBall][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao conseguiu adicionar a Ball[TYPEID=" + Convert.ToString(item._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                             2502, 2));
                     }
 
                 }
                 else
                 {
-                    throw new exception("[player::equipDefaultBall][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] nao conseguiu inicializar a Ball[TYPEID=" + Convert.ToString(bi._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
+                    throw new exception("[player::equipDefaultBall][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] nao conseguiu inicializar a Ball[TYPEID=" + Convert.ToString(bi._typeid) + "] padrao para ele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER,
                         2502, 1));
                 }
 
@@ -2077,7 +2078,7 @@ namespace Pangya_GameServer.Session
             var tmp_typeid = _ue.ball_typeid;
 
             // Valor padrão caso de erro no adicionar a Ball Premium User padrão
-            _ue.ball_typeid = sPremiumSystem.getInstance().getPremiumBallByTicket(Inventory.PremiumTicket._typeid);
+            _ue.ball_typeid = sPremiumSystem.Instance.getPremiumBallByTicket(Inventory.PremiumTicket._typeid);
             Inventory.UserEquippedItem.Ball_WI = null;
 
             var pWi = Inventory.FindWarehouseItemByTypeid(_ue.ball_typeid);
@@ -2085,7 +2086,7 @@ namespace Pangya_GameServer.Session
             if (pWi != null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::equipDefaultBallPremiumUser][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou verificar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, colocando a Ball Premium User Padrao do player. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultBallPremiumUser][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou verificar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, colocando a Ball Premium User Padrao do player. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 Inventory.UserEquippedItem.Ball_WI = pWi;
                 _ue.ball_typeid = pWi._typeid;
@@ -2094,21 +2095,21 @@ namespace Pangya_GameServer.Session
             else
             {
 
-                _smp.message_pool.getInstance().push(new message("[player::equipDefaultBallPremiumUser][Log][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou trocar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, ele nao tem a Ball Premium User Padrao. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultBallPremiumUser][Log][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou trocar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, ele nao tem a Ball Premium User Padrao. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Add Premium Ball
-                stItem item = sPremiumSystem.getInstance().addPremiumBall(this);
+                stItem item = sPremiumSystem.Instance.addPremiumBall(this);
 
                 if (item._typeid != 0u)
                 {
                     // Update ON DB
-                    NormalManagerDB.getInstance().add(0,
-                          new CmdUpdateBallEquiped(UserInfo.uid, item._typeid),
+                    NormalManagerDB.Instance.add(0,
+                          new CmdUpdateBallEquiped(UserInfo.UID, item._typeid),
                           SQLDBResponse, this);
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[player::equipDefaultBallPremiumUser][ERROR][Warning] PLAYER[UID=" + Convert.ToString(UserInfo.uid) + "] tentou trocar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, mas nao conseguiu adicionar a ball premium. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[player::equipDefaultBallPremiumUser][ERROR][Warning] Normal[UID=" + Convert.ToString(UserInfo.UID) + "] tentou trocar a Ball[TYPEID=" + Convert.ToString(tmp_typeid) + "] para comecar o jogo, mas nao conseguiu adicionar a ball premium. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -2138,14 +2139,14 @@ namespace Pangya_GameServer.Session
             return it.Value;
         }
 
-        public void setMemberInfo(MemberInfo MemberInfo)
+        public void setMemberInfo(PlayerMemberInfo MemberInfo)
         {
             UserInfo.Member = MemberInfo;
-            UserInfo.UserCapabilities = MemberInfo.capability;
-            UserInfo.Member.oid = ConnectionID;
-            //UserInfo.mi.state_flag.visible = true;
-            //UserInfo.mi.state_flag.whisper = UserInfo.whisper;
-            //UserInfo.mi.state_flag.channel = !UserInfo.whisper.IsTrue();//passar true?
+            UserInfo.UserCapabilities = MemberInfo.Capability;
+            UserInfo.Member.OID = ConnectionID;
+            //PlayerUserStatistics.mi.State.Visible = true;
+            //PlayerUserStatistics.mi.State.Whisper = PlayerUserStatistics.Whisper;
+            //PlayerUserStatistics.mi.State.Channel = !PlayerUserStatistics.Whisper.IsTrue();//passar true?
         }
 
         private void InitTitleCallbacks()
@@ -2253,10 +2254,10 @@ namespace Pangya_GameServer.Session
                 return;
             }
 
-            // Por Hora só sai, depois faço outro tipo de tratamento se precisar
+            // Por Hora só sai, depois faço outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[player:SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[player:SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -2291,7 +2292,7 @@ namespace Pangya_GameServer.Session
             {
                 p.WriteByte(7);  // Notice
 
-                p.WriteString(UserInfo.nickname);
+                p.WriteString(UserInfo.NickName);
 
                 p.WriteString(msg);
 

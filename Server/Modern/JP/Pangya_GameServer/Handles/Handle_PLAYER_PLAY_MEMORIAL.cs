@@ -29,32 +29,32 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // 1. Validações Iniciais
-                if (Player.UserInfo.block_flag.m_flag.memorial_shop)
+                if (Player.UserInfo.BlockFlag.Flag.MemorialShop)
                 {
-                    throw new exception($"[Memorial] Player {Player.UserInfo.uid} bloqueado.",
+                    throw new exception($"[Memorial] Player {Player.UserInfo.UID} bloqueado.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 6, 0x790001));
                 }
 
-                if (!sMemorialSystem.getInstance().isLoad())
-                    sMemorialSystem.getInstance().load();
+                if (!sMemorialSystem.Instance.isLoad())
+                    sMemorialSystem.Instance.load();
 
                 uint coin_typeid = Packet.ReadUInt32();
 
                 if (coin_typeid == 0)
                     throw new exception("[Memorial] Coin TypeID inválido (zero).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x6300301));
 
-                if (sIff.getInstance().getItemGroupIdentify(coin_typeid) != IFF_GROUP.ITEM)
+                if (sIff.Instance.getItemGroupIdentify(coin_typeid) != IFF_GROUP.ITEM)
                     throw new exception("[Memorial] O item enviado não é uma moeda válida.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 2, 0x6300302));
 
                 var pWi = Player.Inventory.FindWarehouseItemByTypeid(coin_typeid);
                 if (pWi == null)
                     throw new exception("[Memorial] Player não possui a moeda no inventário.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3, 0x6300303));
 
-                var coinIff = sIff.getInstance().findItem(pWi._typeid);
+                var coinIff = sIff.Instance.findItem(pWi._typeid);
                 if (coinIff == null || !coinIff.Active)
                     throw new exception("[Memorial] Moeda não encontrada no IFF do Server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 4, 0x6300304));
 
-                var memorialCoin = sMemorialSystem.getInstance().findCoin(coinIff.ID);
+                var memorialCoin = sMemorialSystem.Instance.findCoin(coinIff.ID);
                 if (memorialCoin == null)
                     throw new exception("[Memorial] Moeda não registrada no Memorial System.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 5, 0x6300305));
 
@@ -66,7 +66,7 @@ namespace Pangya_GameServer.Handles
                 else if (memorialCoin.tipo == MEMORIAL_COIN_TYPE.MCT_SPECIAL)
                     sys_achieve.incrementCounter(0x6C4000B3u);
 
-                var win_item = sMemorialSystem.getInstance().drawCoin(Player, memorialCoin);
+                var win_item = sMemorialSystem.Instance.drawCoin(Player, memorialCoin);
                 if (win_item == null || win_item.Count == 0)
                     throw new exception("[Memorial] Sorteio retornou vazio.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 6, 0x6300306));
 
@@ -79,8 +79,8 @@ namespace Pangya_GameServer.Handles
                     stItem item_tmp = new stItem();
 
                     // Lógica de Mascote por tempo
-                    var mascot = sIff.getInstance().findMascot(el._typeid);
-                    if (sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.MASCOT
+                    var mascot = sIff.Instance.findMascot(el._typeid);
+                    if (sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.MASCOT
                         && mascot != null && mascot.Shop.flag_shop.time_shop.dia > 0 && mascot.Shop.flag_shop.time_shop.active)
                     {
                         bi.qntd = 1;
@@ -97,8 +97,8 @@ namespace Pangya_GameServer.Handles
                         throw new exception($"[Memorial] Falha ao inicializar item ganho: {bi._typeid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 0x6300307));
 
                     // Lógica de duplicidade e Sets
-                    bool canOverlap = sIff.getInstance().IsCanOverlapped(item_tmp._typeid);
-                    bool isCadItem = sIff.getInstance().getItemGroupIdentify(item_tmp._typeid) == IFF_GROUP.CAD_ITEM;
+                    bool canOverlap = sIff.Instance.IsCanOverlapped(item_tmp._typeid);
+                    bool isCadItem = sIff.Instance.getItemGroupIdentify(item_tmp._typeid) == IFF_GROUP.CAD_ITEM;
 
                     if ((canOverlap && !isCadItem) || !Player.Inventory.ownerItem(item_tmp._typeid))
                     {
@@ -110,7 +110,7 @@ namespace Pangya_GameServer.Handles
 
                             foreach (var si in v_setItems)
                             {
-                                if ((sIff.getInstance().IsCanOverlapped(si._typeid) && sIff.getInstance().getItemGroupIdentify(si._typeid) != IFF_GROUP.CAD_ITEM) || !Player.Inventory.ownerItem(si._typeid))
+                                if ((sIff.Instance.IsCanOverlapped(si._typeid) && sIff.Instance.getItemGroupIdentify(si._typeid) != IFF_GROUP.CAD_ITEM) || !Player.Inventory.ownerItem(si._typeid))
                                     v_item_to_sync.Add(new stItem(si));
                             }
                         }
@@ -153,7 +153,7 @@ namespace Pangya_GameServer.Handles
                 // Log de Item Raro
                 if (win_item.Any() && win_item[0].tipo > 0 && win_item.Count == 1)
                 {
-                    NormalManagerDB.getInstance().add(24, new CmdInsertMemorialRareWinLog(Player.UserInfo.uid, memorialCoin._typeid, win_item.FirstOrDefault()));
+                    NormalManagerDB.Instance.add(24, new CmdInsertMemorialRareWinLog(Player.UserInfo.UID, memorialCoin._typeid, win_item.FirstOrDefault()));
                 }
 
                 // 5. Envio de Pacotes
@@ -191,7 +191,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Memorial] Erro: " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Memorial] Erro: " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 Packet pErr = new Packet(0x264);
                 uint errCode = (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL)

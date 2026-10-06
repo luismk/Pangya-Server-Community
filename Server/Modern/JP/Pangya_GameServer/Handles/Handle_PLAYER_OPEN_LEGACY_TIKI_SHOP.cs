@@ -23,11 +23,11 @@ namespace Pangya_GameServer.Handles
 
             try
             {
-                // 1. Verificação de bloqueio (Block Flag)
+                // 1. Verificação de bloqueio (Block ServerFlag)
                 // Verifica se o jogador possui alguma restrição específica para abrir esta loja
-                if (Player.UserInfo.block_flag.m_flag.legacy_tiki_shop)
+                if (Player.UserInfo.BlockFlag.Flag.LegacyTikiShop)
                 {
-                    throw new exception("[Handle_PLAYER_OPEN_LEGACY_TIKI_SHOP][Error] PLAYER [UID=" + Player.UserInfo.uid + "] está bloqueado no Legacy Tiki Shop.",
+                    throw new exception("[Handle_PLAYER_OPEN_LEGACY_TIKI_SHOP][Error] Normal [UID=" + Player.UserInfo.UID + "] está bloqueado no Legacy Tiki Shop.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 4000, 1));
                 }
 
@@ -41,12 +41,12 @@ namespace Pangya_GameServer.Handles
                 Player.Send(p);
 
                 // Log opcional de acesso
-                _smp.message_pool.getInstance().push(new message("[Legacy Tiki Shop::Open][Success] PLAYER [UID=" + Player.UserInfo.uid + "] abriu a loja com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Legacy Tiki Shop::Open][Success] Normal [UID=" + Player.UserInfo.UID + "] abriu a loja com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
                 // Tratamento de Erro do Sistema ou Bloqueio
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_OPEN_LEGACY_TIKI_SHOP][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_OPEN_LEGACY_TIKI_SHOP][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x1E7);
 

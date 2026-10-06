@@ -15,17 +15,17 @@ namespace Pangya_LoginServer.Handles
             switch (option)
             {
                 case 0:
-                    p.WriteString(_session.UserInfo.id);
-                    p.WriteUInt32(_session.UserInfo.uid);
-                    p.WriteUInt32(_session.UserInfo.m_cap);
-                    p.WriteByte(1);           // 1 level, 1 pc bang(ACHO), com base no S4
+                    p.WriteString(_session.UserInfo.Login);
+                    p.WriteUInt32(_session.UserInfo.UID);
+                    p.WriteUInt32(_session.UserInfo.Capability);
+                    p.WriteByte(1);           // 1 Level, 1 pc bang(ACHO), com base no S4
                     p.WriteInt32(0);// valor 0 Unknown
                     p.WriteByte(1);// nada
                     p.WriteInt32(5);// valor 5 Unknown, opcao 0 é pra enviar sem a chave, 
                     p.WriteTime();   // - JP S9 ler mais ignora ele
-                    p.WriteString(_session.UserInfo.token);// Alguma AuthKey aleatória para minha conta que eu não sei - JP S9 ler mais ignora ele
+                    p.WriteString(_session.UserInfo.ShopToken);// Alguma AuthKey aleatória para minha conta que eu não sei - JP S9 ler mais ignora ele
                     p.WriteUInt64(0); // Unknown valor - JP S9 ler mais ignora ele
-                    p.WriteString(_session.UserInfo.nickname);
+                    p.WriteString(_session.UserInfo.NickName);
                     break;
                 case 6:
                 case 1:
@@ -45,9 +45,9 @@ namespace Pangya_LoginServer.Handles
                     p.WriteInt32(sub_opt);
                     break;
                 case 7:
-                    var tempo = _session.UserInfo.block_flag.m_id_state.block_time / 60 / 60/*Hora*/; // Hora
+                    var tempo = _session.UserInfo.BlockFlag.State.TimeBlock / 60 / 60/*Hora*/; // Hora
                     //24(Horas)x15(Dias)=360(horas)
-                    p.WriteInt32(_session.UserInfo.block_flag.m_id_state.block_time == -1 || tempo == 0 ? 360/*Menos de uma hora*/ : tempo);   // Block Por Tempo
+                    p.WriteInt32(_session.UserInfo.BlockFlag.State.TimeBlock == -1 || tempo == 0 ? 360/*Menos de uma hora*/ : tempo);   // Block Por Tempo
                     if (!string.IsNullOrEmpty(message))
                     {
                         p.WriteString(message);
@@ -65,11 +65,11 @@ namespace Pangya_LoginServer.Handles
         {
             var p = new Packet(0x0F);
             p.WriteByte(option);
-            p.WriteString(_session.UserInfo.id);
+            p.WriteString(_session.UserInfo.Login);
             p.WriteUInt32(0);                             // valor 0 Unknown
             p.WriteUInt32(5);                             // valor 5 Unknown
             p.WriteString(UtilTime.formatDateLocal(0));   // Time Build Login Server (ACHO)							- JP S9 ler mais ignora ele
-            p.WriteString(_session.UserInfo.token);                      // Alguma AuthKey aleatória para minha conta que eu não sei - JP S9 ler mais ignora ele
+            p.WriteString(_session.UserInfo.ShopToken);                      // Alguma AuthKey aleatória para minha conta que eu não sei - JP S9 ler mais ignora ele
             return p;
         }
 

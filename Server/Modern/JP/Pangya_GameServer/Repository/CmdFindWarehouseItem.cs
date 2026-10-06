@@ -147,7 +147,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_typeid));
 
-            checkResponse(r, "nao conseguiu encontrar WarehouseItem[TYPEID=" + Convert.ToString(m_typeid) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu encontrar WarehouseItem[TYPEID=" + Convert.ToString(m_typeid) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

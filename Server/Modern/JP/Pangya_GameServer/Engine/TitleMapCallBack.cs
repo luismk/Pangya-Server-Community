@@ -37,7 +37,7 @@ namespace Pangya_GameServer.Engine
             else
             {
                 // Mantendo o seu sistema de log padrão
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     "[PlayerInfo::TitleMapCallback::Exec][Error] callback is null.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

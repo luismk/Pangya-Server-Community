@@ -73,7 +73,7 @@ namespace Pangya_GameServer.Manager
 
             var cmd_mbi2 = new CmdMailBoxInfo2(m_uid);  // Waiter
 
-          NormalManagerDB.getInstance().add(0, cmd_mbi2, null, null);
+          NormalManagerDB.Instance.add(0, cmd_mbi2, null, null);
 
             if (cmd_mbi2.getException().getCodeError() != 0)
                 throw cmd_mbi2.getException();
@@ -101,7 +101,7 @@ namespace Pangya_GameServer.Manager
 
             if (page == 0u)
             {
-                throw new Exception($"[PlayerMailBox::GetPage][Error] PLAYER[UID={m_uid}] Page({page}) invalid page number.");
+                throw new Exception($"[PlayerMailBox::GetPage][Error] Normal[UID={m_uid}] Page({page}) invalid page number.");
             }
 
             // Verifica se o tempo do cache expirou, se sim, atualiza ele novamente
@@ -116,7 +116,7 @@ namespace Pangya_GameServer.Manager
             // Verifica se a página existe
             if (page > Math.Ceiling(m_emails.Count / (double)NUM_OF_EMAIL_PER_PAGE))
             {
-                throw new Exception($"[PlayerMailBox::GetPage][Error] PLAYER[UID={m_uid}] Page({page}) not exists.");
+                throw new Exception($"[PlayerMailBox::GetPage][Error] Normal[UID={m_uid}] Page({page}) not exists.");
             }
 
             // Calcula o índice inicial e a quantidade de emails a pegar
@@ -205,7 +205,7 @@ namespace Pangya_GameServer.Manager
             try
             {
                 if (emailId <= 0)
-                    throw new Exception($"[PlayerMailBox::AddNewEmailArrived][Error] PLAYER[UID={m_uid}] email id({emailId}) is invalid.");
+                    throw new Exception($"[PlayerMailBox::AddNewEmailArrived][Error] Normal[UID={m_uid}] email Login({emailId}) is invalid.");
 
                 // Verifica se o email já existe no cache
                 if (m_emails.ContainsKey(emailId))
@@ -221,7 +221,7 @@ namespace Pangya_GameServer.Manager
                     var cmdEmailInfo2 = new CmdEmailInfo2(m_uid, emailId); // Waiter
 
                     // Simula a interação com o banco de dados
-                  NormalManagerDB.getInstance().add(0, cmdEmailInfo2, null, null);
+                  NormalManagerDB.Instance.add(0, cmdEmailInfo2, null, null);
 
                     if (cmdEmailInfo2.getException().getCodeError() != 0)
                         throw cmdEmailInfo2.getException();
@@ -243,7 +243,7 @@ namespace Pangya_GameServer.Manager
             try
             {
                 if (emailId <= 0)
-                    throw new Exception($"[PlayerMailBox::AddNewEmailArrived][Error] PLAYER[UID={m_uid}] email id({emailId}) is invalid.");
+                    throw new Exception($"[PlayerMailBox::AddNewEmailArrived][Error] Normal[UID={m_uid}] email Login({emailId}) is invalid.");
 
                 // Verifica se o email já existe no cache
                 if (m_emails.ContainsKey(emailId))
@@ -261,7 +261,7 @@ namespace Pangya_GameServer.Manager
                     var cmdEmailInfo2 = new CmdEmailInfo2(m_uid, emailId); // Waiter
 
                     // Simula a interação com o banco de dados
-                  NormalManagerDB.getInstance().add(0, cmdEmailInfo2, null, null);
+                  NormalManagerDB.Instance.add(0, cmdEmailInfo2, null, null);
 
                     if (cmdEmailInfo2.getException().getCodeError() != 0)
                         throw cmdEmailInfo2.getException();
@@ -286,14 +286,14 @@ namespace Pangya_GameServer.Manager
             try
             {
                 if (_id <= 0)
-                    throw new Exception($"[PlayerMailBox::GetEmailInfo][Error] PLAYER[UID={m_uid}] email id({_id}) is invalid.");
+                    throw new Exception($"[PlayerMailBox::GetEmailInfo][Error] Normal[UID={m_uid}] email Login({_id}) is invalid.");
 
                 // Verifica se o tempo do cache expirou, se sim, atualiza ele novamente
                 CheckAndUpdate();
 
                 // Verifica se a caixa de entrada está vazia
                 if (m_emails.Count == 0)
-                    throw new Exception($"[PlayerMailBox::GetEmailInfo][Error] PLAYER[UID={m_uid}] mail box empty, not have how find email id({_id}).");
+                    throw new Exception($"[PlayerMailBox::GetEmailInfo][Error] Normal[UID={m_uid}] mail box empty, not have how find email Login({_id}).");
 
                 if (m_emails.TryGetValue(_id, out var email))
                 {
@@ -308,7 +308,7 @@ namespace Pangya_GameServer.Manager
                         email.visit_count++;
 
                         // Atualiza no banco de dados
-                      NormalManagerDB.getInstance().add(3, new CmdUpdateEmail(m_uid, email), SQLDBResponse, this);
+                      NormalManagerDB.Instance.add(3, new CmdUpdateEmail(m_uid, email), SQLDBResponse, this);
                     }
 
                     // Copia os dados
@@ -329,14 +329,14 @@ namespace Pangya_GameServer.Manager
             try
             {
                 if (emailId <= 0)
-                    throw new Exception($"[PlayerMailBox::LeftItensFromEmail][Error] PLAYER[UID={m_uid}] email id({emailId}) is invalid.");
+                    throw new Exception($"[PlayerMailBox::LeftItensFromEmail][Error] Normal[UID={m_uid}] email Login({emailId}) is invalid.");
 
                 // Verifica se o tempo do cache expirou, se sim, atualiza ele novamente
                 CheckAndUpdate();
 
                 // Verifica se a caixa de entrada está vazia
                 if (m_emails.Count == 0)
-                    throw new Exception($"[PlayerMailBox::LeftItensFromEmail][Error] PLAYER[UID={m_uid}] mail box empty, not have how delete items from email id({emailId}).");
+                    throw new Exception($"[PlayerMailBox::LeftItensFromEmail][Error] Normal[UID={m_uid}] mail box empty, not have how delete items from email Login({emailId}).");
 
                 if (m_emails.TryGetValue(emailId, out var email) && email.itens.Count > 0)
                 {
@@ -345,7 +345,7 @@ namespace Pangya_GameServer.Manager
                 }
 
                 // Atualiza no banco de dados
-              NormalManagerDB.getInstance().add(1, new CmdItemLeftFromEmail(emailId), SQLDBResponse, this);
+              NormalManagerDB.Instance.add(1, new CmdItemLeftFromEmail(emailId), SQLDBResponse, this);
             }
             catch (Exception ex)
             {
@@ -359,13 +359,13 @@ namespace Pangya_GameServer.Manager
             try
             {
                 if (emailIds == null)
-                    throw new Exception($"[PlayerMailBox::DeleteEmail][Error] PLAYER[UID={m_uid}] email[ptr(null), count({count})] is invalid.");
+                    throw new Exception($"[PlayerMailBox::DeleteEmail][Error] Normal[UID={m_uid}] email[ptr(null), count({count})] is invalid.");
 
                 // Verifica os IDs dos e-mails
                 foreach (var id in emailIds)
                 {
                     if (id <= 0)
-                        throw new Exception($"[PlayerMailBox::DeleteEmail][Error] PLAYER[UID={m_uid}] email[id({id}), count({count})] is invalid.");
+                        throw new Exception($"[PlayerMailBox::DeleteEmail][Error] Normal[UID={m_uid}] email[Login({id}), count({count})] is invalid.");
                 }
 
                 // Verifica se o tempo do cache expirou, se sim, atualiza ele novamente
@@ -373,20 +373,20 @@ namespace Pangya_GameServer.Manager
 
                 // Verifica se a caixa de entrada está vazia
                 if (m_emails.Count == 0)
-                    throw new Exception($"[PlayerMailBox::DeleteEmail][Error] PLAYER[UID={m_uid}] mail box empty, not have how delete email id(s){{{string.Join(", ", emailIds)}}}.");
+                    throw new Exception($"[PlayerMailBox::DeleteEmail][Error] Normal[UID={m_uid}] mail box empty, not have how delete email Login(s){{{string.Join(", ", emailIds)}}}.");
 
                 foreach (int emailId in emailIds)
                 {
                     if (m_emails.Remove(emailId) == false)
                     {
                         // Log: email não encontrado
-                        _smp.message_pool.getInstance().push(new message($"[PlayerMailBox::DeleteEmail][Error][Warning] PLAYER[UID={m_uid}] não encontrou o Email[id({emailId})].", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[PlayerMailBox::DeleteEmail][Error][Warning] Normal[UID={m_uid}] não encontrou o Email[Login({emailId})].", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         continue;
                     }
                 }
 
                 // Atualiza no banco de dados
-              NormalManagerDB.getInstance().add(2, new CmdDeleteEmail(m_uid, emailIds, count), SQLDBResponse, this);
+              NormalManagerDB.Instance.add(2, new CmdDeleteEmail(m_uid, emailIds, count), SQLDBResponse, this);
             }
             catch (Exception ex)
             {
@@ -419,7 +419,7 @@ namespace Pangya_GameServer.Manager
             {
                 if (_arg == null)
                 {
-                    _smp.message_pool.getInstance().push(new message($"[PlayerMailBox::SQLDBResponse][Warning] arg is null for msg_id = {_msg_id}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[PlayerMailBox::SQLDBResponse][Warning] arg is null for msg_id = {_msg_id}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return;
                 }
 
@@ -428,7 +428,7 @@ namespace Pangya_GameServer.Manager
                 // Verifica se houve erro no banco de dados
                 if (_pangya_db.getException().getCodeError() != 0)
                 {
-                    _smp.message_pool.getInstance().push(new message($"[PlayerMailBox::SQLDBResponse][Error] PLAYER[UID={pmb.m_uid}] {_pangya_db.getException().getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[PlayerMailBox::SQLDBResponse][Error] Normal[UID={pmb.m_uid}] {_pangya_db.getException().getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return;
                 }
 
@@ -456,7 +456,7 @@ namespace Pangya_GameServer.Manager
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[PlayerMailBox::SQLDBResponse][Error] QUERY_MSG[ID={_msg_id}] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[PlayerMailBox::SQLDBResponse][Error] QUERY_MSG[ID={_msg_id}] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

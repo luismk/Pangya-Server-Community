@@ -30,8 +30,8 @@ namespace Pangya_GameServer.Models
         public void openPlayerWhisper(uint _uid)
         {
             if (_uid == 0)
-                throw new exception("[GMInfo::openPlayerWhisper][Error] GM[UID=" + m_uid + "] tentou adicionar PLAYER[UID="
-                        + _uid + "] a lista de whisper, mas o _uid é invalido. Hacker ou Bug.");
+                throw new exception("[GMInfo::openPlayerWhisper][Error] GM[UID=" + m_uid + "] tentou adicionar Normal[UID="
+                        + _uid + "] a lista de Whisper, mas o _uid é invalido. Hacker ou Bug.");
 
 
             var it = map_open.Where(c => c.Key == _uid);
@@ -39,15 +39,15 @@ namespace Pangya_GameServer.Models
             if (it.Any())
                 map_open[_uid] = true;
             else
-                _smp.message_pool.getInstance().push(new message("[GMInfo::openPlayerWhisper][Warning] GM[UID=" + (m_uid) + "] tentou add PLAYER[UID="
-                         + (_uid) + "] a lista de whisper abertos, mas ele ja esta na lista", 0));
+                _smp.LogManager.Instance.push(new AppMessage("[GMInfo::openPlayerWhisper][Warning] GM[UID=" + (m_uid) + "] tentou add Normal[UID="
+                         + (_uid) + "] a lista de Whisper abertos, mas ele ja esta na lista", 0));
 
         }
         public void closePlayerWhisper(uint _uid)
         {
             if (_uid == 0)
-                throw new exception("[GMInfo::openPlayerWhisper][Error] GM[UID=" + (m_uid) + "] tentou excluir PLAYER[UID="
-            + (_uid) + "] da lista de whisper, mas o _uid é invalido. Hacker ou Bug.");
+                throw new exception("[GMInfo::openPlayerWhisper][Error] GM[UID=" + (m_uid) + "] tentou excluir Normal[UID="
+            + (_uid) + "] da lista de Whisper, mas o _uid é invalido. Hacker ou Bug.");
 
 
             var it = map_open.Where(c => c.Key == _uid);
@@ -55,8 +55,8 @@ namespace Pangya_GameServer.Models
             if (it.Any())
                 map_open.Remove(_uid);
             else
-                _smp.message_pool.getInstance().push(new message("[[GMInfo::openPlayerWhisper][Warning] GM[UID=" + (m_uid) + "] tentou excluir PLAYER[UID="
-                 + (_uid) + "] da lista de whisper, mas ele nao esta na lista.", 0));
+                _smp.LogManager.Instance.push(new AppMessage("[[GMInfo::openPlayerWhisper][Warning] GM[UID=" + (m_uid) + "] tentou excluir Normal[UID="
+                 + (_uid) + "] da lista de Whisper, mas ele nao esta na lista.", 0));
 
         }
 
@@ -90,6 +90,6 @@ namespace Pangya_GameServer.Models
 
         public uint m_uid;
 
-        SortedDictionary<uint, bool> map_open;  // UID dos player que o GM deixou o whisper aberto para ver os chat deles
+        SortedDictionary<uint, bool> map_open;  // UID dos player que o GM deixou o Whisper aberto para ver os chat deles
     }
 }

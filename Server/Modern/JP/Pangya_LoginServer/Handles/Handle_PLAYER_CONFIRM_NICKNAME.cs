@@ -42,7 +42,7 @@ namespace Pangya_LoginServer.Handles
             catch (Exception e)
             {
                 status = NICK_CHECK.UNKNOWN_ERROR;
-                _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_CONFIRM_NICKNAME] Erro ao validar nick '{wnick}': {e.Message}", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_CONFIRM_NICKNAME] Erro ao validar nick '{wnick}': {e.Message}", type_msg.CL_ONLY_CONSOLE));
             }
              
             Player.Send(Handle_PACKET_RESPONSE.pacote00E(Player, wnick, (int)status, 0));
@@ -53,7 +53,7 @@ namespace Pangya_LoginServer.Handles
         private NICK_CHECK ValidateNickname(string nick)
         {
             // Nick igual ao ID de login? Não pode.
-            if (nick.Equals(Player.UserInfo.id, StringComparison.OrdinalIgnoreCase))
+            if (nick.Equals(Player.UserInfo.Login, StringComparison.OrdinalIgnoreCase))
                 return NICK_CHECK.SAME_NICK_USED;
 
             // Contém espaços?
@@ -69,7 +69,7 @@ namespace Pangya_LoginServer.Handles
                 return NICK_CHECK.INCORRECT_NICK;
 
             // Proteção contra nomes de Staff (Se não for GM/ADM)
-            if (Player.UserInfo.m_cap < 4) // m_cap < 4 geralmente não é Staff no seu sistema
+            if (Player.UserInfo.Capability < 4) // Capability < 4 geralmente não é Staff no seu sistema
             {
                 if (Regex.IsMatch(nick, "(GM|ADM|MOD|ADMIN|STAFF)", RegexOptions.IgnoreCase))
                     return NICK_CHECK.HAVE_BAD_WORD;

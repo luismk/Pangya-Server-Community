@@ -22,7 +22,7 @@ namespace PangyaAPI.Network.Service
         public List<ServerInfo> m_server_list;
         public ServerInfo getInfo() => m_si;
 
-        protected AppServer(AppSessionManager<T> sessionManager, PacketDispatcher<T, TId> dispatcher, TypeServer typeServer) : base(sessionManager, dispatcher, typeServer)
+        protected AppServer(AppSessionManager<T> sessionManager, PacketDispatcher<T, TId> dispatcher, ServerType typeServer) : base(sessionManager, dispatcher, typeServer)
         {
         }
 
@@ -38,20 +38,20 @@ namespace PangyaAPI.Network.Service
             try
             {
                 // 1. Log de rotação diária
-                if (_smp.message_pool.getInstance().check_update_day_log())
+                if (_smp.LogManager.Instance.check_update_day_log())
                 {
-                    _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::Monitor][Sucess] Update File Log.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::Monitor][Sucess] Update File Log.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 // 2. Sincronização com o Banco
-                m_si.curr_user = Sessions.Count;
+                m_si.CurrentUsers = Sessions.Count;
                 // 3. Atualização de listas
                 CmdUpdateServerList();
                 CmdUpdateListBlock_IP_MAC();
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                      $"[{GetType().Name}::Monitor][Error] {ex.Message}",
                      type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

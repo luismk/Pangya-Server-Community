@@ -20,7 +20,7 @@ namespace Pangya_GameServer.Models
         }
         public uint _typeid = new uint();
         public uint prob = new uint(); // Probabilidade
-        public CARD_TYPE tipo; // tipo, Normal, Rare, Super Rare, Secreto
+        public CARD_TYPE tipo; // Type, Normal, Rare, Super Rare, Secreto
     }
 
     public class CardPack

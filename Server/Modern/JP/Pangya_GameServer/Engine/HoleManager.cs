@@ -24,14 +24,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Pangya_GameServer.Models.DefineConstants;
-using static Pangya_GameServer.Models.PlayerGameInfo;
+using static Pangya_GameServer.ModelsGameInfo;
 namespace Pangya_GameServer.Engine
 {
     public class HoleManager : IDisposable
     {
         public HoleManager(byte _course,
             short _numero, byte _pin,
-            ROOM_INFO_MODO _modo, byte _hole_repeat,
+            RoomHoleType _modo, byte _hole_repeat,
             byte _weather, byte _wind,
             ushort _degree,
             uCubeCoinFlag _cube_coin)
@@ -48,23 +48,23 @@ namespace Pangya_GameServer.Engine
             this.m_cube = new List<CubeEx>();
             this.m_good = false;
 
-            if (sIff.getInstance().findCourse((uint)((sIff.getInstance().COURSE << 26) | (Course & 0x7F))) == null)
+            if (sIff.Instance.findCourse((uint)((sIff.Instance.COURSE << 26) | (Course & 0x7F))) == null)
             {
-                _smp.message_pool.getInstance().push(new message("[Hole::Hole][Error] course[" + Convert.ToString((ushort)Course) + "] desconhecido. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Hole::Hole][Error] CourseIndex[" + Convert.ToString((ushort)Course) + "] desconhecido. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
 
             if (m_numero < 1 || m_numero > 18)
             {
-                _smp.message_pool.getInstance().push(new message("[Hole::init][Error] numero do hole[" + Convert.ToString(m_numero) + "] nao esta em um intervalo permitido. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Hole::init][Error] RoomID do hole[" + Convert.ToString(m_numero) + "] nao esta em um intervalo permitido. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
 
             LoadCourse();
 
-            // n�mero aleat�rio, para o id do hole(ACHO)
+            // n�mero aleat�rio, para o Login do hole(ACHO)
             float rand_f = (float)((((int)Random.Shared.Next()) * 2.0f) * Random.Shared.Next());
 
             // Gerar n�meros grandes
@@ -159,7 +159,7 @@ namespace Pangya_GameServer.Engine
             return m_cube_coin;
         }
 
-        public ROOM_INFO_MODO getModo()
+        public RoomHoleType getModo()
         {
             return m_modo;
         }
@@ -223,30 +223,30 @@ namespace Pangya_GameServer.Engine
             // Modo hole repeat, tem que pegar o n�mero certo do hole
             byte numero = (byte)m_numero;
 
-            if (m_modo == ROOM_INFO_MODO.M_REPEAT)
+            if (m_modo == RoomHoleType.M_REPEAT)
             {
                 numero = m_hole_repeat;
             }
 
             // Cube Coin Manager
-            if (!sCubeCoinSystem.getInstance().isLoad())
+            if (!sCubeCoinSystem.Instance.isLoad())
             {
-                sCubeCoinSystem.getInstance().load();
+                sCubeCoinSystem.Instance.load();
             }
 
-            var ID = sIff.getInstance().COURSE << 26 | (Course & 0x7F);
-            var course = sCubeCoinSystem.getInstance().FindCourse((uint)ID);
+            var ID = sIff.Instance.COURSE << 26 | (Course & 0x7F);
+            var course = sCubeCoinSystem.Instance.FindCourse((uint)ID);
 
             if (course == null)
             {
-                throw new exception("[Hole::init_cube_coin][Error] course\"" + Convert.ToString((ushort)(Course & 0x7F)) + "\" nao existe no Cube Coin System. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.HOLE,
+                throw new exception("[Hole::init_cube_coin][Error] CourseIndex\"" + Convert.ToString((ushort)(Course & 0x7F)) + "\" nao existe no Cube Coin System. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.HOLE,
                     20, 0));
             }
 
-            // Isso s� desativa os cube, se o course e hole tiver coin � para colocar elas s� n�o o cube se ele estiver desativado
-            if (Course == (byte)ROOM_INFO_COURSE.WIZ_CITY) // Aqui s� tem cube nos holes 3 12 14 18
+            // Isso s� desativa os cube, se o CourseIndex e hole tiver coin � para colocar elas s� n�o o cube se ele estiver desativado
+            if (Course == (byte)RoomCourseFlags.WIZ_CITY) // Aqui s� tem cube nos holes 3 12 14 18
             {
-                cube = (numero == 3 || numero == 12 || numero == 14 || numero == 18) && (m_modo != ROOM_INFO_MODO.M_REPEAT || m_numero % 3 == 0); // Modo Hole Repeat s� de 3 em 3 holes que tem cube, mesmo em Wiz City
+                cube = (numero == 3 || numero == 12 || numero == 14 || numero == 18) && (m_modo != RoomHoleType.M_REPEAT || m_numero % 3 == 0); // Modo Hole Repeat s� de 3 em 3 holes que tem cube, mesmo em Wiz City
             }
             else
             {
@@ -257,12 +257,12 @@ namespace Pangya_GameServer.Engine
 
             if (hole == null)
             {
-                throw new exception("[Hole::init_cube_coin][Error] numero do hole[NUMERO=" + Convert.ToString(m_numero) + "] is valid. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.HOLE,
+                throw new exception("[Hole::init_cube_coin][Error] RoomID do hole[NUMERO=" + Convert.ToString(m_numero) + "] is valid. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.HOLE,
                     21, 0));
             } 
 
             //   Wiz City usa a fun��o dela e o resto usa outra fun��o generica
-            var all_coin_cube = (Course == (byte)ROOM_INFO_COURSE.WIZ_CITY) ? hole.getAllCoinCubeWizCity(cube) : hole.getAllCoinCube(cube);
+            var all_coin_cube = (Course == (byte)RoomCourseFlags.WIZ_CITY) ? hole.getAllCoinCubeWizCity(cube) : hole.getAllCoinCube(cube);
             
             m_cube.AddRange(all_coin_cube);
         }
@@ -270,31 +270,31 @@ namespace Pangya_GameServer.Engine
         private void LoadCourse()
         {
 
-            var course = sIff.getInstance().findCourse((uint)((sIff.getInstance().COURSE << 26) | (Course & 0x7F)));
+            var course = sIff.Instance.findCourse((uint)((sIff.Instance.COURSE << 26) | (Course & 0x7F)));
 
             if (course == null)
             {
-                throw new exception("[Hole::init_from_IFF_STRUCT][Error] course[" + Convert.ToString((ushort)Course & 0x7F) + "] desconhecido. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.HOLE,
+                throw new exception("[Hole::init_from_IFF_STRUCT][Error] CourseIndex[" + Convert.ToString((ushort)Course & 0x7F) + "] desconhecido. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.HOLE,
                     2, 0));
             }
 
             var numero = m_numero;
 
-            if (m_modo == ROOM_INFO_MODO.M_REPEAT)
+            if (m_modo == RoomHoleType.M_REPEAT)
             {
                 numero = m_hole_repeat;
             }
 
             if (numero < 1 || numero > 18)
             {
-                throw new exception("[Hole::init_from_IFF_STRUCT][Error] numero do hole[" + Convert.ToString(m_numero) + "] nao esta em um intervalo permitido. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.HOLE,
+                throw new exception("[Hole::init_from_IFF_STRUCT][Error] RoomID do hole[" + Convert.ToString(m_numero) + "] nao esta em um intervalo permitido. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.HOLE,
                     3, 0));
             }
 
             // !!!!@@@@@@------------===
             // Os Valores do Par dos Holes Mysthic Ruins est�o errados no IFF STRUCT,
             // eles colocaram os valores do Abbot Mine, tenho que trocar depois isso
-            if ((course.ID & 0xFF) == (uint)ROOM_INFO_COURSE.CHRONICLE_1_CHAOS)
+            if ((course.ID & 0xFF) == (uint)RoomCourseFlags.CHRONICLE_1_CHAOS)
             {
                 m_par.par = 4;
 
@@ -327,7 +327,7 @@ namespace Pangya_GameServer.Engine
 
         private uCubeCoinFlag m_cube_coin = new uCubeCoinFlag();
 
-        private ROOM_INFO_MODO m_modo;
+        private RoomHoleType m_modo;
         private byte m_hole_repeat;
 
         private bool m_good;

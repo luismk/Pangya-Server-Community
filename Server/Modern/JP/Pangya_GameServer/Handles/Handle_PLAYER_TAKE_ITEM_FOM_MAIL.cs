@@ -26,7 +26,7 @@ namespace Pangya_GameServer.Handles
                 int email_id = Packet.ReadInt32();
 
                 // Level temporário para verificar subida de nível (Exp Pouch)
-                ushort tmp_level = (ushort)Player.UserInfo.Member.level;
+                ushort tmp_level = (ushort)Player.UserInfo.Member.GameLevel;
 
                 // Não marca como lido ainda
                 var ei = Player.UserInfo.MailBox.getEmailInfo(email_id, false);
@@ -42,15 +42,15 @@ namespace Pangya_GameServer.Handles
 
                         if (item._typeid == 0)
                         {
-                            _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou inicializar o item que pegou do mailbox[MAIL_ID=" + (email_id) + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou inicializar o item que pegou do mailbox[MAIL_ID=" + (email_id) + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             Player.Send(Handle_PACKET_RESPONSE.pacote214(3));
                             return;
                         }
 
                         // Verifica se já possui o item ou se pode acumular (Overlap)
-                        bool canOverlap = sIff.getInstance().IsCanOverlapped(ei.itens[i]._typeid);
-                        bool isCaddieItem = sIff.getInstance().getItemGroupIdentify(ei.itens[i]._typeid) == IFF_GROUP.CAD_ITEM;
+                        bool canOverlap = sIff.Instance.IsCanOverlapped(ei.itens[i]._typeid);
+                        bool isCaddieItem = sIff.Instance.getItemGroupIdentify(ei.itens[i]._typeid) == IFF_GROUP.CAD_ITEM;
                         bool ownerHasItem = Player.Inventory.ownerItem(ei.itens[i]._typeid, 1);
 
                         if ((canOverlap && !isCaddieItem) || !ownerHasItem)
@@ -63,8 +63,8 @@ namespace Pangya_GameServer.Handles
                                 {
                                     foreach (var el in v_stItem)
                                     {
-                                        bool subCanOverlap = sIff.getInstance().IsCanOverlapped(el._typeid);
-                                        bool subIsCaddieItem = sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.CAD_ITEM;
+                                        bool subCanOverlap = sIff.Instance.IsCanOverlapped(el._typeid);
+                                        bool subIsCaddieItem = sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.CAD_ITEM;
 
                                         if ((subCanOverlap && !subIsCaddieItem) || !Player.Inventory.ownerItem(el._typeid, 1))
                                         {
@@ -74,7 +74,7 @@ namespace Pangya_GameServer.Handles
                                 }
                                 else
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Success] PLAYER [UID=" + Player.UserInfo.uid + "] tentou add set item sem item dentro, do MailBox[MAIL_ID=" + (email_id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Success] Normal [UID=" + Player.UserInfo.UID + "] tentou add set item sem item dentro, do MailBox[MAIL_ID=" + (email_id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 }
                             }
                             else
@@ -84,12 +84,12 @@ namespace Pangya_GameServer.Handles
                         }
                         else if (isCaddieItem)
                         {
-                            throw new exception("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou pegar um CaddieItem[TYPEID=" + (ei.itens[i]._typeid) + "] do Mail[ID=" + (email_id) + "] de um caddie que ele nao possui",
+                            throw new exception("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou pegar um CaddieItem[TYPEID=" + (ei.itens[i]._typeid) + "] do Mail[ID=" + (email_id) + "] de um caddie que ele nao possui",
                                 ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 201, 5100072));
                         }
                         else
                         {
-                            throw new exception("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou pegar um item[TYPEID=" + (ei.itens[i]._typeid) + "] do Mail[ID=" + (email_id) + "] que ele ja possui",
+                            throw new exception("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou pegar um item[TYPEID=" + (ei.itens[i]._typeid) + "] do Mail[ID=" + (email_id) + "] que ele ja possui",
                                 ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 201, 5100071));
                         }
                     }
@@ -104,7 +104,7 @@ namespace Pangya_GameServer.Handles
                     {
                         foreach (var fail in rai.fails)
                         {
-                            _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou mover o item[TYPEID=" + (fail._typeid) + "] do MailBox para o MyRoom, mas falhou.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou mover o item[TYPEID=" + (fail._typeid) + "] do MailBox para o MyRoom, mas falhou.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                         Player.Send(Handle_PACKET_RESPONSE.pacote214(2));
@@ -116,7 +116,7 @@ namespace Pangya_GameServer.Handles
                     Player.Send(Handle_PACKET_RESPONSE.pacote214());
 
                     // Se subiu de nível, sincroniza com o canal/lobby
-                    if (tmp_level != Player.UserInfo.Member.level)
+                    if (tmp_level != Player.UserInfo.Member.GameLevel)
                     {
                         m_ci?.UpdatePlayerInfo(Player);
 
@@ -125,7 +125,7 @@ namespace Pangya_GameServer.Handles
                             var pi = m_ci?.GetPlayerInfo(Player);
                             if (pi != null)
                             {
-                                m_ci?.SendBroadcast(Handle_PACKET_RESPONSE.pacote046(new List<PlayerLobbyInfo>() { pi }, 3), 1);
+                                m_ci?.SendBroadcast(Handle_PACKET_RESPONSE.MakePlayerLobby(new List<PlayerLobbyInfo>() { pi }, 3), 1);
                             }
                         }
                     }
@@ -138,7 +138,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_TAKE_ITEM_FROM_MAIL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 int errCode = (int)((ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL)
                     ? ExceptionError.STDA_SYSTEM_ERROR_DECODE(e.getCodeError())

@@ -93,7 +93,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString((ushort)m_gift_flag) + ", " + Convert.ToString((ushort)m_purchase) + ", " + Convert.ToString(m_wi._typeid) + ", " + Convert.ToString((ushort)m_wi.flag) + ", " + Convert.ToString(m_wi.c[3]) + ", " + Convert.ToString(m_wi.clubset_workshop.level));
 
-            checkResponse(r, "nao conseguiu adicionar o clubset[TYPEID=" + Convert.ToString(m_wi._typeid) + "] para o PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu adicionar o clubset[TYPEID=" + Convert.ToString(m_wi._typeid) + "] para o Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

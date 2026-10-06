@@ -24,19 +24,19 @@ namespace Pangya_GameServer.Handles
                 // 2. Validações de integridade
                 if (targetUid == 0 || itemId <= 0)
                 {
-                    throw new exception($"[UCC_SECURITY] Dados inválidos enviados por UID={Player.UserInfo.uid}.",
+                    throw new exception($"[UCC_SECURITY] Dados inválidos enviados por UID={Player.UserInfo.UID}.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 0x5100101));
                 }
 
-                // 3. Verificação de permissão GM (UserInfo)
-                if (!Player.UserInfo.UserCapabilities.game_master)
+                // 3. Verificação de permissão GM (PlayerUserStatistics)
+                if (!Player.UserInfo.UserCapabilities.IsGameMaster)
                 {
-                    throw new exception($"[UCC_SECURITY][Error] PLAYER[UID={Player.UserInfo.uid}] não é GM.",
+                    throw new exception($"[UCC_SECURITY][Error] Normal[UID={Player.UserInfo.UID}] não é GM.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 0x5700100));
                 }
 
                 // 4. Localização do Player alvo
-                var targetPlayer = (Player)GameServer.getInstance().FindSessionByUid(targetUid);
+                var targetPlayer = (Player)GameServer.Instance.FindSessionByUid(targetUid);
 
                 if (targetPlayer == null)
                 {
@@ -54,7 +54,7 @@ namespace Pangya_GameServer.Handles
                 }
 
                 // 6. Geração da Chave no Banco de Dados
-                var key = CommandDB.GenerationSecurityKey(Player.UserInfo.uid, warehouseItem.id);
+                var key = CommandDB.GenerationSecurityKey(Player.UserInfo.UID, warehouseItem.id);
 
                 // 7. Resposta de Sucesso (Packet 0x153)
                 response.init_plain(0x153);
@@ -66,7 +66,7 @@ namespace Pangya_GameServer.Handles
 
                 Player.Send(response);
 
-                Console.WriteLine($"[UCC-Security] Chave gerada com sucesso para {targetPlayer.UserInfo.nickname} por {Player.UserInfo.nickname}");
+                Console.WriteLine($"[UCC-Security] Chave gerada com sucesso para {targetPlayer.UserInfo.NickName} por {Player.UserInfo.NickName}");
             }
             catch (exception e)
             {

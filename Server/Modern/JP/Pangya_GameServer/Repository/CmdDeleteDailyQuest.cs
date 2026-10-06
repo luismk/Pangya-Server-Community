@@ -76,7 +76,7 @@ namespace Pangya_GameServer.Repository
         private uint m_uid = new uint();
         private List<RemoveDailyQuestUser> v_rdqu = new List<RemoveDailyQuestUser>();
 
-        private string[] m_szConsulta = { "DELETE FROM pangya.pangya_achievement WHERE uid = ", " AND ID_ACHIEVEMENT IN(", ");DELETE FROM pangya.pangya_quest WHERE uid = ", " AND achievement_id IN(", ")" };
+        private string[] m_szConsulta = { "DELETE FROM pangya.pangya_achievement WHERE UID = ", " AND ID_ACHIEVEMENT IN(", ");DELETE FROM pangya.pangya_quest WHERE UID = ", " AND achievement_id IN(", ")" };
 
     }
 }

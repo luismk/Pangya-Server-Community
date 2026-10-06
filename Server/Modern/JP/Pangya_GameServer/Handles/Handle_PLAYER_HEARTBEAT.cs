@@ -20,20 +20,20 @@ namespace Pangya_GameServer.Handles
                 int currentTick = Packet.ReadInt32();
                 long diff = currentTick - lastTick;
 
-                //_smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_HEARTBEAT][Log] PLAYER[UID= {Player.UserInfo.uid}, TIME OLD= {diff}ms, TIME NOW= {currentTick}ms", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                //_smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_HEARTBEAT][Log] Normal[UID= {Player.PlayerUserStatistics.UID}, TIME OLD= {diff}ms, TIME NOW= {currentTick}ms", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Se o tempo passado for maior que o TTL definido + 25%, loga um Warning
-                long ttlLimit = GameServer.getInstance().getBotTTL() + (GameServer.getInstance().getBotTTL() / 4);
+                long ttlLimit = GameServer.Instance.getBotTTL() + (GameServer.Instance.getBotTTL() / 4);
                 if (diff >= ttlLimit)
                 {
-                     _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_HEARTBEAT][Warning] PLAYER[UID= {Player.UserInfo.uid}, TIME OLD= {diff}ms (LIMIT= {ttlLimit}ms)] DELAY", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                     _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_HEARTBEAT][Warning] Normal[UID= {Player.UserInfo.UID}, TIME OLD= {diff}ms (LIMIT= {ttlLimit}ms)] DELAY", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 // Atualiza o tick da sessão
                 Player.TicketBot = Environment.TickCount;
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_HEARTBEAT][ErrorSystem] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_HEARTBEAT][ErrorSystem] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;

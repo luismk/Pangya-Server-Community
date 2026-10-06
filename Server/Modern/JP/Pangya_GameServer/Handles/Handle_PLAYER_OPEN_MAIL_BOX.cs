@@ -21,9 +21,9 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // 1. Verificação de Bloqueio
-                if (Player.UserInfo.block_flag.m_flag.mail_box)
+                if (Player.UserInfo.BlockFlag.Flag.MailBox)
                 {
-                    throw new exception("[Handle_PLAYER_OPEN_MAIL_BOX][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou abrir Mail Box, mas ele nao pode. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_OPEN_MAIL_BOX][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou abrir Mail Box, mas ele nao pode. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 5, 0x790001));
                 }
 
@@ -32,7 +32,7 @@ namespace Pangya_GameServer.Handles
 
                 if (pagina <= 0)
                 {
-                    throw new exception("[Handle_PLAYER_OPEN_MAIL_BOX][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou abrir Mail Box[Pagina=" + (pagina) + "], mas a pagina é invalida.",
+                    throw new exception("[Handle_PLAYER_OPEN_MAIL_BOX][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou abrir Mail Box[Pagina=" + (pagina) + "], mas a pagina é invalida.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 6, 0x790002));
                 }
 
@@ -52,7 +52,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_OPEN_MAIL_BOX][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_OPEN_MAIL_BOX][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x211);
 

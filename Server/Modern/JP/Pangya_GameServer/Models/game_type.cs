@@ -64,7 +64,7 @@ namespace Pangya_GameServer.Models
         {
             return "Bar Point: Forca: " + bar_point[0] + " Hit PangYa: " + bar_point[1] + Environment.NewLine +
                    "Ball Effect: X: " + ball_effect[0] + " Y: " + ball_effect[1] + Environment.NewLine +
-                   "Acerto PangYa Flag: " + acerto_pangya_flag + Environment.NewLine +
+                   "Acerto PangYa ServerFlag: " + acerto_pangya_flag + Environment.NewLine +
                    "Special Shot: " + special_shot.ToString() + Environment.NewLine +
                    "Time Hole SYNC: " + time_hole_sync + Environment.NewLine +
                    "Mira(shot): " + mira + Environment.NewLine +
@@ -91,7 +91,7 @@ namespace Pangya_GameServer.Models
 
         public uint time_hole_sync = 0;
 
-        public float mira; // Mira da tacada do player, seria o R do location[x,y,z,r]
+        public float mira; // Mira da tacada do player, seria o R do LocationInfo[X,Y,Z,r]
 
         public uint time_shot = 0;
 
@@ -128,7 +128,7 @@ namespace Pangya_GameServer.Models
 
     }
 
-    // Separei o spand time, que o pang battle não tem ele
+    // Separei o spand time, que o Pang battle não tem ele
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class ShotData : ShotDataBase
     {
@@ -279,7 +279,7 @@ namespace Pangya_GameServer.Models
         }
         public override string ToString()
         {
-            return "OID: " + Convert.ToString(oid) + Environment.NewLine + "Location: " + location.ToString() + Environment.NewLine + "STATE: " + Convert.ToString((ushort)state) + Environment.NewLine + "Bunker Flag: " + Convert.ToString((ushort)bunker_flag) + Environment.NewLine + "ucUnknown: " + Convert.ToString((ushort)ucUnknown) + Environment.NewLine + "Pang: " + Convert.ToString(pang) + Environment.NewLine + "Pang Bonus: " + Convert.ToString(bonus_pang) + Environment.NewLine + "State Shot: " + state_shot.ToString() + Environment.NewLine + "Tempo Shot: " + Convert.ToString(tempo_shot) + Environment.NewLine + "Grand Prix Penalidade: " + Convert.ToString((ushort)grand_prix_penalidade) + Environment.NewLine;
+            return "OID: " + Convert.ToString(oid) + Environment.NewLine + "Location: " + location.ToString() + Environment.NewLine + "STATE: " + Convert.ToString((ushort)state) + Environment.NewLine + "Bunker ServerFlag: " + Convert.ToString((ushort)bunker_flag) + Environment.NewLine + "ucUnknown: " + Convert.ToString((ushort)ucUnknown) + Environment.NewLine + "Pang: " + Convert.ToString(pang) + Environment.NewLine + "Pang Bonus: " + Convert.ToString(bonus_pang) + Environment.NewLine + "State Shot: " + state_shot.ToString() + Environment.NewLine + "Tempo Shot: " + Convert.ToString(tempo_shot) + Environment.NewLine + "Grand Prix Penalidade: " + Convert.ToString((ushort)grand_prix_penalidade) + Environment.NewLine;
         }
         public int oid = -1;
         [field: MarshalAs(UnmanagedType.Struct)]
@@ -712,7 +712,7 @@ namespace Pangya_GameServer.Models
         [field: MarshalAs(UnmanagedType.Struct)]
         public stStateShot state_shot = new stStateShot();
         public short tempo_shot; // Acho que seja o tempo da tacada
-        public byte grand_prix_penalidade; // Flag(valor) de penalidade do Grand Prix quando tem regras com penalidades
+        public byte grand_prix_penalidade; // ServerFlag(valor) de penalidade do Grand Prix quando tem regras com penalidades
 
         public byte[] ToArray()
         {
@@ -990,7 +990,7 @@ namespace Pangya_GameServer.Models
             pang = 0;
             bonus_pang = 0;
             pang_pang_battle = 0; // Pang do Pang Battle que o player ganhou ou perdeu
-            pang_battle_run_hole = 0; // Player saiu do pang battle(-1) ou alguém saiu(+1)
+            pang_battle_run_hole = 0; // Player saiu do Pang battle(-1) ou alguém saiu(+1)
             time_out = 0; // Count de time outs do player, 3 time outs o jogo kika o player
             exp = 0; // Exp que o player, ganhou no jogo
         }
@@ -1005,7 +1005,7 @@ namespace Pangya_GameServer.Models
         public ulong pang = 0;
         public ulong bonus_pang = 0;
         public long pang_pang_battle = 0; // Pang do Pang Battle que o player ganhou ou perdeu
-        public int pang_battle_run_hole = 0; // Player saiu do pang battle(-1) ou alguém saiu(+1)
+        public int pang_battle_run_hole = 0; // Player saiu do Pang battle(-1) ou alguém saiu(+1)
         public uint time_out = 0; // Count de time outs do player, 3 time outs o jogo kika o player
         public int exp = 0; // Exp que o player, ganhou no jogo
     }
@@ -1069,7 +1069,7 @@ namespace Pangya_GameServer.Models
             long now = UtilTime.GetTickCount();
             float elapsed = (now - startTick) / 1000.0f; // segundos
 
-            // Velocidade da barra (ajustável por modo)
+            // Velocidade da barra (ajustável por HoleMode)
             float speed = 1.35f;
 
             // Movimento da barra (0 → 1 → 0)
@@ -1231,7 +1231,7 @@ namespace Pangya_GameServer.Models
         public ClubMastery club = new ClubMastery();
     }
 
-    // Effect Item Flag
+    // Effect Item ServerFlag
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     public class uEffectFlag
     {
@@ -1424,7 +1424,7 @@ namespace Pangya_GameServer.Models
             public float best_long_puttin;
             public float best_drive;
             [field: MarshalAs(UnmanagedType.ByValArray)]
-            public int[] finish_hole = new int[18]; // Flag para verificar se o player terminou o hole
+            public int[] finish_hole = new int[18]; // ServerFlag para verificar se o player terminou o hole
             [field: MarshalAs(UnmanagedType.ByValArray)]
             public int[] par_hole = new int[18]; // Par do hole, [18 Holes o máximo de um jogo]negativo
             [field: MarshalAs(UnmanagedType.ByValArray)] public int[] tacada = new int[18]; // Tacadas do hole, [18 Holes o máximo de um jogo](negativo)
@@ -1561,7 +1561,7 @@ namespace Pangya_GameServer.Models
         public byte level;
         public byte hole = 255; // Número do Hole que o player está
 
-        public bool init_first_hole = true; // Flag que guarda quando o player inicializou o primeiro hole do jogo
+        public bool init_first_hole = true; // ServerFlag que guarda quando o player inicializou o primeiro hole do jogo
 
         public byte finish_load_hole = 0;
 
@@ -1573,11 +1573,11 @@ namespace Pangya_GameServer.Models
 
         public byte finish_shot2 = 0;
 
-        public byte finish_hole = 0; // Usa no Grand Prix, flag de sincronização de hole conluído para trocar para o prox
+        public byte finish_hole = 0; // Usa no Grand Prix, ServerFlag de sincronização de hole conluído para trocar para o prox
 
-        public byte finish_hole2 = 0; // Usa no Grand Prix, flag de sincronização do tempo do hole do player, para não dá time out depois que ele concluiu o hole
+        public byte finish_hole2 = 0; // Usa no Grand Prix, ServerFlag de sincronização do tempo do hole do player, para não dá time out depois que ele concluiu o hole
 
-        public byte finish_hole3 = 0; // Usa no Grand Prix, flag de sincronização se o player já enviou o pacote de finalizar o hole antes
+        public byte finish_hole3 = 0; // Usa no Grand Prix, ServerFlag de sincronização se o player já enviou o pacote de finalizar o hole antes
 
         public byte sync_shot_flag = 0;
 
@@ -1589,7 +1589,7 @@ namespace Pangya_GameServer.Models
 
         public byte char_motion_item = 0; // Está com intro de character Equipado
 
-        public bool premium_flag = false; // 1 Player é um usuário premium, 0 player normal
+        public bool premium_flag = false; // 1 Player é um usuário premium, 0 player Normal
 
         public byte enter_after_started = 0; // Entrou no Jogo depois de ele ter começado
 
@@ -1605,12 +1605,12 @@ namespace Pangya_GameServer.Models
         public uint mascot_typeid = 0; // Typeid do Mascot equipado
         public uint item_active_used_shot = 0; // O item Active usado na tacada
         public float earcuff_wind_angle_shot; // Ângulo que o efeito earcuff ativou na tacada para o player
-        public uEffectFlag effect_flag_shot = new uEffectFlag(); // Effect Flag Shot(tacada), Wind 1m, Safety, Patinha e etc
-        public eFLAG_GAME flag = new eFLAG_GAME(); // Flag se acabou o camp, ainda esta jogando, quitou, saiu, ou o jogo terminou pro ele
-        public uBoostItemFlag boost_item_flag = new uBoostItemFlag(); // Flag que Exibe os icon de quais boost item o player está usando
-        public eCARD_WIND_FLAG card_wind_flag = new eCARD_WIND_FLAG(); // Card Wind Flag
+        public uEffectFlag effect_flag_shot = new uEffectFlag(); // Effect ServerFlag Shot(tacada), Wind 1m, Safety, Patinha e etc
+        public eFLAG_GAME flag = new eFLAG_GAME(); // ServerFlag se acabou o camp, ainda esta jogando, quitou, saiu, ou o jogo terminou pro ele
+        public uBoostItemFlag boost_item_flag = new uBoostItemFlag(); // ServerFlag que Exibe os icon de quais boost item o player está usando
+        public eCARD_WIND_FLAG card_wind_flag = new eCARD_WIND_FLAG(); // Card Wind ServerFlag
         public stTreasureHunterInfo thi = new stTreasureHunterInfo(); // Treasure Hunter Info do player, esse é que aumenta com card
-        public eTEAM team = new eTEAM(); // Team(time) que o player está, antes usado no tourney de time, agora só usado no Match
+        public eTEAM team = new eTEAM(); // Team(time) que o player está, antes usado no Tourney de time, agora só usado no Match
         public TickTimeSync tick_sync_shot = new TickTimeSync(); // Tick de quando o player recebeu o pacote para ele enviar o pacote sync shot
         public TickTimeSync tick_sync_end_shot = new TickTimeSync(); // Tick de quando o player enviou o pacote de termino de tacada (FinishShot)
         public BarSpace bar_space = new BarSpace();
@@ -1620,7 +1620,7 @@ namespace Pangya_GameServer.Models
         public ShotDataEx shot_data = new ShotDataEx();
         public ShotEndLocationData shot_data_for_cube = new ShotEndLocationData(); // Dados que vou usar para os locais de spaw do Spinning Cube
         public ShotSyncData shot_sync = new ShotSyncData();
-        public UserInfo ui = new UserInfo();
+        public PlayerUserStatistics ui = new PlayerUserStatistics();
         public DropItemRet drop_list = new DropItemRet(); // Drop List do player
         public UsedItem used_item = new UsedItem(); // Item usado no jogo
         public stProgress progress = new stProgress(); // Progresso do jogo, tacadas e score
@@ -1657,7 +1657,7 @@ namespace Pangya_GameServer.Models
             if (session == null || sd == null)
                 return;
 
-            uint uid = session.UserInfo.uid;
+            uint uid = session.UserInfo.UID;
 
             bool isclubValid = sd.club == 0x0E || sd.club == 0x0D || sd.club == 0x0C || sd.club == 0x0B || sd.club == 0x0A;
 
@@ -1740,16 +1740,16 @@ namespace Pangya_GameServer.Models
 
         private void Flag(Player session, string reason, string detail)
         {
-            _smp.message_pool.getInstance().push(
-                new message(
-                    $"[AlwaysPangyaDetect][{reason}] UID={session.UserInfo.uid} {detail}",
+            _smp.LogManager.Instance.push(
+                new AppMessage(
+                    $"[AlwaysPangyaDetect][{reason}] UID={session.UserInfo.UID} {detail}",
                     type_msg.CL_ONLY_CONSOLE_DEBUG
                 )
             );
 
             // Aqui você decide:
             // - só logar
-            // - marcar flag no player
+            // - marcar ServerFlag no player
             // - kickar
             // - enviar pro GameGuard
         }

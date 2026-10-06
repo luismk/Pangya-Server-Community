@@ -304,16 +304,16 @@ namespace PangyaAPI.DataBase.Engine
         }
         private void logSchema(string type, OdbcError err, string sql)
         {
-            _smp.message_pool.getInstance().push(
-                new message(
+            _smp.LogManager.Instance.push(
+                new AppMessage(
                     $"[mssql::{type}][ErrorCode: {err.SQLState}/{err.NativeError}, {err.Message}]",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
 
         private void logError(string where, string msg, string sql)
         {
-            _smp.message_pool.getInstance().push(
-                new message(
+            _smp.LogManager.Instance.push(
+                new AppMessage(
                     $"[mssql::{where}][Error] {msg} | SQL: {sql}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
         }

@@ -42,7 +42,7 @@ namespace PangyaAPI.Utilities.Log
 
         public void push(string deque, type_msg type, ConsoleColor consoleColor = default)
         {
-            base.push(new message(deque, type, consoleColor) as T);
+            base.push(new AppMessage(deque, type, consoleColor) as T);
             console_log();//aqui é bem mais rapido
             //sempre que for chamar o push, ja chamo console log
             //assim nao travo a thread primaria
@@ -50,7 +50,7 @@ namespace PangyaAPI.Utilities.Log
 
         public void push(string deque, type_msg type)
         {
-            base.push(new message(deque, type) as T);
+            base.push(new AppMessage(deque, type) as T);
             console_log();//aqui é bem mais rapido
             //sempre que for chamar o push, ja chamo console log
             //assim nao travo a thread primaria

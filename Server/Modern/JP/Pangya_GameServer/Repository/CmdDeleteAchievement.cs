@@ -66,7 +66,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta[0] + Convert.ToString(m_uid) + m_szConsulta[1] + Convert.ToString(m_id));
 
-            checkResponse(r, "nao conseguiu deletar o Achievement[ID=" + Convert.ToString(m_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu deletar o Achievement[ID=" + Convert.ToString(m_id) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

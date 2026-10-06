@@ -51,7 +51,7 @@ namespace Pangya_GameServer.Repository
                 m_lr.Clear();
             }
 
-           string m_szConsulta = "SELECT " + makeEscapeKeyword("index") + ", " + makeEscapeKeyword("name") + ", " + makeEscapeKeyword("type") + ", days_to_gift, n_times_gift, item_typeid, item_qntd, item_qntd_time, is_end, end_date FROM pangya.pangya_login_reward WHERE is_end = 0";
+           string m_szConsulta = "SELECT " + makeEscapeKeyword("index") + ", " + makeEscapeKeyword("Name") + ", " + makeEscapeKeyword("type") + ", days_to_gift, n_times_gift, item_typeid, item_qntd, item_qntd_time, is_end, end_date FROM pangya.pangya_login_reward WHERE is_end = 0";
             
             var r = consulta(m_szConsulta);
 

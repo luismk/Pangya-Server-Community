@@ -62,7 +62,7 @@ namespace Pangya_LoginServer.Repository
 
             if (m_ip.Length == 0)
             {
-                throw new exception("[CmdRegisterPlayerLogin::prepareConsulta][Error] ip is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdRegisterPlayerLogin::prepareConsulta][Error] IpAddress is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 

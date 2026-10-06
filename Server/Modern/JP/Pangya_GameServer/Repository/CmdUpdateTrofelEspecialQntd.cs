@@ -101,7 +101,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(query);
 
-            checkResponse(r, "nao conseguiu Atualizar quantidade do Trofel Especial(" + (m_type == eTYPE.GRAND_PRIX ? "Grand Prix" : "") + ")[ID=" + Convert.ToString(m_id) + ", QNTD=" + Convert.ToString(m_qntd) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu Atualizar quantidade do Trofel Especial(" + (m_type == eTYPE.GRAND_PRIX ? "Grand Prix" : "") + ")[ID=" + Convert.ToString(m_id) + ", QNTD=" + Convert.ToString(m_qntd) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

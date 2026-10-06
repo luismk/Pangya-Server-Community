@@ -4,9 +4,9 @@ namespace Pangya_GameServer.Models
 {
     public enum SCRATCH_CARD_TYPE : uint
     {
-        SCT_COMMUN = 0, // tipo = 0(normal)
-        SCT_COOKIE = 1, // tipo =1(cookie)
-        SCT_RARE = 2  // tipo =2(rare ou super rare)
+        SCT_COMMUN = 0, // Type = 0(Normal)
+        SCT_COOKIE = 1, // Type =1(cookie)
+        SCT_RARE = 2  // Type =2(rare ou super rare)
     }
 
     public class ctx_scratch_card_item
@@ -14,7 +14,7 @@ namespace Pangya_GameServer.Models
         public uint _typeid;
         public uint probabilidade;
         public uint qntd;
-        public int numero;                // Número que o papel shop já está
+        public int numero;                // Número que o papel ShopRoom já está
         public SCRATCH_CARD_TYPE tipo;
         public bool active;               // Active 0 ou 1
 
@@ -57,7 +57,7 @@ namespace Pangya_GameServer.Models
     {
         public uint numero;                // Atual Número do Papel Shop
         public bool limitted_per_day;      // Limitado por dia, tem uma quantidade que pode jogar  // 0 ou 1
-        public DateTime update_date;       // Date de atualização do dia do papel shop
+        public DateTime update_date;       // Date de atualização do dia do papel ShopRoom
 
         public ctx_scratch_card()
         {

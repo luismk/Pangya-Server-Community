@@ -1,6 +1,6 @@
 using Pangya_GameServer.Feature;
 using Pangya_GameServer.Flags;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Roms.GameBase.Modes;
 using Pangya_GameServer.Session;
@@ -15,7 +15,7 @@ namespace Pangya_GameServer.Roms.GameModes
     {
         private bool _initPracticeState;
 
-        public Practice(List<Player> players, RoomInfo roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
+        public Practice(List<Player> players, GameRoomInfoModel roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
         { 
             // Aqui tem que inicializar os players info
             InitAllPlayerInfo();
@@ -42,7 +42,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameModePractice::RequestInitHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameModePractice::RequestInitHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -61,7 +61,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameModePractice::RequestChangeWindNextHoleRepeat][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameModePractice::RequestChangeWindNextHoleRepeat][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -77,7 +77,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameModePractice::RequestReplySyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameModePractice::RequestReplySyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -112,7 +112,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameModePractice::RequestCalculeShotSpinningCube][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameModePractice::RequestCalculeShotSpinningCube][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -129,7 +129,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameModePractice::RequestCalculeShotCoin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameModePractice::RequestCalculeShotCoin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -174,7 +174,7 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 // Verifica se o player terminou jogo, fez o ultimo hole
-                if (Course.findHoleSeq(pgi.hole) == RoomInfo.qntd_hole)
+                if (Course.findHoleSeq(pgi.hole) == RoomInfo.HoleCount)
                 {
                     // Resposta para o player que terminou o ultimo hole do Game 
                     session.Send(new Packet(0x199));
@@ -183,20 +183,20 @@ namespace Pangya_GameServer.Roms.GameModes
                     if (pgi.shot_sync.state_shot.display.clear_bonus)
                     {
 
-                        if (!MapSystem.getInstance().isLoad())
+                        if (!MapSystem.Instance.isLoad())
                         {
-                            MapSystem.getInstance().load();
+                            MapSystem.Instance.load();
                         }
 
-                        var map = MapSystem.getInstance().getMap((byte)(RoomInfo.course & ROOM_INFO_COURSE.UNK));
+                        var map = MapSystem.Instance.getMap((byte)(RoomInfo.CourseIndex & RoomCourseFlags.UNK));
 
                         if (map == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[GameModePractice::checkEndShotOfHole][Error][Warning] tentou pegar o Map dados estaticos do course[COURSE=" + Convert.ToString((ushort)((byte)(RoomInfo.course & ROOM_INFO_COURSE.UNK))) + "], mas nao conseguiu encontra na classe do Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[GameModePractice::checkEndShotOfHole][Error][Warning] tentou pegar o Map dados estaticos do CourseIndex[COURSE=" + Convert.ToString((ushort)((byte)(RoomInfo.CourseIndex & RoomCourseFlags.UNK))) + "], mas nao conseguiu encontra na classe do Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                         else
                         {
-                            pgi.data.bonus_pang += MapSystem.getInstance().calculeClear30s(map, RoomInfo.qntd_hole);
+                            pgi.data.bonus_pang += MapSystem.Instance.calculeClear30s(map, RoomInfo.HoleCount);
                         }
                     }
                 }
@@ -274,7 +274,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameModePractice::timeIsOver][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameModePractice::timeIsOver][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -299,11 +299,11 @@ namespace Pangya_GameServer.Roms.GameModes
                         "tentou terminar o jogo",
                         session, out PlayerGameInfo pgi);
 
-                    // Practice n o salva info, s  pang, exp, e itens used and dropped. Ex: Active Item, Spinning Cube e Coin
+                    // Practice n o salva info, s  Pang, Experience, e itens used and dropped. Ex: Active Item, Spinning Cube e Coin
                     SavePang(session);
 
-                    // Practice ganha exp, mas nao d  para o caddie, o caddie n o ganha exp no practice
-                    if (pgi.data.exp > 0) // s  add exp se for maior que 0
+                    // Practice ganha Experience, mas nao d  para o caddie, o caddie n o ganha Experience no practice
+                    if (pgi.data.exp > 0) // s  add Experience se for maior que 0
                     {
                         session.addExp(pgi.data.exp, false);
                     }
@@ -326,7 +326,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Colocar o finish_game Para 1 quer dizer que ele acabou o camp
                     pgi.finish_game = 1;
 
-                    // Flag do game que terminou
+                    // ServerFlag do game que terminou
                     GameInitState = 2; // ACABOU
                 }
             }
@@ -340,7 +340,7 @@ namespace Pangya_GameServer.Roms.GameModes
             if (Players.Count > 0)
             {
 
-                // Practine n o conta estrela ele da 1 de exp por hole jogados
+                // Practine n o conta estrela ele da 1 de Experience por hole jogados
                 float stars = Course.getStar();
 
                 var holeSeq = 0;
@@ -349,23 +349,23 @@ namespace Pangya_GameServer.Roms.GameModes
                 {
 
                     InitPlayerInfo("RequestFinishExpGame",
-                        "tentou finalizar exp do jogo",
+                        "tentou finalizar Experience do jogo",
                         el, out PlayerGameInfo pgi);
 
                     holeSeq = Course.findHoleSeq(pgi.hole);
 
                     // Ele est  no primeiro hole e n o acertou ele, s  da experi ncia se ele tiver acertado o hole
-                    if (holeSeq != RoomInfo.qntd_hole && !pgi.shot_sync.state_shot.display.acerto_hole)
+                    if (holeSeq != RoomInfo.HoleCount && !pgi.shot_sync.state_shot.display.acerto_hole)
                     {
                         holeSeq = 0;
                     }
 
-                    if (el.UserInfo.level < 70)
+                    if (el.UserInfo.Level < 70)
                     {
                         pgi.data.exp = ((holeSeq > 0 ? holeSeq : 0) * 1);
                     }
 
-                    _smp.message_pool.getInstance().push(new message("[GameModePractice::FinishExpGame][Log] PLAYER[UID=" + Convert.ToString(el.UserInfo.uid) + "] ganhou " + Convert.ToString(pgi.data.exp) + " de experience.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameModePractice::FinishExpGame][Log] Normal[UID=" + Convert.ToString(el.UserInfo.UID) + "] ganhou " + Convert.ToString(pgi.data.exp) + " de experience.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 }
             }
@@ -375,7 +375,7 @@ namespace Pangya_GameServer.Roms.GameModes
         {
 
             InitPlayerInfo("SavePang",
-                "tentou salvar os pang ganho no jogo",
+                "tentou salvar os Pang ganho no jogo",
                 session, out PlayerGameInfo pgi);
 
             if (pgi.data.pang > 0 || pgi.data.bonus_pang > 0) // S  add se for maior que 0
@@ -391,12 +391,12 @@ namespace Pangya_GameServer.Roms.GameModes
             base.CalculePang(session);
 
             InitPlayerInfo("CalculePang",
-                "tentou calcular o pang do player no jogo",
+                "tentou calcular o Pang do player no jogo",
                 session, out PlayerGameInfo pgi);
 
             // Practice
-            // Hole Repeat ganha 1/6 dos pang(s) feito
-            if (RoomInfo.modo == (int)ROOM_INFO_MODO.M_REPEAT)
+            // Hole Repeat ganha 1/6 dos Pang(s) feito
+            if (RoomInfo.HoleMode == (int)RoomHoleType.M_REPEAT)
             {
                 float taxaDinamica = 1.0f / 6.0f; // Padrão
 
@@ -468,7 +468,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Calcula os pangs que o player ganhou
                     CalculePang(session);
 
-                    // Atualizar os pang do player se ele estiver com assist ligado, e for maior que beginner E
+                    // Atualizar os Pang do player se ele estiver com assist ligado, e for maior que beginner E
                     UpdatePlayerAssist(session);
 
                     if (GameInitState == 1 && option == 0)
@@ -484,7 +484,7 @@ namespace Pangya_GameServer.Roms.GameModes
                         SendUpdateState(session, 2);
 
                         // Achievement Counter
-                        pgi.sys_achieve.incrementCounter((RoomInfo.GetModo() == ROOM_INFO_MODO.M_REPEAT) ? 0x6C40003Du /*/ *Hole Repeat * /*/ : 0x6C40003Eu /*/ *Course Practice * /*/);
+                        pgi.sys_achieve.incrementCounter((RoomInfo.GetHoleType() == RoomHoleType.M_REPEAT) ? 0x6C40003Du /*/ *Hole Repeat * /*/ : 0x6C40003Eu /*/ *Course Practice * /*/);
                     }
                 }
 

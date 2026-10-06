@@ -10,9 +10,9 @@ namespace Pangya_GameServer.Repository
         /// <summary>
         /// Atualiza os pontos de um jogador que já possui registro na tabela.
         /// </summary>
-        /// <param name="_uid">ID do Jogador</param>
-        /// <param name="_points_to_add">Quantidade de pontos a SOMAR ao atual</param>
-        /// <param name="_limit_buy">Novo limite de compra</param>
+        /// <param Name="_uid">ID do Jogador</param>
+        /// <param Name="_points_to_add">Quantidade de pontos a SOMAR ao atual</param>
+        /// <param Name="_limit_buy">Novo limite de compra</param>
         public CmdUpdateWebShopPoint(uint _uid, long _points_to_add)
         {
             this.m_uid = _uid;
@@ -39,11 +39,11 @@ namespace Pangya_GameServer.Repository
             }
 
             // Query SQL direta para UPDATE
-            // Usamos += (points = points + x) para garantir que o ganho de pontos seja acumulativo
+            // Usamos += (points = points + X) para garantir que o ganho de pontos seja acumulativo
             string query = string.Format(
                 "UPDATE [pangya].[pangya_point_event] " +
                 "SET [points] = [points] + {1} " +
-                "WHERE [uid] = {0}",
+                "WHERE [UID] = {0}",
                 m_uid, m_points_to_add
             );
 
@@ -51,7 +51,7 @@ namespace Pangya_GameServer.Repository
             var r = _update(query);
 
             // Valida se o comando foi aceito pelo SQL
-            checkResponse(r, "Não foi possível atualizar os pontos do PLAYER[UID: " + m_uid + "]");
+            checkResponse(r, "Não foi possível atualizar os pontos do Normal[UID: " + m_uid + "]");
 
             return r;
         }
@@ -96,7 +96,7 @@ namespace Pangya_GameServer.Repository
                 m_add_points.ToString() + ", " +
                 m_limit_buy.ToString());
 
-            checkResponse(r, "nao conseguiu processar PointEvent para o PLAYER[UID: " + m_uid + "]");
+            checkResponse(r, "nao conseguiu processar PointEvent para o Normal[UID: " + m_uid + "]");
 
             return r;
         }

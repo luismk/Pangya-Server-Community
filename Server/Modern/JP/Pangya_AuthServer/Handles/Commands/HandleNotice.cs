@@ -16,12 +16,12 @@ namespace Pangya_AuthServer.Handles.Commands
             {
                 // 1. Busca informação no Banco de Dados
                 CmdNoticeInfo cmd_ni = new CmdNoticeInfo(el.idx);
-                snmdb.NormalManagerDB.getInstance().add(0, cmd_ni);
+                snmdb.NormalManagerDB.Instance.add(0, cmd_ni);
 
                 // 2. Validações iniciais
                 if (cmd_ni.getException().getCodeError() != 0)
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[HandleNotice][Error] {cmd_ni.getException().getFullMessageError()}",
                         type_msg.CL_ONLY_CONSOLE));
                     return;
@@ -30,7 +30,7 @@ namespace Pangya_AuthServer.Handles.Commands
                 var msg = cmd_ni.getInfo();
                 if (string.IsNullOrEmpty(msg))
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[HandleNotice][Error] msg is empty. Comando[{el.toString()}]",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return;
@@ -41,14 +41,14 @@ namespace Pangya_AuthServer.Handles.Commands
                 p.WriteString(msg);
 
                 // 4. Lógica de Envio (Target ou Broadcast por Tipo)
-                var s = (Player)AuthServer.getInstance().FindSessionByUID(el.target);
+                var s = (Player)AuthServer.Instance.FindSessionByUID(el.target);
 
                 if (s == null)
                 {
-                    var Players = AuthServer.getInstance().FindPlayersByType(el.target);
+                    var Players = AuthServer.Instance.FindPlayersByType(el.target);
                     if (Players.Count > 0)
                     {
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[HandleNotice][Log] Send Broadcast Notice[MESSAGE={msg}] For Server[UID={el.target}]",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -57,14 +57,14 @@ namespace Pangya_AuthServer.Handles.Commands
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[HandleNotice][Error] Nao encontrou o SERVER[UID/TIPO={el.target}] para enviar Notice.",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[HandleNotice][Log] Send Broadcast Notice[MESSAGE={msg}] For Server[UID={el.target}]",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -73,7 +73,7 @@ namespace Pangya_AuthServer.Handles.Commands
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[HandleNotice][Critical] {e.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

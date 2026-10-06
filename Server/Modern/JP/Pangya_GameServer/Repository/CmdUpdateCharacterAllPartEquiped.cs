@@ -46,7 +46,7 @@ namespace Pangya_GameServer.Repository
         protected override Response prepareConsulta()
         {
 
-            string q = ""; // "|" + (_ci._typeid) + "|" + (_ci.id);
+            string q = ""; // "|" + (_ci._typeid) + "|" + (_ci.Login);
 
             q += "|" + Convert.ToString((ushort)m_ci.default_hair) + "|" + Convert.ToString((ushort)m_ci.default_shirts);
             q += "|" + Convert.ToString((ushort)m_ci.gift_flag) + "|" + Convert.ToString((ushort)m_ci.purchase);

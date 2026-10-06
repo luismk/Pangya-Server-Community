@@ -103,11 +103,11 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
         public void addPlayer(Player _session)
         {
 
-            if (findPlayerByUID(_session.UserInfo.uid) != null)
+            if (findPlayerByUID(_session.UserInfo.UID) != null)
             {
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[Guild::addPlayer][Warning] tentou adicionar o PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] na guild, mas ele ja existe na guild. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Guild::addPlayer][Warning] tentou adicionar o Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] na Guild, mas ele ja existe na Guild. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -122,14 +122,14 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             if (_session == null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Guild::deletePlayer][Error] _session is invalid(null). Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Guild::deletePlayer][Error] _session is invalid(null). Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
 
             var it = v_players.FirstOrDefault(_el =>
             {
-                return _el.UserInfo.uid == _session.UserInfo.uid;
+                return _el.UserInfo.UID == _session.UserInfo.UID;
             });
 
             if (it != null)  // deleta o player do map
@@ -138,7 +138,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[Guild::deletePlayer][Warning] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] ja foi deletado do vector. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Guild::deletePlayer][Warning] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] ja foi deletado do vector. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -157,7 +157,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
         {
             var it = v_players.FirstOrDefault(_el =>
             {
-                return _el.UserInfo.uid == _uid;
+                return _el.UserInfo.UID == _uid;
             });
 
             return it;
@@ -168,7 +168,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
             var it = v_players.FirstOrDefault(_el =>
             {
-                return string.CompareOrdinal(_nickname, _el.UserInfo.nickname) == 0;
+                return string.CompareOrdinal(_nickname, _el.UserInfo.NickName) == 0;
             });
 
             return it;
@@ -180,7 +180,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             if (_index > v_players.Count())
             {
 
-                _smp.message_pool.getInstance().push(new message("[Guild::getPlayerByIndex][Error] index[VALUE=" + Convert.ToString(_index) + "] is invalid(out_of_bounds)", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Guild::getPlayerByIndex][Error] index[VALUE=" + Convert.ToString(_index) + "] is invalid(out_of_bounds)", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return null;
             }
@@ -200,11 +200,11 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             return (uint)v_players.Count();
         }
 
-        private eTEAM m_team = new eTEAM(); // Time que a guild está na sala
-        private uint m_uid = new uint(); // UID da guild
-        private int m_point; // Pontos da guild
+        private eTEAM m_team = new eTEAM(); // Time que a Guild está na sala
+        private uint m_uid = new uint(); // UID da Guild
+        private int m_point; // Pontos da Guild
         private uint m_pang_win = new uint(); // Pangs ganho no jogo
-        private ulong m_pang = new ulong(); // Pangs da guild
+        private ulong m_pang = new ulong(); // Pangs da Guild
 
         private List<Player> v_players = new List<Player>(); // Players 
     }

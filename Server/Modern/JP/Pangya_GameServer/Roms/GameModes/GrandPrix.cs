@@ -2,7 +2,7 @@ using Pangya_GameServer.Engine;
 using Pangya_GameServer.Feature;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Roms.GameBase.Modes;
 using Pangya_GameServer.Server;
@@ -28,7 +28,7 @@ namespace Pangya_GameServer.Roms.GameModes
         private TimerManager _timerManagerRules;
         private LockManager _grandPrixManager;
         private bool _initGrandPrixState; 
-        public GrandPrix(List<Player> players, RoomInfo roomInfo, RateValue rateValue, GrandPrixData grandPrixData) : base(players, roomInfo, rateValue)
+        public GrandPrix(List<Player> players, GameRoomInfoModel roomInfo, RateValue rateValue, GrandPrixData grandPrixData) : base(players, roomInfo, rateValue)
         { 
             if (grandPrixData == null)
                 throw new exception("[GrandPrix::GrandPrix][Error] grandPrixData está NULL — não é possível inicializar o Grand Prix.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX, 1, 0));
@@ -48,7 +48,7 @@ namespace Pangya_GameServer.Roms.GameModes
             InitAllPlayerInfo();
 
             // Load Grand Prix Rank Reward from iff
-            _reward = sIff.getInstance().findGrandPrixRankReward(_grandPrixData.TypeID_Link);
+            _reward = sIff.Instance.findGrandPrixRankReward(_grandPrixData.TypeID_Link);
 
             // Log para verificar o carregamento
             if (_reward != null && _reward.Count > 0)
@@ -58,7 +58,7 @@ namespace Pangya_GameServer.Roms.GameModes
             else
             {
                 if (_grandPrixData.reward._typeid[0] == 0)
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::Error] Falha crítica: m_gp_reward ou m_gp retornou NULL ou nao tem premios para o GP TypeID: " + _grandPrixData.TypeID_Link, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::Error] Falha crítica: m_gp_reward ou m_gp retornou NULL ou nao tem premios para o GP TypeID: " + _grandPrixData.TypeID_Link, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             // Init _bots
@@ -67,7 +67,7 @@ namespace Pangya_GameServer.Roms.GameModes
             // Class Grand Prix Counter Item Typeid
             uint class_gp_counter_typeid = 0;
 
-            if (sIff.getInstance().isGrandPrixEvent(_grandPrixData.ID))
+            if (sIff.Instance.isGrandPrixEvent(_grandPrixData.ID))
             {
 
                 class_gp_counter_typeid = 0x6C4000AEu;
@@ -76,7 +76,7 @@ namespace Pangya_GameServer.Roms.GameModes
             else
             {
 
-                switch (sIff.getInstance().getGrandPrixAbaType(_grandPrixData.ID))
+                switch (sIff.Instance.getGrandPrixAbaType(_grandPrixData.ID))
                 {
                     case GrandPrixData.GP_ABA.ROOKIE:
                         class_gp_counter_typeid = 0x6C4000AAu;
@@ -152,7 +152,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 _grandPrixManager.unlock(session);
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::RequestFinishCharIntro][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::RequestFinishCharIntro][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -176,20 +176,20 @@ namespace Pangya_GameServer.Roms.GameModes
                 if (velocidade >= TimeBoosterValue)
                 {
 
-                    if (!session.UserInfo.UserCapabilities.premium_user)
+                    if (!session.UserInfo.UserCapabilities.UserPremium)
                     { // NÃO é premium user — precisa ter o item Time Booster
 
                         var pWi = session.Inventory.FindWarehouseItemByTypeid(TIME_BOOSTER_TYPEID);
 
                         if (pWi == null)
                         {
-                            throw new exception("[GrandPrix::RequestActiveBooster][Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou ativar time booster, mas ele nao tem o item passive. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                            throw new exception("[GrandPrix::RequestActiveBooster][Error] Normal[UID=" + session.UserInfo.UID + "] tentou ativar time booster, mas ele nao tem o item passive. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                                 11, 0));
                         }
 
                         if (pWi.STDA_C_ITEM_QNTD <= 0)
                         {
-                            throw new exception("[GrandPrix::RequestActiveBooster][Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou ativar time booster, mas ele nao tem quantidade suficiente[VALUE=" + (pWi.STDA_C_ITEM_QNTD) + ", REQUEST=1] do item de time booster.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY_BASE,
+                            throw new exception("[GrandPrix::RequestActiveBooster][Error] Normal[UID=" + session.UserInfo.UID + "] tentou ativar time booster, mas ele nao tem quantidade suficiente[VALUE=" + (pWi.STDA_C_ITEM_QNTD) + ", REQUEST=1] do item de time booster.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY_BASE,
                                 12, 0));
                         }
 
@@ -197,13 +197,13 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         if (it.Value == null)
                         {
-                            throw new exception("[GrandPrix::RequestActiveBooster][Error] PLAYER[UID = " + session.UserInfo.uid + "] tentou ativar time booster, mas ele nao tem ele no item passive usados do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                            throw new exception("[GrandPrix::RequestActiveBooster][Error] Normal[UID = " + session.UserInfo.UID + "] tentou ativar time booster, mas ele nao tem ele no item passive usados do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                                 13, 0));
                         }
 
                         if ((short)it.Value.count >= pWi.STDA_C_ITEM_QNTD)
                         {
-                            throw new exception("[GrandPrix::RequestActiveBooster][Error] PLAYER[UID=" + session.UserInfo.uid + "] tentou ativar time booster, mas ele ja usou todos os time booster. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                            throw new exception("[GrandPrix::RequestActiveBooster][Error] Normal[UID=" + session.UserInfo.UID + "] tentou ativar time booster, mas ele ja usou todos os time booster. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                                 14, 0));
                         }
 
@@ -233,7 +233,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::RequestActiveBooster][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::RequestActiveBooster][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -265,7 +265,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 _grandPrixManager.unlock(session);
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::RequestStartTurnTime][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::RequestStartTurnTime][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -290,7 +290,7 @@ namespace Pangya_GameServer.Roms.GameModes
             { 
                 _grandPrixManager.unlock(session);
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::RequestInitShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::RequestInitShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -314,7 +314,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 _grandPrixManager.unlock(session);
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::RequestSyncShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::RequestSyncShot][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -326,7 +326,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 if (s == null)
                 {
-                    throw new exception("[GrandPrix::requestTranslateSyncShotData][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou sincronizar tacada do PLAYER[OID=" + Convert.ToString(ssd.oid) + "], mas o player nao existe nessa jogo. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                    throw new exception("[GrandPrix::requestTranslateSyncShotData][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou sincronizar tacada do Normal[OID=" + Convert.ToString(ssd.oid) + "], mas o player nao existe nessa jogo. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                         200, 0));
                 }
 
@@ -334,7 +334,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 _grandPrixManager.@lock(session);
 
                 // Update Sync Shot Player
-                if (session.UserInfo.uid == s.UserInfo.uid)
+                if (session.UserInfo.UID == s.UserInfo.UID)
                 {
 
                     var pgi = InitPlayerInfo("requestTranslateSyncShotData",
@@ -374,7 +374,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                     if (hole == null)
                     {
-                        throw new exception("[GrandPrix::requestTranslateSyncShotData][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou sincronizar tacada no hole[NUMERO=" + Convert.ToString((ushort)pgi.hole) + "], mas o numero do hole is invalid. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                        throw new exception("[GrandPrix::requestTranslateSyncShotData][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou sincronizar tacada no hole[NUMERO=" + Convert.ToString((ushort)pgi.hole) + "], mas o RoomID do hole is invalid. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                             12, 0));
                     }
 
@@ -420,7 +420,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 // Libera
                 _grandPrixManager.unlock(session);
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::requestTranslateSyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::requestTranslateSyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -430,7 +430,7 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 // S  calcula se n o for short game e n o for grand prix rookie
-                if (!(RoomInfo.special_flag_mod.short_game) && !(sIff.getInstance().getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.getInstance().isGrandPrixNormal(_grandPrixData.ID)))
+                if (!(RoomInfo.SpecialModeRoom.IsShotMode) && !(sIff.Instance.getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.Instance.isGrandPrixNormal(_grandPrixData.ID)))
                 {
                     CalculeShotToSpinningCube(session, ssd);
                 }
@@ -438,7 +438,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::requestCalculeShotSpinningCube][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::requestCalculeShotSpinningCube][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
          
@@ -448,7 +448,7 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 // S  calcula se n o for short game e n o for grand prix rookier
-                if (!(RoomInfo.special_flag_mod.short_game) && !(sIff.getInstance().getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.getInstance().isGrandPrixNormal(_grandPrixData.ID)))
+                if (!(RoomInfo.SpecialModeRoom.IsShotMode) && !(sIff.Instance.getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.Instance.isGrandPrixNormal(_grandPrixData.ID)))
                 {
                     CalculeShotToCoin(session, ssd);
                 }
@@ -456,7 +456,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (exception e)
             { 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::requestCalculeShotCoin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::requestCalculeShotCoin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
          
@@ -534,7 +534,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 // Libera
                 _grandPrixManager.unlock(session);
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::finishHole][ErrrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::finishHole][ErrrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -556,13 +556,13 @@ namespace Pangya_GameServer.Roms.GameModes
                     CalculePang(session);
 
                     // Rookie Grand Prix s  da 1/3 dos pangs ganhos
-                    if (sIff.getInstance().getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.getInstance().isGrandPrixNormal(_grandPrixData.ID))
+                    if (sIff.Instance.getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.Instance.isGrandPrixNormal(_grandPrixData.ID))
                     {
                         pgi.data.pang = (ulong)(pgi.data.pang * (1.0f / 3.0f));
                         pgi.data.bonus_pang = (ulong)(pgi.data.bonus_pang * (1.0f / 3.0f));
                     }
 
-                    // Atualizar os pang do player se ele estiver com assist ligado, e for maior que beginner E
+                    // Atualizar os Pang do player se ele estiver com assist ligado, e for maior que beginner E
                     UpdatePlayerAssist(session);
 
                     if (GameInitState == 1 && option == 0)
@@ -621,7 +621,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Game Data Init
                     p.init_plain(0x76);
 
-                    p.WriteByte(RoomInfo.tipo_show);
+                    p.WriteByte(RoomInfo.RoomType);
                     p.WriteUInt32(1);
 
                     p.WriteTime(StartTime);
@@ -654,7 +654,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::sendInitialData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::sendInitialData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -699,7 +699,7 @@ namespace Pangya_GameServer.Roms.GameModes
                         RequestFinishItemUsedGame(it); // Salva itens usados no Tourney
 
                         // Rookie Grand Prix n o altera o info do player s  achievement
-                        if (!(sIff.getInstance().getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.getInstance().isGrandPrixNormal(_grandPrixData.ID)))
+                        if (!(sIff.Instance.getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.Instance.isGrandPrixNormal(_grandPrixData.ID)))
                         {
                             RequestSaveInfo((it), (option == 0x800) ? 5 /*N o conta quit*/ : 1); // Quitou ou tomou DC
                         }
@@ -730,7 +730,7 @@ namespace Pangya_GameServer.Roms.GameModes
                         // Acabou
 
                         // Rookie Grand Prix n o altera o info do player s  achievement
-                        if (!(sIff.getInstance().getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.getInstance().isGrandPrixNormal(_grandPrixData.ID)))
+                        if (!(sIff.Instance.getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.Instance.isGrandPrixNormal(_grandPrixData.ID)))
                         {
                             RequestSaveInfo((it), 0);
                         }
@@ -746,7 +746,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     {
 
                         // Achievements
-                        RainHoleSeqCount(session); // conta os achievement de chuva em holes consecutivas
+                        RainHoleSeqCount(session); // conta os achievement de Rain em holes consecutivas
 
                         ScoreSeqCount(session); // conta os achievement de back-to-back(2 ou mais score iguais consecutivos) do player
 
@@ -777,7 +777,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandPrix::deletePlayer][Warning] player ja foi excluido do base.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::deletePlayer][Warning] player ja foi excluido do base.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 // Aqui se n o for true tem que ver se todos terminaram o hole e enviar o pacote255
@@ -789,7 +789,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Aqui se n o for true tem que ver se todos terminaram o hole e enviar o pacote255
                 if (!ret && CheckAllHoleAndClear())
@@ -840,9 +840,9 @@ namespace Pangya_GameServer.Roms.GameModes
                         // N o tem um timer criado ainda, cria um para ele
                         if (timer == null || timer.m_timer == null)
                         {
-                            if (timer == null && (timer = _timerManager.insertTimer(p, GameServer.getInstance().MakeTimer((uint)(_grandPrixData.TimeHole * 1000), null, () => OnEndTime(this, quem), PangyaSyncTimer.TIMER_TYPE.NORMAL))) == null)
+                            if (timer == null && (timer = _timerManager.insertTimer(p, GameServer.Instance.MakeTimer((uint)(_grandPrixData.TimeHole * 1000), null, () => OnEndTime(this, quem), PangyaSyncTimer.TIMER_TYPE.NORMAL))) == null)
                             {
-                                throw new exception("[GrandPrix::GameStartTime][Error] PLAYER[UID=" + Convert.ToString(p.UserInfo.uid) + "] nao conseguiu criar um timer_ctx para poder criar um timer para o player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                                throw new exception("[GrandPrix::GameStartTime][Error] Normal[UID=" + Convert.ToString(p.UserInfo.UID) + "] nao conseguiu criar um timer_ctx para poder criar um timer para o player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                                     1050, 0));
                             }
                         }
@@ -856,7 +856,7 @@ namespace Pangya_GameServer.Roms.GameModes
                                     timer.m_timer.Stop();
 
                                 // inicia ele novamente, melhor desta forma
-                                timer.m_timer = GameServer.getInstance().MakeTimer((uint)(_grandPrixData.TimeHole * 1000), null, () => OnEndTime(this, quem), PangyaSyncTimer.TIMER_TYPE.NORMAL);
+                                timer.m_timer = GameServer.Instance.MakeTimer((uint)(_grandPrixData.TimeHole * 1000), null, () => OnEndTime(this, quem), PangyaSyncTimer.TIMER_TYPE.NORMAL);
                             }
                         }
                     }
@@ -867,7 +867,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::GameStartTime][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::GameStartTime][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -903,7 +903,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 ret = false;
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::GameStopTimer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::GameStopTimer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -949,7 +949,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                                 if (hole == null)
                                 {
-                                    throw new exception("[GrandPrix::timeIsOver][Error] PLAYER[UID=" + Convert.ToString(s.UserInfo.uid) + "] tentou pegar hole[NUMERO=" + Convert.ToString((ushort)pgi.hole) + "] no jogo, mas o numero do hole is invalid. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                                    throw new exception("[GrandPrix::timeIsOver][Error] Normal[UID=" + Convert.ToString(s.UserInfo.UID) + "] tentou pegar hole[NUMERO=" + Convert.ToString((ushort)pgi.hole) + "] no jogo, mas o RoomID do hole is invalid. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                                         1020, 0));
                                 }
 
@@ -985,7 +985,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::timeIsOver][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::timeIsOver][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
          
@@ -1014,9 +1014,9 @@ namespace Pangya_GameServer.Roms.GameModes
 
 
                         // Cria o timer rule 
-                        if (timer == null && (timer = _timerManagerRules.insertTimer(p, GameServer.getInstance().MakeTimer(time_milli * 1000 /*milliseconds*/, null, () => end_time_rule(this, quem), PangyaSyncTimer.TIMER_TYPE.NORMAL))) == null)
+                        if (timer == null && (timer = _timerManagerRules.insertTimer(p, GameServer.Instance.MakeTimer(time_milli * 1000 /*milliseconds*/, null, () => end_time_rule(this, quem), PangyaSyncTimer.TIMER_TYPE.NORMAL))) == null)
                         {
-                            throw new exception("[GrandPrix::GameStartTimeRule][Error] PLAYER[UID=" + Convert.ToString(p.UserInfo.uid) + "] nao conseguiu criar um timer_ctx para poder criar um timer rule para o player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                            throw new exception("[GrandPrix::GameStartTimeRule][Error] Normal[UID=" + Convert.ToString(p.UserInfo.UID) + "] nao conseguiu criar um timer_ctx para poder criar um timer rule para o player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                                 1050, 0));
                         }
                     }
@@ -1033,7 +1033,7 @@ namespace Pangya_GameServer.Roms.GameModes
                             }
 
                             // inicia ele novamente
-                            timer.m_timer = GameServer.getInstance().MakeTimer(time_milli * 1000 /*milliseconds*/, null, () => end_time_rule(this, quem), PangyaSyncTimer.TIMER_TYPE.NORMAL);
+                            timer.m_timer = GameServer.Instance.MakeTimer(time_milli * 1000 /*milliseconds*/, null, () => end_time_rule(this, quem), PangyaSyncTimer.TIMER_TYPE.NORMAL);
                         }
                     }
 
@@ -1043,7 +1043,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::GameStartTimeRule][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::GameStartTimeRule][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
       
@@ -1084,7 +1084,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 ret = false;
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::GameStopTimeRule][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::GameStopTimeRule][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -1152,7 +1152,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::timeRuleIsOver][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::timeRuleIsOver][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
           
@@ -1170,7 +1170,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::end_time][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::end_time][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return 0;
@@ -1188,7 +1188,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::end_time_rule][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::end_time_rule][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return 0;
@@ -1270,7 +1270,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 var qntd = 30u - Players.Count;
 
-                var gp_ai = sIff.getInstance().getGrandPrixAIOptionalData();
+                var gp_ai = sIff.Instance.getGrandPrixAIOptionalData();
 
                 LotterySystem lottery = new LotterySystem();
 
@@ -1323,13 +1323,13 @@ namespace Pangya_GameServer.Roms.GameModes
                 ulong bonus_pang = 0;
 
                 // Media do bot se ele fizer par em todos os holes
-                float media_all_parhole = Course.getMediaAllParHolesBySeq(RoomInfo.qntd_hole);
+                float media_all_parhole = Course.getMediaAllParHolesBySeq(RoomInfo.HoleCount);
 
                 Func<HoleManager, Bot.eTYPE_SCORE, bool, uint> lambdaWindFactor = (mhole, type, sameType) =>
                 {
                     uint factor = 1;
                     int wind = mhole.getWind().wind;
-                    int weather = mhole.getWeather(); // 2 = chuva ou neve
+                    int weather = mhole.getWeather(); // 2 = Rain ou neve
 
                     // Vento leve e pontuação máxima
                     if (wind >= 0 && wind < 3 && type == Bot.eTYPE_SCORE.MAX_SCORE)
@@ -1352,7 +1352,7 @@ namespace Pangya_GameServer.Roms.GameModes
                         factor = 7;
                     }
 
-                    // Se tiver chuva ou neve (weather == 2)
+                    // Se tiver Rain ou neve (weather == 2)
                     if (weather == 2 && (type == Bot.eTYPE_SCORE.MED_SCORE || type == Bot.eTYPE_SCORE.MIN_SCORE))
                     {
                         factor += 2;
@@ -1377,9 +1377,9 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         bot.max_record = (bot.type_score == Bot.eTYPE_SCORE.MAX_SCORE ? bot_score.ScoreBotMax + (int)(Random.Shared.Next() % 3) : (bot.type_score == Bot.eTYPE_SCORE.MED_SCORE ? bot_score.ScoreBotMed + (int)(Random.Shared.Next(0, 6) - 3) : bot_score.ScoreBotMin + (int)(Random.Shared.Next(0, 5) - 3)));
 
-                        bot.qntd_hole = RoomInfo.qntd_hole;
+                        bot.qntd_hole = RoomInfo.HoleCount;
 
-                        for (var j = 0; j < RoomInfo.qntd_hole; ++j)
+                        for (var j = 0; j < RoomInfo.HoleCount; ++j)
                         {
                             hole = Course.findHoleBySeq((short)(j + 1));
                             if (hole != null)
@@ -1388,7 +1388,7 @@ namespace Pangya_GameServer.Roms.GameModes
                                 // Score
                                 bot.med_shot_per_hole = (int)Math.Round(((bot.qntd_hole - j + 1) * media_all_parhole + (bot.max_record - bot.record)) / (float)(bot.qntd_hole - j + 1));
 
-                                min_shot = (hole.getPar().par + ((RoomInfo.special_flag_mod.short_game) ? -2 /*Short Game*/ : hole.getPar().range_score[0]));
+                                min_shot = (hole.getPar().par + ((RoomInfo.SpecialModeRoom.IsShotMode) ? -2 /*Short Game*/ : hole.getPar().range_score[0]));
 
                                 if (min_shot >= bot.med_shot_per_hole) // Limite de menor score do hole
                                 {
@@ -1431,7 +1431,7 @@ namespace Pangya_GameServer.Roms.GameModes
                                     if ((lc = lottery_score.SpinRoleta(true)) == null)
                                     {
 
-                                        _smp.message_pool.getInstance().push(new message("[GrandPrix::init_bots][Warning] nao conseguiu rodar a roleta para o score do bot, usando o med_shot_per_hole.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                        _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::init_bots][Warning] nao conseguiu rodar a roleta para o score do bot, usando o med_shot_per_hole.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                         score = bot.med_shot_per_hole - hole.getPar().par;
 
@@ -1454,7 +1454,7 @@ namespace Pangya_GameServer.Roms.GameModes
                                     }
                                 }
 
-                                // Pang e Bonus pang
+                                // Pang e Bonus Pang
                                 pang = (ulong)(Random.Shared.Next() % (351 * (hole.getWeather() == 2 ? 2 : 1)));
                                 bonus_pang = (ulong)Random.Shared.Next() % 200Ul;
 
@@ -1468,18 +1468,18 @@ namespace Pangya_GameServer.Roms.GameModes
                                 bot.pang_total += pang;
                                 bot.bonus_pang_total += bonus_pang;
 
-                            } // If course->findHole
+                            } // If CourseIndex->findHole
 
                             else
                             {
-                                _smp.message_pool.getInstance().push(new message($"[GrandPrix::init_bots][ERROR] Hole não encontrado para seq {(j + 1)}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage($"[GrandPrix::init_bots][ERROR] Hole não encontrado para seq {(j + 1)}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 break;
                             }
                         } // For Hole Bot
 
                         if (bot.qntd_hole != (byte)bot.hole.Count)
                         {
-                            _smp.message_pool.getInstance().push(new message("[GrandPrix::init_bots][WARNIG] Bot[ID=" + Convert.ToString(bot.id) + ", HOLE_QNTD_INIT=" + Convert.ToString(bot.hole.Count) + ", HOLE_QNTD_GP=" + Convert.ToString((ushort)bot.qntd_hole) + "] qntd de holes inicializado esta diferente da quantidade de holes da sala Grand Prix. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::init_bots][WARNIG] Bot[ID=" + Convert.ToString(bot.id) + ", HOLE_QNTD_INIT=" + Convert.ToString(bot.hole.Count) + ", HOLE_QNTD_GP=" + Convert.ToString((ushort)bot.qntd_hole) + "] qntd de holes inicializado esta diferente da quantidade de holes da sala Grand Prix. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                         tmp_pi = new PlayerGameInfo();
@@ -1631,7 +1631,7 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 // Verifica se o player terminou jogo, fez o ultimo hole
-                if (Course.findHoleSeq(pgi.hole) == RoomInfo.qntd_hole)
+                if (Course.findHoleSeq(pgi.hole) == RoomInfo.HoleCount)
                 {
                     // Resposta para o player que terminou o ultimo hole do Game 
                     session.Send(new Packet(0x199));
@@ -1640,20 +1640,20 @@ namespace Pangya_GameServer.Roms.GameModes
                     if (pgi.shot_sync.state_shot.display.clear_bonus)
                     {
 
-                        if (!MapSystem.getInstance().isLoad())
+                        if (!MapSystem.Instance.isLoad())
                         {
-                            MapSystem.getInstance().load();
+                            MapSystem.Instance.load();
                         }
 
-                        var map = MapSystem.getInstance().getMap((byte)(RoomInfo.course & ROOM_INFO_COURSE.UNK));
+                        var map = MapSystem.Instance.getMap((byte)(RoomInfo.CourseIndex & RoomCourseFlags.UNK));
 
                         if (map == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[GameModeGrandPrix::checkEndShotOfHole][Error][Warning] tentou pegar o Map dados estaticos do course[COURSE=" + Convert.ToString((ushort)((byte)(RoomInfo.course & ROOM_INFO_COURSE.UNK))) + "], mas nao conseguiu encontra na classe do Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[GameModeGrandPrix::checkEndShotOfHole][Error][Warning] tentou pegar o Map dados estaticos do CourseIndex[COURSE=" + Convert.ToString((ushort)((byte)(RoomInfo.CourseIndex & RoomCourseFlags.UNK))) + "], mas nao conseguiu encontra na classe do Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                         else
                         {
-                            pgi.data.bonus_pang += MapSystem.getInstance().calculeClear30s(map, RoomInfo.qntd_hole);
+                            pgi.data.bonus_pang += MapSystem.Instance.calculeClear30s(map, RoomInfo.HoleCount);
                         }
                     }
                 }
@@ -1699,7 +1699,7 @@ namespace Pangya_GameServer.Roms.GameModes
         {
 
             InitPlayerInfo("SavePang",
-                "tentou salvar os pang ganho no jogo",
+                "tentou salvar os Pang ganho no jogo",
                 session, out PlayerGameInfo pgi);
 
             if (pgi.data.pang > 0 || pgi.data.bonus_pang > 0) // S  add se for maior que 0
@@ -1715,12 +1715,12 @@ namespace Pangya_GameServer.Roms.GameModes
             base.CalculePang(session);
 
             InitPlayerInfo("CalculePang",
-                "tentou calcular o pang do player no jogo",
+                "tentou calcular o Pang do player no jogo",
                 session, out PlayerGameInfo pgi);
 
             // GrandPrix
-            // Hole Repeat ganha 1/6 dos pang(s) feito
-            if (RoomInfo.modo == (int)ROOM_INFO_MODO.M_REPEAT)
+            // Hole Repeat ganha 1/6 dos Pang(s) feito
+            if (RoomInfo.HoleMode == (int)RoomHoleType.M_REPEAT)
             {
                 float taxaDinamica = 1.0f / 6.0f; // Padrão
 
@@ -1759,17 +1759,17 @@ namespace Pangya_GameServer.Roms.GameModes
                 {
                     if (session.Inventory == null)
                     {
-                        throw new exception("[GrandPrix::consomeTicket][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + ", MASTER=" + Convert.ToString(RoomInfo.master) + "], mas o player nao tem a quantidade de Ticket[TYPEID=" + Convert.ToString(_grandPrixData.ticket._typeid) + ", REQ_QNTD=" + Convert.ToString(_grandPrixData.ticket.qntd) + ", HAVE_QNTD=" + 0 + "] para jogar o Grand Prix. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                        throw new exception("[GrandPrix::consomeTicket][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + ", MASTER=" + Convert.ToString(RoomInfo.OwnerUID) + "], mas o player nao tem a quantidade de Ticket[TYPEID=" + Convert.ToString(_grandPrixData.ticket._typeid) + ", REQ_QNTD=" + Convert.ToString(_grandPrixData.ticket.qntd) + ", HAVE_QNTD=" + 0 + "] para jogar o Grand Prix. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                             10, 0x5900203));
                     }
 
                     // Tira o ticket Grand Prix do player
-                    var pWi = session.Inventory.FindWarehouseItemByTypeid(_grandPrixData.ticket._typeid) ?? throw new exception("[GrandPrix::consomeTicket][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + ", MASTER=" + Convert.ToString(RoomInfo.master) + "], mas o player nao tem o Ticket[TYPEID=" + Convert.ToString(_grandPrixData.ticket._typeid) + "] para jogar o Grand Prix. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                    var pWi = session.Inventory.FindWarehouseItemByTypeid(_grandPrixData.ticket._typeid) ?? throw new exception("[GrandPrix::consomeTicket][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + ", MASTER=" + Convert.ToString(RoomInfo.OwnerUID) + "], mas o player nao tem o Ticket[TYPEID=" + Convert.ToString(_grandPrixData.ticket._typeid) + "] para jogar o Grand Prix. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                             9, 0x5900203));
 
                     if (pWi.STDA_C_ITEM_QNTD < (short)_grandPrixData.ticket.qntd)
                     {
-                        throw new exception("[GrandPrix::consomeTicket][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + ", MASTER=" + Convert.ToString(RoomInfo.master) + "], mas o player nao tem a quantidade de Ticket[TYPEID=" + Convert.ToString(_grandPrixData.ticket._typeid) + ", REQ_QNTD=" + Convert.ToString(_grandPrixData.ticket.qntd) + ", HAVE_QNTD=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + "] para jogar o Grand Prix. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                        throw new exception("[GrandPrix::consomeTicket][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + ", MASTER=" + Convert.ToString(RoomInfo.OwnerUID) + "], mas o player nao tem a quantidade de Ticket[TYPEID=" + Convert.ToString(_grandPrixData.ticket._typeid) + ", REQ_QNTD=" + Convert.ToString(_grandPrixData.ticket.qntd) + ", HAVE_QNTD=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + "] para jogar o Grand Prix. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                             10, 0x5900203));
                     }
 
@@ -1785,7 +1785,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Update On Server And Database
                     if (ItemManager.removeItem(item, session) <= 0)
                     {
-                        throw new exception("[GrandPrix::consomeTicket][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + ", MASTER=" + Convert.ToString(RoomInfo.master) + "], mas nao conseguiu excluir o Ticket[TYPEID=" + Convert.ToString(item._typeid) + "] do player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
+                        throw new exception("[GrandPrix::consomeTicket][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou comecar o jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + ", MASTER=" + Convert.ToString(RoomInfo.OwnerUID) + "], mas nao conseguiu excluir o Ticket[TYPEID=" + Convert.ToString(item._typeid) + "] do player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GRAND_PRIX,
                             11, 0x5900203));
                     }
 
@@ -1808,7 +1808,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 catch (exception e)
                 {
 
-                    _smp.message_pool.getInstance().push(new message("[GrandPrix::consomeTicket][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::consomeTicket][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.GRAND_PRIX)
                     {
@@ -1828,7 +1828,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 int exp = 0;
                  
                 // Exp padr�o de hole do Grand Prix
-                switch (RoomInfo.qntd_hole)
+                switch (RoomInfo.HoleCount)
                 {
                     case 3:
                         exp = 2;
@@ -1853,7 +1853,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 exp = (int)(exp * stars);
                 // Grand Prix Rookie d  um pouco menos de experi ncia
-                if (sIff.getInstance().getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.getInstance().isGrandPrixNormal(_grandPrixData.ID))
+                if (sIff.Instance.getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.Instance.isGrandPrixNormal(_grandPrixData.ID))
                 {
                     exp = (int)(exp * 0.12f);
                 }
@@ -1870,7 +1870,7 @@ namespace Pangya_GameServer.Roms.GameModes
                         exp = (int)(exp * TRANSF_SERVER_RATE_VALUE(PlayerOrder[i].used_item.rate.exp) * TRANSF_SERVER_RATE_VALUE(RateValue.exp));
 
                         // Exp que o player ganhou
-                        if (PlayerOrder[i].level < 70 /*Ultimo level n o ganha exp*/)
+                        if (PlayerOrder[i].level < 70 /*Ultimo Level n o ganha Experience*/)
                         {
                             PlayerOrder[i].data.exp = exp;
                         }
@@ -1887,7 +1887,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
             RequestSaveDrop(session);
 
-            RainHoleSeqCount(session); // conta os achievement de chuva em holes consecutivas
+            RainHoleSeqCount(session); // conta os achievement de Rain em holes consecutivas
             ScoreSeqCount(session); // conta os achievement de back-to-back(2 ou mais score iguais consecutivos) do player
 
             RainCount(session); // Aqui achievement de rain count
@@ -1930,7 +1930,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     CalculeRankPlace();
                 }
 
-                var it = PlayerOrder.FindIndex(el => el.uid == session.UserInfo.uid);
+                var it = PlayerOrder.FindIndex(el => el.uid == session.UserInfo.UID);
                 var position = it != -1 ? it + 1 : 0; // Se não encontrar, posição 0 (equivalente a não encontrado)
 
                 // Atualiza Grand Prix Clear do player
@@ -1950,7 +1950,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[requestSaveGrandPrixClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[requestSaveGrandPrixClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1967,7 +1967,7 @@ namespace Pangya_GameServer.Roms.GameModes
             if (PlayerOrder.Count != (allplayer + _bots.Count))
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::sendTrofel][Error] VALUES[ORDER=" + Convert.ToString(PlayerOrder.Count) + ", INFO=" + Convert.ToString(PlayerInfo.Count) + ", BOT=" + Convert.ToString(_bots.Count) + "] nao conseguiu gerar os trofeus por que o vector de player rank order nao bate com o dos players no jogo", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::sendTrofel][Error] VALUES[ORDER=" + Convert.ToString(PlayerOrder.Count) + ", INFO=" + Convert.ToString(PlayerInfo.Count) + ", BOT=" + Convert.ToString(_bots.Count) + "] nao conseguiu gerar os trofeus por que o vector de player RankPosition order nao bate com o dos players no jogo", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -1981,14 +1981,14 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 var p = new Packet();
 
-                var it = PlayerOrder.FirstOrDefault(el => el.uid == session.UserInfo.uid);
+                var it = PlayerOrder.FirstOrDefault(el => el.uid == session.UserInfo.UID);
 
                 if (it != null)
                 {
 
                     try
                     {
-                        int index = PlayerOrder.FindIndex(el => el.uid == session.UserInfo.uid);
+                        int index = PlayerOrder.FindIndex(el => el.uid == session.UserInfo.UID);
                         if (index >= 0 && index < _reward.Count && _reward.Count > 0)//verifica se tem premios
                         {
                             gprr = _reward[index];
@@ -2029,24 +2029,24 @@ namespace Pangya_GameServer.Roms.GameModes
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message("[GrandPrix::sendTrofel][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao tem trofeu nessa room.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::sendTrofel][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao tem trofeu nessa room.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                     catch (IndexOutOfRangeException e)
                     {
 
-                        _smp.message_pool.getInstance().push(new message("[GrandPrix::sendTrofel][IndexOutOfRangeException] " + e.StackTrace, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::sendTrofel][IndexOutOfRangeException] " + e.StackTrace, type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     catch (exception e)
                     {
 
-                        _smp.message_pool.getInstance().push(new message("[GrandPrix::sendTrofel][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::sendTrofel][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandPrix::sendTrofel][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao esta no vector de player order.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::sendTrofel][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao esta no vector de player order.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -2071,14 +2071,14 @@ namespace Pangya_GameServer.Roms.GameModes
 
         public void SendRewardRankAndGrandPrix(Player session)
         {
-            // 1. Garante que o rank foi calculado
+            // 1. Garante que o RankPosition foi calculado
             if (PlayerOrder.Count <= 0)
             {
                 CalculeRankPlace();
             }
 
             // 2. Encontra a info do player no ranking do jogo atual
-            PlayerGameInfo it = PlayerOrder.Find(el => el.uid == session.UserInfo.uid);
+            PlayerGameInfo it = PlayerOrder.Find(el => el.uid == session.UserInfo.UID);
 
             if (it != null && _grandPrixData != null && _grandPrixData.ID != 0)
             {
@@ -2104,7 +2104,7 @@ namespace Pangya_GameServer.Roms.GameModes
                         itemGP.STDA_C_ITEM_QNTD = 1;
                         itemGP.STDA_C_ITEM_TIME = (short)_grandPrixData.reward.time[i];
                         itemGP.flag_time = 4; // Dias
-                        itemGP.flag = 0x40;   // Flag de tempo
+                        itemGP.flag = 0x40;   // ServerFlag de tempo
                     }
                     else
                     {
@@ -2113,7 +2113,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     }
 
                     // Adiciona se puder acumular ou se o player não possuir
-                    if ((sIff.getInstance().IsCanOverlapped(itemGP._typeid) && sIff.getInstance().getItemGroupIdentify(itemGP._typeid) != IFF_GROUP.CAD_ITEM) || !session.Inventory.ownerItem(itemGP._typeid))
+                    if ((sIff.Instance.IsCanOverlapped(itemGP._typeid) && sIff.Instance.getItemGroupIdentify(itemGP._typeid) != IFF_GROUP.CAD_ITEM) || !session.Inventory.ownerItem(itemGP._typeid))
                     {
                         if (ItemManager.isSetItem(itemGP._typeid))
                         {
@@ -2128,7 +2128,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
 
                 // --- PARTE B: RECOMPENSA DE RANK (POSIÇÃO) ---
-                int index = PlayerOrder.FindIndex(el => el.uid == session.UserInfo.uid);
+                int index = PlayerOrder.FindIndex(el => el.uid == session.UserInfo.UID);
 
                 // CORREÇÃO: index >= 0 permite que o 1º lugar (índice 0) receba o prêmio
                 if (index >= 0 && index < _reward.Count && _reward.Count > 0)//verifica se tem premios
@@ -2162,8 +2162,8 @@ namespace Pangya_GameServer.Roms.GameModes
                                 itemRank.STDA_C_ITEM_QNTD = (short)itemRank.qntd;
                             }
 
-                            // Verifica posse do item de rank
-                            if ((sIff.getInstance().IsCanOverlapped(itemRank._typeid) && sIff.getInstance().getItemGroupIdentify(itemRank._typeid) != IFF_GROUP.CAD_ITEM) || !session.Inventory.ownerItem(itemRank._typeid))
+                            // Verifica posse do item de RankPosition
+                            if ((sIff.Instance.IsCanOverlapped(itemRank._typeid) && sIff.Instance.getItemGroupIdentify(itemRank._typeid) != IFF_GROUP.CAD_ITEM) || !session.Inventory.ownerItem(itemRank._typeid))
                             {
                                 if (ItemManager.isSetItem(itemRank._typeid))
                                 {
@@ -2187,7 +2187,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                     if (rai.fails.Count > 0 && rai.type != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH)
                     {
-                        _smp.message_pool.getInstance().push(new message($"[GP:Reward][WARNING] Falha ao adicionar {rai.fails.Count} itens para UID: {session.GetUID()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[GP:Reward][WARNING] Falha ao adicionar {rai.fails.Count} itens para UID: {session.GetUID()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
                     // 2. Monta e envia o pacote 0x216 (Update Item no Cliente)
@@ -2199,7 +2199,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     {
                         p.WriteByte(el.type);
                         p.WriteUInt32(el._typeid);
-                        p.WriteInt32(el.id); // Importante: O addItem deve ter atualizado esse id com o do DB
+                        p.WriteInt32(el.id); // Importante: O addItem deve ter atualizado esse Login com o do DB
                         p.WriteUInt32(el.flag_time);
                         p.WriteBytes(el.stat.ToArray());
                         // Se for tempo, envia o tempo, senão a quantidade
@@ -2212,7 +2212,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message($"[GrandPrix::sendReward] Erro: Player UID {session.UserInfo.uid} ou GP m_gp inválidos.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[GrandPrix::sendReward] Erro: Player UID {session.UserInfo.UID} ou GP m_gp inválidos.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -2249,7 +2249,7 @@ namespace Pangya_GameServer.Roms.GameModes
                         }
 
                         // Verifica se o player terminou jogo, fez o ultimo hole
-                        if (Course.findHoleSeq(pgi.hole) == RoomInfo.qntd_hole)
+                        if (Course.findHoleSeq(pgi.hole) == RoomInfo.HoleCount)
                         {
 
                             // Resposta para o player que terminou o ultimo hole do Game
@@ -2261,20 +2261,20 @@ namespace Pangya_GameServer.Roms.GameModes
                             if (pgi.shot_sync.state_shot.display.clear_bonus)
                             {
 
-                                if (!MapSystem.getInstance().isLoad())
+                                if (!MapSystem.Instance.isLoad())
                                 {
-                                    MapSystem.getInstance().load();
+                                    MapSystem.Instance.load();
                                 }
 
-                                var map = MapSystem.getInstance().getMap((byte)(RoomInfo.GetMap() & 0x7F));
+                                var map = MapSystem.Instance.getMap((byte)(RoomInfo.GetMap() & 0x7F));
 
                                 if (map == null)
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[TourneyBase::checkEndShotOfHole][Error][Warning] tentou pegar o Map dados estaticos do course[COURSE=" + Convert.ToString((ushort)((byte)(RoomInfo.GetMap() & 0x7F))) + "], mas nao conseguiu encontra na classe do Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[TourneyBase::checkEndShotOfHole][Error][Warning] tentou pegar o Map dados estaticos do CourseIndex[COURSE=" + Convert.ToString((ushort)((byte)(RoomInfo.GetMap() & 0x7F))) + "], mas nao conseguiu encontra na classe do Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 }
                                 else
                                 {
-                                    pgi.data.bonus_pang += MapSystem.getInstance().calculeClear30s(map, RoomInfo.qntd_hole);
+                                    pgi.data.bonus_pang += MapSystem.Instance.calculeClear30s(map, RoomInfo.HoleCount);
                                 }
                             }
                         }
@@ -2295,7 +2295,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::changeTurn][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::changeTurn][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return 0;
@@ -2324,23 +2324,23 @@ namespace Pangya_GameServer.Roms.GameModes
                         session);
 
                     // Rookie Grand Prix n o altera o info do player s  achievement
-                    if (!(sIff.getInstance().getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.getInstance().isGrandPrixNormal(_grandPrixData.ID)))
+                    if (!(sIff.Instance.getGrandPrixAbaType(_grandPrixData.ID) == GrandPrixData.GP_ABA.ROOKIE && sIff.Instance.isGrandPrixNormal(_grandPrixData.ID)))
                     {
 
                         // Salve o record se o camp acabou e o player n o terminou todos os holes tbm tem que salvar o record [OK][Feito]
                         RequestSaveRecordCourse(session,
                             52 /*Grand Prix*/,
-                            (RoomInfo.qntd_hole == 18 && (Course.findHoleSeq(pgi.hole) == 18 || pgi.flag == PlayerGameInfo.eFLAG_GAME.END_GAME)) ? 1 : 0);
+                            (RoomInfo.HoleCount == 18 && (Course.findHoleSeq(pgi.hole) == 18 || pgi.flag == PlayerGameInfo.eFLAG_GAME.END_GAME)) ? 1 : 0);
 
                         RequestSaveInfo(session, 0);
                     }
 
                     // D  Exp para o Caddie E Mascot Tamb m
                     if (pgi.data.exp > 0)
-                    { // s  add exp se for maior que 0
+                    { // s  add Experience se for maior que 0
 
                         // Add Exp para o player
-                        session.addExp(pgi.data.exp, false /*N o precisa do pacote para trocar de level*/);
+                        session.addExp(pgi.data.exp, false /*N o precisa do pacote para trocar de Level*/);
 
                         // D  Exp para o Caddie Equipado
                         if (session.Inventory.UserEquippedItem.CaddieEquiped != null) // Tem um caddie equipado
@@ -2391,7 +2391,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Colocar o finish_game Para 1 quer dizer que ele acabou o camp
                     pgi.finish_game = 1;
 
-                    // Flag do game que terminou
+                    // ServerFlag do game que terminou
                     GameInitState = 2; // ACABOU
 
                 }
@@ -2418,15 +2418,15 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 if (Convert.ToByte(flagObj) > 0)
                 {
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[GrandPrix::{method}][Error] PLAYER[UID={session.UserInfo.uid}] já enviou esse pacote, ignorando.",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[GrandPrix::{method}][Error] Normal[UID={session.UserInfo.UID}] já enviou esse pacote, ignorando.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     action?.Invoke(); // Só chama se não for null
                     return;
                 }
 
-                // Marca como executado (usa o tipo original pra evitar problemas de compatibilidade)
+                // Marca como executado (usa o Type original pra evitar problemas de compatibilidade)
                 if (flagObj is byte)
                     flagField.SetValue(pgi, (byte)1);
                 else if (flagObj is uint)
@@ -2465,7 +2465,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 _grandPrixManager.unlock(session);
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::checkAllShotPacket][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::checkAllShotPacket][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -2496,7 +2496,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 _grandPrixManager.unlock(session);
 
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::clearAllShotPacket][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::clearAllShotPacket][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -2517,7 +2517,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandPrix::checkAllClearHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::checkAllClearHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             return (count == Players.Count);
@@ -2541,7 +2541,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandPrix::CheckAllHoleAndClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::CheckAllHoleAndClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             } 
             // Clear
@@ -2568,7 +2568,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandPrix::clear_all_hole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::clear_all_hole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -2621,7 +2621,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 foreach (var el in _timerManager.getTimers())
                 {
                     if (el.m_timer != null)
-                        GameServer.getInstance().DeleteTimer(el.m_timer);
+                        GameServer.Instance.DeleteTimer(el.m_timer);
                 }
             }
             finally
@@ -2636,12 +2636,12 @@ namespace Pangya_GameServer.Roms.GameModes
                 foreach (var el in _timerManagerRules.getTimers())
                 {
                     if (el.m_timer != null)
-                        GameServer.getInstance().DeleteTimer(el.m_timer);
+                        GameServer.Instance.DeleteTimer(el.m_timer);
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GrandPrix::ClearGameTimers][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandPrix::ClearGameTimers][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             finally
             {

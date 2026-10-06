@@ -30,7 +30,7 @@ namespace Pangya_GameServer.Handles
 
                 if (r == null)
                 {
-                    throw new exception("[Lobby.Room::RequestChangePlayerStateAFKRoom][Error] sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby.Room::RequestChangePlayerStateAFKRoom][Error] sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         10, 0));
                 }
 
@@ -40,7 +40,7 @@ namespace Pangya_GameServer.Handles
 
                 if (pri == null)
                 {
-                    throw new exception("[Lobby.Room::RequestChangePlayerStateAFKRoom][Error] nao tem o info do Player na sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby.Room::RequestChangePlayerStateAFKRoom][Error] nao tem o info do Player na sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         11, 0));
                 }
 
@@ -50,7 +50,7 @@ namespace Pangya_GameServer.Handles
                         12, 0));
                 }
 
-                pci.state_flag.away = pri.state_flag.away = state;
+                pci.State.Sleep = pri.State.Sleep = state;
 
                 Packet p = new Packet(0x8E);
                 p.WriteInt32(Player.ConnectionID);
@@ -58,11 +58,11 @@ namespace Pangya_GameServer.Handles
 
                 r.SendBroadCast(p);
 
-                m_ci.Lobby.SendBroadCast(Handle_PACKET_RESPONSE.pacote046(new List<PlayerLobbyInfo>() { (pci == null) ? new PlayerLobbyInfo() : pci }, 3));
+                m_ci.Lobby.SendBroadCast(Handle_PACKET_RESPONSE.MakePlayerLobby(new List<PlayerLobbyInfo>() { (pci == null) ? new PlayerLobbyInfo() : pci }, 3));
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[requestChangePlayerStateAFKRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[requestChangePlayerStateAFKRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         await Task.CompletedTask;

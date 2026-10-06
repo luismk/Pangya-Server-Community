@@ -9,7 +9,7 @@ namespace Pangya_GameServer.Repository
         private uint m_game_server_id;
 
         // Ajustamos a Query para ser um UPDATE real com WHERE no UID
-        private const string m_szConsulta = "UPDATE pangya.account SET [LastLogonTime] = GETDATE(), [Logon] = 1 WHERE [uid] = ";
+        private const string m_szConsulta = "UPDATE pangya.account SET [LastLogonTime] = GETDATE(), [Logon] = 1 WHERE [UID] = ";
 
         public CmdPlayerTimeLogout(uint _uid, uint _game_server_id = 20201)
         {
@@ -34,7 +34,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(sql);
 
-            checkResponse(r, "Nao conseguiu atualizar o LastLogonTime do PLAYER[UID=" + m_uid + "]");
+            checkResponse(r, "Nao conseguiu atualizar o LastLogonTime do Normal[UID=" + m_uid + "]");
 
             return r;
         }
@@ -64,7 +64,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta + m_uid);
 
-            checkResponse(r, "nao conseguiu pegar o pang do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu pegar o Pang do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

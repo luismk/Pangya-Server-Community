@@ -23,7 +23,7 @@ namespace PangyaAPI.Network.Handle
 
         /// <summary>
         /// Obtém o pacote bruto recebido da rede, extraindo-o diretamente a partir do objeto <see cref="PacketResult"/>.
-        /// Implementa a propriedade exigida pela interface <see cref="IPacketHandler{TSession}"/>.
+        /// Implementa a ServerProperty exigida pela interface <see cref="IPacketHandler{TSession}"/>.
         /// </summary>
         public Packet Packet => PacketResult?._Packet;
 

@@ -43,7 +43,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_gp.uid == 0u)
             {
-                throw new exception("[CmdUpdateGuildPoints::prepareConsulta][Error] m_gp.uid is invalid(zero). Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdUpdateGuildPoints::prepareConsulta][Error] m_gp.UID is invalid(zero). Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 

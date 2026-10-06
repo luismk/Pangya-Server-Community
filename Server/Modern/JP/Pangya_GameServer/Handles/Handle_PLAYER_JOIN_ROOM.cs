@@ -35,144 +35,144 @@ namespace Pangya_GameServer.Handles
                 short sala_numero = Packet.ReadInt16();
                 string senha = Packet.ReadString();
 
-                var r = GameServer.getInstance().FindRoom(sala_numero);
+                var r = GameServer.Instance.FindRoom(sala_numero);
 
                 if (r == null)
                 {
-                    throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[NUMERO=" + (sala_numero) + "], mas ela nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[NUMERO=" + (sala_numero) + "], mas ela nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         2, 0));
                 }
 
-                // Flag Server
-                var flag = Player.UserInfo.block_flag.m_flag;
+                // ServerFlag Server
+                var flag = Player.UserInfo.BlockFlag.Flag;
 
                 // Player não pode criar sala, exceto Lounge, se ele não estiver bloqueado
-                if (flag.all_game && (r.GetTipo() != ROOM_INFO_TYPE.LOUNGE || flag.lounge))
+                if (flag.AllGame && (r.GetTipo() != RoomTypeFlags.LOUNGE || flag.Lounge))
                 {
-                    throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar um sala[NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar um sala[NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         1, 0x780001));
                 }
 
                 switch (r.GetTipo())
                 {
-                    case ROOM_INFO_TYPE.STROKE:
-                        if (flag.stroke)
+                    case RoomTypeFlags.STROKE:
+                        if (flag.Stroke)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Stroke. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Stroke. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 2, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.MATCH:
-                        if (flag.match)
+                    case RoomTypeFlags.MATCH:
+                        if (flag.Match)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Match. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Match. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 3, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.TOURNEY:
-                        if (flag.tourney)
+                    case RoomTypeFlags.TOURNEY:
+                        if (flag.Tourney)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Tourney. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Tourney. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 4, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.TOURNEY_TEAM:
-                        if (flag.team_tourney)
+                    case RoomTypeFlags.TOURNEY_TEAM:
+                        if (flag.TeamTourney)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Team Tourney. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Team Tourney. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 5, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.GUILD_BATTLE:
-                        if (flag.guild_battle)
+                    case RoomTypeFlags.GUILD_BATTLE:
+                        if (flag.GuildBattle)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Guild Battle. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Guild Battle. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 6, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.PANG_BATTLE:
-                        if (flag.pang_battle)
+                    case RoomTypeFlags.PANG_BATTLE:
+                        if (flag.PangBattle)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Pang Battle. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Pang Battle. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 7, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.APPROCH:
-                        if (flag.approach)
+                    case RoomTypeFlags.APPROCH:
+                        if (flag.Approach)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Approach. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Approach. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 8, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.LOUNGE:
-                        if (flag.lounge)
+                    case RoomTypeFlags.LOUNGE:
+                        if (flag.Lounge)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Lounge. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Lounge. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 9, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.GRAND_ZODIAC_INT:
-                    case ROOM_INFO_TYPE.GRAND_ZODIAC_ADV:
-                    case ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE:
-                        if (flag.grand_zodiac)
+                    case RoomTypeFlags.GRAND_ZODIAC_INT:
+                    case RoomTypeFlags.GRAND_ZODIAC_ADV:
+                    case RoomTypeFlags.GRAND_ZODIAC_PRACTICE:
+                        if (flag.GrandZodiac)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Grand Zodiac. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Grand Zodiac. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 10, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.GRAND_PRIX:
-                        if (flag.grand_prix)
+                    case RoomTypeFlags.GRAND_PRIX:
+                        if (flag.GrandPrix)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Grand Prix. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Grand Prix. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 11, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE:
-                        if (flag.ssc)
+                    case RoomTypeFlags.SPECIAL_SHUFFLE_COURSE:
+                        if (flag.SpecialShufflerCourse)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Special Shuffle Course. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Special Shuffle Course. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 12, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.PRACTICE:
-                        if (flag.single_play)
+                    case RoomTypeFlags.PRACTICE:
+                        if (flag.Practice)
                         {
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Practice. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar Practice. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 13, 0x770001));
                         }
                         break;
                 }
 
-                if (r.GetInfo().special_flag_mod.short_game && (flag.team_tourney || flag.short_game))
+                if (r.GetInfo().SpecialModeRoom.IsShotMode && (flag.TeamTourney || flag.ShortGame))
                 {
-                    throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar sala Short Game. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas ele nao pode entrar sala Short Game. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         1, 770001));
                 }
 
-                if (r.GetTipo() == ROOM_INFO_TYPE.GRAND_PRIX)
+                if (r.GetTipo() == RoomTypeFlags.GRAND_PRIX)
                 {
-                    throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas nao pode entrar na sala Grand Prix com esse pacote. Hacker.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[TIPO=" + r.GetInfo() + ", NUMERO=" + r.GetRoomId() + "], mas nao pode entrar na sala Grand Prix com esse pacote. Hacker.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         15, 0x770001));
                 }
 
-                if (r.GameRun() && Player.UserInfo.UserCapabilities.game_master) // GM Entra na sala depois que o jogo começou
+                if (r.GameRun() && Player.UserInfo.UserCapabilities.IsGameMaster) // GM Entra na sala depois que o jogo começou
                 {
                     r.SendTimeGame(Player);
                 }
                 else if (r.CurrentGame != null) // não é GM envia error para o Player que ele nao pode entrar na sala depois de ter começado
                 {
-                    throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[NUMERO=" + (sala_numero) + "], mas a sala ja comecou o jogo. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[NUMERO=" + (sala_numero) + "], mas a sala ja comecou o jogo. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         10, 0));
                 }
                 else
                 {
-                    if (!r.IsLocked() || r.IsInvited(Player) || (Player.UserInfo.UserCapabilities.game_master) || (!senha.empty() && r.CheckPass(senha)))
+                    if (!r.IsLocked() || r.IsInvited(Player) || (Player.UserInfo.UserCapabilities.IsGameMaster) || (!senha.empty() && r.CheckPass(senha)))
                     {
                         if (r.IsInvited(Player))
                         {
                             // Deleta convite
 
-                            // Add convidado a sala
+                            // Add Invite a sala
                             if (!r.IsFull() && r.GetInvited(Player) != null)
                             {
                                 var ici = r.DeleteInvited(Player);
@@ -184,7 +184,7 @@ namespace Pangya_GameServer.Handles
                         }
                         else if (!r.IsFull())
                         {
-                            // Verifica se o Player foi convidado em outra sala
+                            // Verifica se o Player foi Invite em outra sala
                             // e tira o convite dele
                             Player.GetChannel().DeleteInviteTimeResquestByInvited(Player);
 
@@ -192,13 +192,13 @@ namespace Pangya_GameServer.Handles
                         }
                         else
                         {
-                            throw new exception("[Handle_PLAYER_JOIN_ROOM][Warning] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[NUMERO=" + (sala_numero) + "], mas a sala esta cheia.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Handle_PLAYER_JOIN_ROOM][Warning] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[NUMERO=" + (sala_numero) + "], mas a sala esta cheia.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 3, 0));
                         }
                     }
                     else
                     {
-                        throw new exception("[Handle_PLAYER_JOIN_ROOM][Warning] PLAYER[UID=" + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou entrar na sala[NUMERO=" + (sala_numero) + "], mas a senha nao é igual a da sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Handle_PLAYER_JOIN_ROOM][Warning] Normal[UID=" + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou entrar na sala[NUMERO=" + (sala_numero) + "], mas a Password nao é igual a da sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             4, 0));
                     }
 
@@ -219,14 +219,14 @@ namespace Pangya_GameServer.Handles
 
                     Player.GetChannel().SendUpdateRoomInfo(r.GetInfo(), 3);
 
-                    if (r.GetTipo() != ROOM_INFO_TYPE.PRACTICE && r.GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+                    if (r.GetTipo() != RoomTypeFlags.PRACTICE && r.GetTipo() != RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
                     {
                         Player.GetChannel().SendUpdatePlayerInfo(Player, 3);
                     }
 
                     // Guild Battle precisa enviar o sendCharacter opção 0 duas vezes.
-                    // Uma na sua posição normal e outra depois de atualizar o info da sala na lobby
-                    if (r.GetTipo() == ROOM_INFO_TYPE.GUILD_BATTLE)
+                    // Uma na sua posição Normal e outra depois de atualizar o info da sala na lobby
+                    if (r.GetTipo() == RoomTypeFlags.GUILD_BATTLE)
                     {
                         r.SendPlayerInfo(Player, 0);
                     }
@@ -234,7 +234,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_JOIN_ROOM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_JOIN_ROOM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Resposta Error
                 p.init_plain(0x49);

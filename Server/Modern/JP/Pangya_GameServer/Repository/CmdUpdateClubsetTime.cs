@@ -57,7 +57,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_wi.id <= 0)
             {
-                throw new exception("[CmdUpdateClubSetTime::prepareConsulta][Error] m_wi.id is invalid(" + Convert.ToString(m_wi.id) + ")", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdUpdateClubSetTime::prepareConsulta][Error] m_wi.Login is invalid(" + Convert.ToString(m_wi.id) + ")", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
@@ -70,7 +70,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_wi.id) + ", " + Convert.ToString(m_wi._typeid) + ", " + (formatDateLocal(m_wi.end_date_unix_local)));
 
-            checkResponse(r, "nao conseguiu atualizar o tempo do ClubSet[ID=" + Convert.ToString(m_wi.id) + ", TYPEID=" + Convert.ToString(m_wi._typeid) + ", ENDDATE=" + formatDateLocal(m_wi.end_date_unix_local) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o tempo do ClubSet[ID=" + Convert.ToString(m_wi.id) + ", TYPEID=" + Convert.ToString(m_wi._typeid) + ", ENDDATE=" + formatDateLocal(m_wi.end_date_unix_local) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

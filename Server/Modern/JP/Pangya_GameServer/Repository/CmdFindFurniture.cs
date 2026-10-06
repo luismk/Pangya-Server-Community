@@ -65,7 +65,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_mri.id > 0)
             { // found
-              //uid_req = IFNULL<uint>(_result->data[1]);	ignora o uid retornado
+              //uid_req = IFNULL<uint>(_result->data[1]);	ignora o UID retornado
                 m_mri._typeid = IFNULL<uint>(_result.data[2]);
                 m_mri.number = (short)IFNULL<uint>(_result.data[3]);
                 m_mri.location.x = (float)IFNULL<float>(_result.data[4]);
@@ -79,7 +79,7 @@ namespace Pangya_GameServer.Repository
         protected override Response prepareConsulta()
         {
 
-            if (m_typeid == 0 || sIff.getInstance().getItemGroupIdentify(m_typeid) != IFF_GROUP.FURNITURE)
+            if (m_typeid == 0 || sIff.Instance.getItemGroupIdentify(m_typeid) != IFF_GROUP.FURNITURE)
             {
                 throw new exception("[CmdFindFurniture::prepareConsulta][Error] _typeid furniture is invalid", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
@@ -90,7 +90,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_typeid));
 
-            checkResponse(r, "nao conseguiu encontrar o furniture[TYPEID=" + Convert.ToString(m_typeid) + "] do PLAYER[TYPEID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu encontrar o furniture[TYPEID=" + Convert.ToString(m_typeid) + "] do Normal[TYPEID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

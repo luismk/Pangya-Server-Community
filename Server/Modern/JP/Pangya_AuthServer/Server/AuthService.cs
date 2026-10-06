@@ -27,7 +27,7 @@ namespace Pangya_AuthServer.Server
         #endregion
 
         #region Constructor
-        public AuthService() : base(new PlayerManager(500), new PacketDispatcher<Player, AuthClientDispatcher>(), TypeServer.AuthServer)
+        public AuthService() : base(new PlayerManager(500), new PacketDispatcher<Player, AuthClientDispatcher>(), ServerType.AuthServer)
         {
             _playerManager = (PlayerManager)SessionsManager;
             LoadConfig();
@@ -41,7 +41,7 @@ namespace Pangya_AuthServer.Server
         public override void LoadConfig()
         {
             base.LoadConfig(); 
-            m_si.tipo = 5;//auth server
+            m_si.Type = 5;//auth server
         }
 
         private void RegisterHandlers()
@@ -73,7 +73,7 @@ namespace Pangya_AuthServer.Server
         {
             if (_arg == null)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     "[AuthServer::DBResponse][WARNING] _arg is nullptr, na msg_id = " + Convert.ToString(_msg_id),
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
@@ -81,7 +81,7 @@ namespace Pangya_AuthServer.Server
 
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     "[AuthServer::DBResponse][Error] " + _pangya_db.getException().getFullMessageError(),
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
@@ -113,7 +113,7 @@ namespace Pangya_AuthServer.Server
         {
             if (session is not Player player)
             {
-                Console.WriteLine($"[Erro] A sessão conectada não é do tipo Player! Tipo real: {session.GetType().Name}");
+                Console.WriteLine($"[Erro] A sessão conectada não é do Type Player! Tipo real: {session.GetType().Name}");
                 return;
             }
 
@@ -121,13 +121,13 @@ namespace Pangya_AuthServer.Server
             {
                 var packet = new Packet(0x00);
                 packet.WriteInt32(player._ParseKey);
-                packet.WriteInt32(this.m_si.uid);
+                packet.WriteInt32(this.m_si.UID);
                 player.SendAuth(packet, true);
-                _smp.message_pool.getInstance().push(new message($"[AuthService::OnClientConnected] PLAYER[IP: {player.GetIP()} ID: {player.ConnectionID}]", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[AuthService::OnClientConnected] PLAYER[IP: {player.GetIP()} ID: {player.ConnectionID}]", type_msg.CL_ONLY_CONSOLE));
             }
             catch (exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[AuthService.OnClientConnected][ErrorSt]: {ex.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -141,7 +141,7 @@ namespace Pangya_AuthServer.Server
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MESSAGE_SERVER, 60, 0));
 
             Player p = (Player)session;
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                 $"[AuthService::OnClientDisconnecteded][Warning] PLAYER[IP: {p._IpAddress} ID: {p.ConnectionID}]",
                 type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
@@ -166,7 +166,7 @@ namespace Pangya_AuthServer.Server
                 if (GuildRankTime.Year == 0)
                 {
                     CmdGuildRankingUpdateTime cmd_grut = new CmdGuildRankingUpdateTime();
-                    snmdb.NormalManagerDB.getInstance().add(0, cmd_grut);
+                    snmdb.NormalManagerDB.Instance.add(0, cmd_grut);
 
                     if (cmd_grut.getException().getCodeError() != 0)
                     {
@@ -181,7 +181,7 @@ namespace Pangya_AuthServer.Server
                     || GuildRankTime.Month < local.Month
                     || GuildRankTime.Day < local.Day)
                 {
-                    snmdb.NormalManagerDB.getInstance().add(3,
+                    snmdb.NormalManagerDB.Instance.add(3,
                         new CmdUpdateGuildRanking(),
                         DBResponse,
                         this);
@@ -191,7 +191,7 @@ namespace Pangya_AuthServer.Server
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     "[AuthServer::onHeartBeat][ErrorSystem] " + e.getFullMessageError(),
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

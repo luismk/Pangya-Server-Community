@@ -38,7 +38,7 @@ namespace Pangya_GameServer.Manager
             //// Load System
             var cmd_sg = new CmdShopGift(); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_sg, SQLDBResponse, null);
 
             if (cmd_sg.getException().getCodeError() != 0)
@@ -60,10 +60,10 @@ namespace Pangya_GameServer.Manager
                 return;
             }
 
-            // Por Hora só sai, depois faço outro tipo de tratamento se precisar
+            // Por Hora só sai, depois faço outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[ShopGiftSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ShopGiftSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace Pangya_GameServer.Manager
             {
                 string ret = "";
 
-                var @base = sIff.getInstance().findCommomItem(_typeid);
+                var @base = sIff.Instance.findCommomItem(_typeid);
 
                 if (@base != null)
                     ret = @base.Name;
@@ -160,20 +160,20 @@ namespace Pangya_GameServer.Manager
 
                 if (item._typeid == 0)
                 {
-                    _smp.message_pool.getInstance().push(new message("[ShopGiftSystem::sendGiftToPlayer][Error][Warning] tentou enviar o reward para o PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] o Item[" + Convert.ToString(gift.item_typeid) + "], mas nao conseguiu inicializar o item. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[ShopGiftSystem::sendGiftToPlayer][Error][Warning] tentou enviar o reward para o Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] o Item[" + Convert.ToString(gift.item_typeid) + "], mas nao conseguiu inicializar o item. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 var msg = "Shop Gift Reward System";
 
                 if (MailManager.SendMessageWithItem(0,
-                    _session.UserInfo.uid, msg, item) <= 0)
+                    _session.UserInfo.UID, msg, item) <= 0)
                 {
-                    _smp.message_pool.getInstance().push(new message("[ShopGiftSystem::sendGiftToPlayer][Error][Warning] tentou enviar reward para o PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] o Item[" + Convert.ToString(gift.item_typeid) + "], mas nao conseguiu colocar o item no mail box dele. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[ShopGiftSystem::sendGiftToPlayer][Error][Warning] tentou enviar reward para o Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] o Item[" + Convert.ToString(gift.item_typeid) + "], mas nao conseguiu colocar o item no mail box dele. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
 
-                NormalManagerDB.getInstance().add(0,
-                      new CmdInsertShopGiftLog(_session.UserInfo.uid,
+                NormalManagerDB.Instance.add(0,
+                      new CmdInsertShopGiftLog(_session.UserInfo.UID,
                           gift.gift_id, gift.item_typeid,
                           gift.item_qntd),
                       null, null);
@@ -181,7 +181,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[ShopGiftSystem::sendGiftToPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ShopGiftSystem::sendGiftToPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 

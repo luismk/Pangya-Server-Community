@@ -23,27 +23,27 @@ namespace Pangya_GameServer.Handles
                 uint _typeid = Packet.ReadUInt32();
                 int id = Packet.ReadInt32();
 
-                if (!sCardSystem.getInstance().isLoad())
-                    sCardSystem.getInstance().load();
+                if (!sCardSystem.Instance.isLoad())
+                    sCardSystem.Instance.load();
 
                 // 2. Validação de posse do item
                 var pCi = Player.Inventory.FindCardById(id);
                 if (pCi == null || pCi.qntd < 1)
                 {
-                    throw new exception($"[Handle_PLAYER_OPEN_CARD_PACK] Player [UID={Player.UserInfo.uid}] não possui o Card Pack.",
+                    throw new exception($"[Handle_PLAYER_OPEN_CARD_PACK] Player [UID={Player.UserInfo.UID}] não possui o Card Pack.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 102, 0x5400103));
                 }
 
                 // 3. Busca a definição do Card Pack (Box ou Comum)
-                CardPack cp = (sIff.getInstance().getItemSubGroupIdentify22(_typeid) == 4)
-                    ? sCardSystem.getInstance().findBoxCardPack(_typeid)
-                    : sCardSystem.getInstance().findCardPack(_typeid);
+                CardPack cp = (sIff.Instance.getItemSubGroupIdentify22(_typeid) == 4)
+                    ? sCardSystem.Instance.findBoxCardPack(_typeid)
+                    : sCardSystem.Instance.findCardPack(_typeid);
 
                 if (cp == null)
                     throw new exception("Card Pack não configurado no servidor.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 100, 0x5400101));
 
                 // 4. Sorteio dos Cards
-                var cards = sCardSystem.getInstance().draws(cp);
+                var cards = sCardSystem.Instance.draws(cp);
                 if (cards == null || cards.Count == 0)
                     throw new exception("Erro ao sortear cards.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 101, 0x5400102));
 
@@ -117,7 +117,7 @@ namespace Pangya_GameServer.Handles
                     p.WriteUInt32(el._typeid);
                     p.WriteZero(12);
 
-                    var subGroup = sIff.getInstance().getItemSubGroupIdentify22(el._typeid);
+                    var subGroup = sIff.Instance.getItemSubGroupIdentify22(el._typeid);
 
                     // Prevenção de valor zerado no pacote
                     int qtyToSend = (subGroup == 3 || subGroup == 4) ? 1 : Math.Max(1, el.stat.qntd_dep);
@@ -140,7 +140,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_OPEN_CARD_PACK][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_OPEN_CARD_PACK][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x154);
                 p.WriteUInt32(1); // Falha
@@ -150,8 +150,8 @@ namespace Pangya_GameServer.Handles
 
         private void UpdateCardAchievements(AchievementSystem sys, Card cardDraw)
         {
-            // Lógica de incremento baseada no tipo de card sorteado
-            var subType = (CARD_SUB_TYPE)sIff.getInstance().getItemSubGroupIdentify22(cardDraw._typeid);
+            // Lógica de incremento baseada no Type de card sorteado
+            var subType = (CARD_SUB_TYPE)sIff.Instance.getItemSubGroupIdentify22(cardDraw._typeid);
             switch (subType)
             {
                 case CARD_SUB_TYPE.T_CHARACTER: sys.incrementCounter(0x6C400079u); break;

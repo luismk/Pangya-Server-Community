@@ -38,13 +38,13 @@ namespace Pangya_GameServer.Handles
 
                 if (pWi == null)
                 {
-                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas ele nao tem o item[TYPEID=" + (item_typeid) + "] para isso. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas ele nao tem o item[TYPEID=" + (item_typeid) + "] para isso. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         150, 0x5300151));
                 }
 
                 if (pWi.STDA_C_ITEM_QNTD < 1)
                 {
-                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas ele nao tem quantidade do item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + ", QNTD=" + (pWi.STDA_C_ITEM_QNTD) + ", Request=1]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas ele nao tem quantidade do item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + ", QNTD=" + (pWi.STDA_C_ITEM_QNTD) + ", Request=1]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         151, 0x5300152));
                 }
 
@@ -52,27 +52,27 @@ namespace Pangya_GameServer.Handles
 
                 if (pClub == null)
                 {
-                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas ele nao tem o ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas ele nao tem o ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         152, 0x5300153));
                 }
 
-                var clubset = sIff.getInstance().findClubSet(pClub._typeid);
+                var clubset = sIff.Instance.findClubSet(pClub._typeid);
 
                 if (clubset == null)
                 {
-                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas nao tem esse ClubSet no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas nao tem esse ClubSet no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         153, 0x5300154));
                 }
 
                 if (clubset.work_shop.tipo == -1)
                 {
-                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas esse ClubSet nao pode Recuperar o Recovery Pts. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas esse ClubSet nao pode Recuperar o Recovery Pts. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         154, 0x5300155));
                 }
 
                 if (pClub.clubset_workshop.recovery_pts == 0)
                 {
-                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas o ClubSet do Player ja foi recuperado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas o ClubSet do Player ja foi recuperado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         156, 0x5300157));
                 }
 
@@ -87,7 +87,7 @@ namespace Pangya_GameServer.Handles
 
                 if (ItemManager.removeItem(item, Player) <= 0)
                 {
-                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas nao conseguiu remover item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[RequestClubSetWorkShopRecoveryPts][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou recuperar os pontos de recuperacao do ClubSet[ID=" + (clubset_id) + "], mas nao conseguiu remover item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         155, 0x5300156));
                 }
 
@@ -110,14 +110,14 @@ namespace Pangya_GameServer.Handles
                 v_item.Add(new stItemEx(item));
 
                 // UPDATE ON DB
-                NormalManagerDB.getInstance().add(12,
-                     new CmdUpdateClubSetWorkshop(Player.UserInfo.uid,
+                NormalManagerDB.Instance.add(12,
+                     new CmdUpdateClubSetWorkshop(Player.UserInfo.UID,
                          pClub,
                          CmdUpdateClubSetWorkshop.FLAG.F_R_RECOVERY_PTS),
                      null, null);
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[ClubSet WorkShop::RecoveryPts][Sucess] PLAYER [UID=" + Player.UserInfo.uid + "] recuperou os pontos do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ClubSet WorkShop::RecoveryPts][Sucess] Normal [UID=" + Player.UserInfo.UID + "] recuperou os pontos do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // UPDATE ON Jogo
                 p.init_plain(0x216);
@@ -159,7 +159,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestClubSetWorkShopRecoveryPts][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestClubSetWorkShopRecoveryPts][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x246);
 

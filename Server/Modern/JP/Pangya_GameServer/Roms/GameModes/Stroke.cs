@@ -1,5 +1,5 @@
 using Pangya_GameServer.Feature;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Repository;
 using Pangya_GameServer.Roms.GameBase.Modes;
@@ -16,7 +16,7 @@ namespace Pangya_GameServer.Roms.GameModes
     {
         private bool _initStrokeState;
 
-        public Stroke(List<Player> players, RoomInfo roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
+        public Stroke(List<Player> players, GameRoomInfoModel roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
         {
            
             // Aqui tem que inicializar os players info
@@ -34,12 +34,12 @@ namespace Pangya_GameServer.Roms.GameModes
                 {
                     if (el.Inventory.uid != el2.Inventory.uid)
                     {
-                        el.UserInfo.GameHistory.Add(el2.UserInfo, el.UserInfo.Member.sexo);
+                        el.UserInfo.GameHistory.Add(el2.UserInfo, el.UserInfo.Member.Gender);
                     }
                 }
 
                 // Update ON DB
-                NormalManagerDB.getInstance().add(1, new CmdUpdateLastPlayerGame(el.Inventory.uid, el.UserInfo.GameHistory), DBResponse);
+                NormalManagerDB.Instance.add(1, new CmdUpdateLastPlayerGame(el.Inventory.uid, el.UserInfo.GameHistory), DBResponse);
             }
 
             _initStrokeState = InitRoomGame(); 
@@ -86,7 +86,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message("[Versus::Versus][Error]: " + ex.StackTrace, type_msg.CL_ONLY_CONSOLE_DEBUG));
+                _smp.LogManager.Instance.push(new AppMessage("[Versus::Versus][Error]: " + ex.StackTrace, type_msg.CL_ONLY_CONSOLE_DEBUG));
 
                 return false;
             }
@@ -105,7 +105,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 for (var i = 0; i < PlayerOrder.Count; ++i)
                 {
-                    switch (RoomInfo.qntd_hole)
+                    switch (RoomInfo.HoleCount)
                     {
                         case 3:
                             exp = 8;
@@ -147,11 +147,11 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         // Movido para dentro do null-check: session pode ser null se o player
                         // desconectou antes do fim do jogo, causando NullReferenceException.
-                        NormalManagerDB.getInstance().add(0, new CmdUpdateWebShopPoint(session.Inventory.uid, 150), null, null);
+                        NormalManagerDB.Instance.add(0, new CmdUpdateWebShopPoint(session.Inventory.uid, 150), null, null);
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message($"[GameModeStroke::FinishExpGame][Warning] PLAYER[UID={PlayerOrder[i].uid}] não encontrado na sessão.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[GameModeStroke::FinishExpGame][Warning] Normal[UID={PlayerOrder[i].uid}] não encontrado na sessão.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
             }
@@ -193,7 +193,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
             RequestSaveDrop(session);
 
-            RainHoleSeqCount(session); // conta os achievement de chuva em holes consecutivas
+            RainHoleSeqCount(session); // conta os achievement de Rain em holes consecutivas
 
             ScoreSeqCount(session); // conta os achievement de back-to-back(2 ou mais score iguais consecutivos) do player
 
@@ -264,7 +264,7 @@ namespace Pangya_GameServer.Roms.GameModes
                                 p.init_plain(0x67);
                                 el.Send(p);
 
-                                //pgi.flag = PlayerGameInfo::eFLAG_GAME::END_GAME;
+                                //pgi.ServerFlag = PlayerGameInfo::eFLAG_GAME::END_GAME;
                                 SetGameFlag(pgi, PlayerGameInfo.eFLAG_GAME.END_GAME);
                             }
                         }
@@ -296,13 +296,13 @@ namespace Pangya_GameServer.Roms.GameModes
 
                                     RequestSaveRecordCourse(el,
                                         0,
-                                        (RoomInfo.qntd_hole == 18 && Course.findHoleSeq(pgi.hole) == 18) ? 1 : 0);
+                                        (RoomInfo.HoleCount == 18 && Course.findHoleSeq(pgi.hole) == 18) ? 1 : 0);
 
                                     RequestSaveInfo(el, 0);
 
                                     // D  Exp para o Caddie E Mascot Tamb m
                                     if (pgi.data.exp > 0)
-                                    { // s  add exp se for maior que 0
+                                    { // s  add Experience se for maior que 0
 
                                         // Add Exp para o player
                                         el.addExp(pgi.data.exp, false);
@@ -355,7 +355,7 @@ namespace Pangya_GameServer.Roms.GameModes
                                     p.WriteUInt64(0Ul);
                                     el.Send(p); 
 
-                                    //pgi.flag = PlayerGameInfo::eFLAG_GAME::FINISH;
+                                    //pgi.ServerFlag = PlayerGameInfo::eFLAG_GAME::FINISH;
                                     SetGameFlag(pgi, PlayerGameInfo.eFLAG_GAME.FINISH);
                                 }
                             }
@@ -407,7 +407,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         p.WriteInt32(pgi.oid);
                         SendBroadCast(p);
-                        _smp.message_pool.getInstance().push(new message($"[Versus::timeIsOver][Log] PLAYER[UID={pgi.uid}] Time Out", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[Versus::timeIsOver][Log] Normal[UID={pgi.uid}] Time Out", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     }
                 }
@@ -415,7 +415,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[Versus::timeIsOver][Warning] time is over executed without _quem, _quem is invalid(null). Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Versus::timeIsOver][Warning] time is over executed without _quem, _quem is invalid(null). Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -460,7 +460,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         RequestSaveInfo(it, (option == 0x800) ? 5 : 1); // Quitou ou tomou DC
 
-                        //pgi.flag = PlayerGameInfo::eFLAG_GAME::QUIT;
+                        //pgi.ServerFlag = PlayerGameInfo::eFLAG_GAME::QUIT;
                         SetGameFlag(pgi, PlayerGameInfo.eFLAG_GAME.QUIT);
 
                         // Resposta Player saiu do Jogo, tira ele do list de score
@@ -471,7 +471,7 @@ namespace Pangya_GameServer.Roms.GameModes
 						// Resposta Player saiu do jogo MSG
 						p.init_plain(0x40); 
                         p.WriteByte(2); // Player Saiu Msg 
-                        p.WriteString(it.UserInfo.nickname); 
+                        p.WriteString(it.UserInfo.NickName); 
                         p.WriteUInt16(0); // size Msg, n o precisa de msg o pangya j  manda na opt 2
 						sessions.SendBroadCast(p);
 
@@ -495,7 +495,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     {
 
                         // Achievements
-                        RainHoleSeqCount(session); // conta os achievement de chuva em holes consecutivas
+                        RainHoleSeqCount(session); // conta os achievement de Rain em holes consecutivas
 
                         ScoreSeqCount(session); // conta os achievement de back-to-back(2 ou mais score iguais consecutivos) do player
 
@@ -522,12 +522,12 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[Versus::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Versus::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Versus::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Versus::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             finally
             {
@@ -586,10 +586,10 @@ namespace Pangya_GameServer.Roms.GameModes
                 return;
             }
 
-            // Por Hora s  sai, depois fa o outro tipo de tratamento se precisar
+            // Por Hora s  sai, depois fa o outro Type de tratamento se precisar
             if (pangyaDb.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[Versus::SQLDBResponse][Error] " + pangyaDb.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Versus::SQLDBResponse][Error] " + pangyaDb.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
             switch (msgId)
@@ -598,7 +598,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     {
                         var cmd_l5pg = (CmdUpdateLastPlayerGame)(pangyaDb);
 
-                        _smp.message_pool.getInstance().push(new message("[Versus::SQLDBResponse][Log] player[UID=" + cmd_l5pg.getUID() + "] atualizou o Last 5 Player Game dele com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Versus::SQLDBResponse][Log] player[UID=" + cmd_l5pg.getUID() + "] atualizou o Last 5 Player Game dele com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         break;
                     }

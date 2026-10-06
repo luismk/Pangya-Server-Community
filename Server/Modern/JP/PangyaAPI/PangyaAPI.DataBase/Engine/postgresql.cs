@@ -57,7 +57,7 @@
 //            }
 //            catch (Exception ex)
 //            {
-//                _smp.message_pool.getInstance().push(new message("[mssql::Connect][Error] " + ex.Message + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+//                _smp.LogManager.Instance.push(new AppMessage("[mssql::Connect][Error] " + ex.Message + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 //                m_connected = false;
 //            }
 //        }
@@ -129,8 +129,8 @@
 //                    ex.Message, commandText
 //                );
 
-//                // Enviar a mensagem para o message_pool
-//                _smp.message_pool.getInstance().push(new message(mensagemErro, 0)); return res;
+//                // Enviar a mensagem para o LogManager
+//                _smp.LogManager.Instance.push(new AppMessage(mensagemErro, 0)); return res;
 //            }
 //        }
 //        public override response ExecProc(string _proc_name, string valor = null)
@@ -186,8 +186,8 @@
 //                    ex.Message, commandText
 //                );
 
-//                // Enviar a mensagem para o message_pool
-//                _smp.message_pool.getInstance().push(new message(mensagemErro, type_msg.CL_FILE_LOG_AND_CONSOLE));
+//                // Enviar a mensagem para o LogManager
+//                _smp.LogManager.Instance.push(new AppMessage(mensagemErro, type_msg.CL_FILE_LOG_AND_CONSOLE));
 //                return res;
 //            }
 //        }
@@ -227,7 +227,7 @@
 //            catch (exception ex)
 //            {
 
-//                _smp.message_pool.getInstance().push(new message("[mssql::ExecProcWithParams][Error] " + ex.getFullMessageError() + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+//                _smp.LogManager.Instance.push(new AppMessage("[mssql::ExecProcWithParams][Error] " + ex.getFullMessageError() + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 //                return res;
 
 //            }
@@ -265,7 +265,7 @@
 //            catch (exception ex)
 //            {
 
-//                _smp.message_pool.getInstance().push(new message("[mssql::ExecProcWithParams][Error] " + ex.getFullMessageError() + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+//                _smp.LogManager.Instance.push(new AppMessage("[mssql::ExecProcWithParams][Error] " + ex.getFullMessageError() + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 //                return res;
 
 //            }
@@ -299,7 +299,7 @@
 //            }
 //            catch (exception ex)
 //            {
-//                _smp.message_pool.getInstance().push(new message("[mssql::HandleDiagnosticQuery][Error] " + ex.getFullMessageError() + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+//                _smp.LogManager.Instance.push(new AppMessage("[mssql::HandleDiagnosticQuery][Error] " + ex.getFullMessageError() + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 //            }
 //            finally
 //            {
@@ -362,7 +362,7 @@
 //            }
 //            catch (exception ex)
 //            {
-//                _smp.message_pool.getInstance().push(new message("[mssql::HandleDiagnosticQuery][Error] " + ex.getFullMessageError() + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+//                _smp.LogManager.Instance.push(new AppMessage("[mssql::HandleDiagnosticQuery][Error] " + ex.getFullMessageError() + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 //            }
 
 //            finally

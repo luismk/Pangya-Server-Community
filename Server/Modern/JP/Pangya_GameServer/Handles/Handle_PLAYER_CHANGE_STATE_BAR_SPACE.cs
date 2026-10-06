@@ -28,7 +28,7 @@ namespace Pangya_GameServer.Handles
 
                 if (r == null)
                 {
-                    throw new exception("[Lobby.Room::RequestChangeStateBarSpace][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar state da barra de espaco no jogo na sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], nas ele nao esta em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby.Room::RequestChangeStateBarSpace][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar StateRoom da barra de espaco no jogo na sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], nas ele nao esta em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         1, 0x5900701));
                 }
 
@@ -36,7 +36,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby.Room::RequestChangeStateBarSpace][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby.Room::RequestChangeStateBarSpace][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

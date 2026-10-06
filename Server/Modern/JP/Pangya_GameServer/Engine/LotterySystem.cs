@@ -97,7 +97,7 @@ namespace Pangya_GameServer.Engine
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Lottery::spinRoleta][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lottery::spinRoleta][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 throw;
             }

@@ -20,24 +20,24 @@ namespace Pangya_GameServer.Handles
 
                 if (string.IsNullOrWhiteSpace(nicknameSender))
                 {
-                    throw new exception($"[WhisperRefuse] Player[UID={Player.UserInfo.uid}] enviou um nickname vazio.",
+                    throw new exception($"[WhisperRefuse] Player[UID={Player.UserInfo.UID}] enviou um NickName vazio.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 0x750050, 0));
                 }
 
                 if (!Tools.Sanitize(nicknameSender))
                 {
-                    throw new exception($"[WhisperRefuse] Player[UID={Player.UserInfo.uid}] enviou nickname com caracteres suspeitos: {nicknameSender}",
+                    throw new exception($"[WhisperRefuse] Player[UID={Player.UserInfo.UID}] enviou NickName com caracteres suspeitos: {nicknameSender}",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 1));
                 }
 
                 // 2. Localiza o remetente original da mensagem
-                var senderSession = GameServer.getInstance().FindSessionByNickname(nicknameSender);
+                var senderSession = GameServer.Instance.FindSessionByNickname(nicknameSender);
 
                 if (senderSession != null && senderSession.Connected)
                 {
                     // Log do evento
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[WhisperRefuse] Player[{Player.UserInfo.nickname}] recusou automaticamente o whisper de [{nicknameSender}].",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[WhisperRefuse] Player[{Player.UserInfo.NickName}] recusou automaticamente o Whisper de [{nicknameSender}].",
                         type_msg.CL_FILE_LOG_AND_CONSOLE)); 
                     var response = Handle_PACKET_RESPONSE.pacote040(nicknameSender, "", eChatMsg.CHAT_REFUSE_WHISPER); 
                     senderSession.Send(response);
@@ -45,7 +45,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_NOTIFY_NOT_DISPLAY_PRIVATE_MESSAGE_NOW][Error] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

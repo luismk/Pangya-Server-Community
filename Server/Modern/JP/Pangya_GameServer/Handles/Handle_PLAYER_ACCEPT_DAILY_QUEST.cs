@@ -31,7 +31,7 @@ namespace Pangya_GameServer.Handles
 
                 if (num_quest <= 0u)
                 {
-                    throw new exception("PLAYER[UID=" + Convert.ToString(Player.UserInfo.uid) + "] tentou aceitar o Daily Quest, mas o numero de quest para aceitar is invalid(zero). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
+                    throw new exception("Normal[UID=" + Convert.ToString(Player.UserInfo.UID) + "] tentou aceitar o Daily Quest, mas o RoomID de quest para aceitar is invalid(zero). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
                         5000, 0));
                 }
 
@@ -69,7 +69,7 @@ namespace Pangya_GameServer.Handles
                         p.WriteUInt32(0); // type
                         p.WriteInt32(0); // Qntd antes
                         p.WriteInt32(0); // Qntd depois
-                        p.WriteInt32(0); // add quantos, tipo de add tinha 0(antes) + 3(qntd) = 3(depois)
+                        p.WriteInt32(0); // add quantos, Type de add tinha 0(antes) + 3(qntd) = 3(depois)
                         p.WriteZero(25);
                     }
                 }
@@ -92,7 +92,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_ACCEPT_DAILY_QUEST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_ACCEPT_DAILY_QUEST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 Player.Send(Handle_PACKET_RESPONSE.pacote226(new List<AchievementInfoEx>(), 1));
 

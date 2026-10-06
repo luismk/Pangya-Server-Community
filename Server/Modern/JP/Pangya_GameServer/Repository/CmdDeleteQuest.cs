@@ -95,7 +95,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta[0] + Convert.ToString(m_uid) + m_szConsulta[1] + str_ids + m_szConsulta[2]);
 
-            checkResponse(r, "nao conseguiu deletar Quest[ID = { " + str_ids + " }] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu deletar Quest[ID = { " + str_ids + " }] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }
@@ -104,7 +104,7 @@ namespace Pangya_GameServer.Repository
         protected uint m_uid = new uint();
         protected List<int> v_id = new List<int>();
 
-        protected string[] m_szConsulta = { "DELETE FROM pangya.pangya_quest WHERE UID = ", " AND id IN(", ")" };
+        protected string[] m_szConsulta = { "DELETE FROM pangya.pangya_quest WHERE UID = ", " AND Login IN(", ")" };
 
     }
 }

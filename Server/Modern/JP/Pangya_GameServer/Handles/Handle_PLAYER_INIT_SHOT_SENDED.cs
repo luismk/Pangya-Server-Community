@@ -24,14 +24,14 @@ namespace Pangya_GameServer.Handles
         {
             try
             {
-                var r = Player.GetGameRoom() ?? throw new exception("[Error] PLAYER [UID=" + Player.UserInfo.uid + "] o server enviou o pacote de InitShot para o cliente, mas a sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "] nao existe mais. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                var r = Player.GetGameRoom() ?? throw new exception("[Error] Normal [UID=" + Player.UserInfo.UID + "] o server enviou o pacote de InitShot para o cliente, mas a sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "] nao existe mais. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         1, 0x5905001));
 
                 r.RequestInitShotSended(Player, Packet);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_INIT_SHOT_SENDED][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_INIT_SHOT_SENDED][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

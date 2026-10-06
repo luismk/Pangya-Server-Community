@@ -10,15 +10,15 @@ namespace PangyaAPI.Network.Repository
 
         int m_server_uid = -1;
         bool m_error = false;
-        RateConfigInfo m_rate_info;
+        ServerRateInfo m_rate_info;
         public CmdRateConfigInfo(int _uid)
         {
             m_server_uid = _uid;
-            m_rate_info = new RateConfigInfo();
+            m_rate_info = new ServerRateInfo();
         }
         public CmdRateConfigInfo()
         {
-            m_rate_info = new RateConfigInfo();
+            m_rate_info = new ServerRateInfo();
         }
 
         protected override void lineResult(ctx_res _result, uint _index_result)
@@ -31,22 +31,22 @@ namespace PangyaAPI.Network.Repository
                 else
                 {
 
-                    m_rate_info.grand_zodiac_event_time = short.Parse(_result.data[0].ToString());
-                    m_rate_info.scratchy = short.Parse(_result.data[1].ToString());
-                    m_rate_info.papel_shop_rare_item = short.Parse(_result.data[2].ToString());
-                    m_rate_info.papel_shop_cookie_item = short.Parse(_result.data[3].ToString());
-                    m_rate_info.treasure = short.Parse(_result.data[4].ToString());
-                    m_rate_info.pang = short.Parse(_result.data[5].ToString());
-                    m_rate_info.exp = short.Parse(_result.data[6].ToString());
-                    m_rate_info.club_mastery = short.Parse(_result.data[7].ToString());
-                    m_rate_info.chuva = short.Parse(_result.data[8].ToString());
-                    m_rate_info.memorial_shop = short.Parse(_result.data[9].ToString());
-                    m_rate_info.angel_event = short.Parse(_result.data[10].ToString());
-                    m_rate_info.grand_prix_event = short.Parse(_result.data[11].ToString());
-                    m_rate_info.golden_time_event = short.Parse(_result.data[12].ToString());
-                    m_rate_info.login_reward_event = short.Parse(_result.data[13].ToString());
-                    m_rate_info.bot_gm_event = short.Parse(_result.data[14].ToString());
-                    m_rate_info.smart_calculator = short.Parse(_result.data[15].ToString());
+                    m_rate_info.GrandZodiacEventTime = short.Parse(_result.data[0].ToString());
+                    m_rate_info.Scratchy = short.Parse(_result.data[1].ToString());
+                    m_rate_info.PapelShopRareItem = short.Parse(_result.data[2].ToString());
+                    m_rate_info.PapelShopCookieItem = short.Parse(_result.data[3].ToString());
+                    m_rate_info.Treasure = short.Parse(_result.data[4].ToString());
+                    m_rate_info.Pang = short.Parse(_result.data[5].ToString());
+                    m_rate_info.Experience = short.Parse(_result.data[6].ToString());
+                    m_rate_info.ClubMastery = short.Parse(_result.data[7].ToString());
+                    m_rate_info.Rain = short.Parse(_result.data[8].ToString());
+                    m_rate_info.MemorialShop = short.Parse(_result.data[9].ToString());
+                    m_rate_info.AngelEvent = short.Parse(_result.data[10].ToString());
+                    m_rate_info.GrandPrixEvent = short.Parse(_result.data[11].ToString());
+                    m_rate_info.GoldenTimeEvent = short.Parse(_result.data[12].ToString());
+                    m_rate_info.LoginRewardEvent = short.Parse(_result.data[13].ToString());
+                    m_rate_info.GMEventBot = short.Parse(_result.data[14].ToString());
+                    m_rate_info.SmartCalculation = short.Parse(_result.data[15].ToString());
                 }
             }
             catch (Exception ex)
@@ -64,7 +64,7 @@ namespace PangyaAPI.Network.Repository
             return r;
         }
 
-        public RateConfigInfo getInfo()
+        public ServerRateInfo getInfo()
         {
             return this.m_rate_info;
         }

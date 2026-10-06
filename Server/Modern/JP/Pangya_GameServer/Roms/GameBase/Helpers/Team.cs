@@ -14,11 +14,11 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
         public class team_ctx
         {
             public uint point = new uint(); // Aqui é a pontuação do time
-            public ushort degree; // Angulo do team
+            public ushort degree; // Angulo do Team
             public byte player_start_hole; // Player que começou o Hole
-            public byte acerto_hole; // Flag que acertou o hole
-            public byte hole; // Hole que o team está
-            public byte win = 0; // Flag que fala se o player ganhou o hole anterior
+            public byte acerto_hole; // ServerFlag que acertou o hole
+            public byte hole; // Hole que o Team está
+            public byte win = 0; // ServerFlag que fala se o player ganhou o hole anterior
             public ushort finish; // State finish Hole, 9 finish with int putt, 10 finish with chip-in
             public byte quit = 0; // Player ou o Team desistiu
             public GameData data = new GameData();
@@ -46,13 +46,13 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                     2, 0));
             }
 
-            if (!m_players.Any(_el => _el.UserInfo.uid == _player.UserInfo.uid))  // deleta o player do map
+            if (!m_players.Any(_el => _el.UserInfo.UID == _player.UserInfo.UID))  // deleta o player do map
             {
                 m_players.Add(_player);
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[Team::addPlayer][Warning] PLAYER[UID=" + Convert.ToString(_player.UserInfo.uid) + "] ja esta no team.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Team::addPlayer][Warning] Normal[UID=" + Convert.ToString(_player.UserInfo.UID) + "] ja esta no Team.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -70,7 +70,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
                     2, 0));
             }
 
-            if (m_players.Any(_el => _el.UserInfo.uid == _player.UserInfo.uid))  // deleta o player do map
+            if (m_players.Any(_el => _el.UserInfo.UID == _player.UserInfo.UID))  // deleta o player do map
             {
                 m_players.Remove(_player);
             }
@@ -93,7 +93,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
         {
             var it = m_players.FirstOrDefault(_el =>
             {
-                return _el.UserInfo.uid == _uid;
+                return _el.UserInfo.UID == _uid;
             });
 
             return it;
@@ -104,7 +104,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
             var it = m_players.FirstOrDefault(_el =>
             {
-                return string.CompareOrdinal(_nickname, _el.UserInfo.nickname) == 0;
+                return string.CompareOrdinal(_nickname, _el.UserInfo.NickName) == 0;
             });
 
             return it;
@@ -350,7 +350,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
             m_team_ctx.player_start_hole -= _dec;
         }
 
-        // retorna o número de players no team(time)
+        // retorna o número de players no Team(time)
         public uint getCount()
         {
             return (uint)m_players.Count();
@@ -382,11 +382,11 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
             m_players.Sort((el1, el2) =>
             {
-                if (el1.UserInfo.uid == _uid && el2.UserInfo.uid != _uid)
+                if (el1.UserInfo.UID == _uid && el2.UserInfo.UID != _uid)
                 {
                     return -1; // el1 vem antes de el2
                 }
-                if (el1.UserInfo.uid != _uid && el2.UserInfo.uid == _uid)
+                if (el1.UserInfo.UID != _uid && el2.UserInfo.UID == _uid)
                 {
                     return 1; // el1 vem depois de el2
                 }
@@ -407,7 +407,7 @@ namespace Pangya_GameServer.Roms.GameBase.Helpers
 
         protected int m_id = -1; // Cor, 0 Red, 1 Blue, -1 indefinido
 
-        // Dados of team
+        // Dados of Team
         protected team_ctx m_team_ctx = new team_ctx();
         private bool disposedValue;
 

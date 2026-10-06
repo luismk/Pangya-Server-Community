@@ -2,7 +2,7 @@ using Pangya_GameServer.Engine;
 using Pangya_GameServer.Feature;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Repository;
 using Pangya_GameServer.Roms;
@@ -38,101 +38,101 @@ namespace Pangya_GameServer.Handles
                 // 1. Validação de tamanho mínimo do pacote (Prevenção de Buffer Overflow/Crash)
                 if (Packet.Size < 20)
                 {
-                    throw new exception($"[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= {Player.UserInfo.uid}, ID: {Player.UserInfo.id} ] Packet size ({Packet.Size}) too small. Hacker attempt.",
+                    throw new exception($"[Handle_PLAYER_MAKE_ROOM] Normal[UID= {Player.UserInfo.UID}, ID: {Player.UserInfo.Login} ] Packet size ({Packet.Size}) too small. Hacker attempt.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 0));
                 }
 
                 int option;
-                RoomInfo ri = new RoomInfo();
+                GameRoomInfoModel ri = new GameRoomInfoModel();
                 string s_tmp = "";
 
                 option = Packet.ReadByte();
 
-                ri.time_vs = Packet.ReadUInt32();
-                ri.time_30s = Packet.ReadUInt32();
-                ri.max_player = Packet.ReadByte();
-                ri.tipo = Packet.ReadByte();
-                ri.qntd_hole = Packet.ReadByte();
-                ri.course = (ROOM_INFO_COURSE)(Packet.ReadByte());
+                ri.TimeSec = Packet.ReadUInt32();
+                ri.TimeMin = Packet.ReadUInt32();
+                ri.MaxUsers = Packet.ReadByte();
+                ri.RealRoomType = Packet.ReadByte();
+                ri.HoleCount = Packet.ReadByte();
+                ri.CourseIndex = (RoomCourseFlags)(Packet.ReadByte());
 
                 // 3. Verificação de Course Válido
-                if (!Enum.IsDefined(typeof(ROOM_INFO_COURSE), ri.course))
+                if (!Enum.IsDefined(typeof(RoomCourseFlags), ri.CourseIndex))
                 {
-                    throw new exception($"[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= {Player.UserInfo.uid}, ID: {Player.UserInfo.id} ] Course ID {(int)ri.course} inválido.",
+                    throw new exception($"[Handle_PLAYER_MAKE_ROOM] Normal[UID= {Player.UserInfo.UID}, ID: {Player.UserInfo.Login} ] Course ID {(int)ri.CourseIndex} inválido.",
                        ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 0));
                 }
 
-                ri.modo = Packet.ReadByte();
-                if (!Enum.IsDefined(typeof(ROOM_INFO_MODO), ri.modo))
+                ri.HoleMode = Packet.ReadByte();
+                if (!Enum.IsDefined(typeof(RoomHoleType), ri.HoleMode))
                 {
-                    throw new exception($"[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= {Player.UserInfo.uid}, ID: {Player.UserInfo.id} ] Modo ID {(int)ri.modo} inválido.",
+                    throw new exception($"[Handle_PLAYER_MAKE_ROOM] Normal[UID= {Player.UserInfo.UID}, ID: {Player.UserInfo.Login} ] Modo ID {(int)ri.HoleMode} inválido.",
                        ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 0));
                 }
 
                 var len = Packet.Size;
 
                 bool practice = false; 
-                ri.hole_repeat = 0;
-                ri.fixed_hole = 0;
+                ri.IDHoleRepeted = 0;
+                ri.HoleFixed = 0;
                 //hole repeted = 68, chip-in = 63
-                if ((len == 52) && ri.tipo == 19) //hole repeted tem natural
+                if ((len == 52) && ri.RealRoomType == 19) //hole repeted tem NaturalMode
                 {
                     Packet.ReadBytes(5);//seria esses dados abaixo...
-                    ri.hole_repeat = 1;
-                    ri.fixed_hole = 7;
+                    ri.IDHoleRepeted = 1;
+                    ri.HoleFixed = 7;
                     practice = true;
                 }
-                else if (len == 47 && ri.tipo == 14) 
+                else if (len == 47 && ri.RealRoomType == 14) 
                     // Chip-in Practice, so pra passar true mesmo...
                 {
                     practice = true;
                 }
 
-                if (!Player.UserInfo.UserCapabilities.game_master && ri.max_player > 30)
+                if (!Player.UserInfo.UserCapabilities.IsGameMaster && ri.MaxUsers > 30)
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] limite atingido, Hacker, por que o cliente nao deixa criar uma sala maior que 30, pois o cliente nao e gm/adm.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] limite atingido, Hacker, por que o cliente nao deixa criar uma sala maior que 30, pois o cliente nao e gm/adm.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         7, 0));
                 }
 
-                ri.special_flag_mod.ulNaturalAndShortGame = Packet.ReadUInt32();
+                ri.SpecialModeRoom.Value = Packet.ReadUInt32();
 
                 // CHECK DE SEGURANÇA: 
                 // Natural (Bit 0) + Short Game (Bit 1) = Valor máximo 3
-                if (ri.special_flag_mod.ulNaturalAndShortGame > 3)
+                if (ri.SpecialModeRoom.Value > 3)
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala com NaturalAndShortGame inválido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala com NaturalAndShortGame inválido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                       7, 0));
                 }
                 s_tmp = Packet.ReadString();
 
                 if (s_tmp.Length == 0)
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] Nome da sala vazio, Hacker, por que o cliente nao deixa enviar esse pacote sem um nome da sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] Nome da sala vazio, Hacker, por que o cliente nao deixa enviar esse pacote sem um Name da sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         7, 0));
                 }
 
                 if (s_tmp.Length > 32)
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] Nome da sala muito longo, Hacker.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] Nome da sala muito longo, Hacker.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         7, 0));
                 }
 
                 if (practice)
                 {
                     s_tmp = "Single Player Practice Mode";
-                    if (ri.max_player > 1)
+                    if (ri.MaxUsers > 1)
                     {
-                        throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + (_channel?.getId())
+                        throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + (_channel?.getId())
                             + "] Numero de jogadores errado, Hacker, por que o cliente nao deixa enviar esse pacote assim.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 7));
                     }
                 }
 
-                ri.name = s_tmp;
+                ri.Name = s_tmp;
                 s_tmp = Packet.ReadString();
 
                 if (s_tmp.Length > 8)
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tamanho da senha esta errado, Code[0].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tamanho da Password esta errado, Code[0].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         7, 0));
                 }
 
@@ -140,160 +140,160 @@ namespace Pangya_GameServer.Handles
                 {
                     if (s_tmp.empty()) 
                     {
-                        throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + (_channel?.getId())
-                            + "] senha da sala practice esta errada!.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 0));
+                        throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + (_channel?.getId())
+                            + "] Password da sala practice esta errada!.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 0));
                     }
 
                     if (s_tmp.Length < 8)
                     {
-                        throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tamanho da senha esta errado, Code[2].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tamanho da Password esta errado, Code[2].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             7, 0));
                     }
                 }
 
                 if (!s_tmp.empty())
                 {
-                    ri.senha_flag = 0;
-                    ri.senha = s_tmp;
+                    ri.IsPublicRoom = 0;
+                    ri.Password = s_tmp;
                 }
 
-                ri.typeid_artefatic = Packet.ReadUInt32();
+                ri.ItemIDArtifact = Packet.ReadUInt32();
 
                 // Check De Regras
                 _channel?.CheckRoom(Player, ri);
 
-                if (ri.special_flag_mod.short_game && ri.GetTipo() != ROOM_INFO_TYPE.TOURNEY
-                    && ri.GetTipo() != ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE
-                    && ri.GetTipo() != ROOM_INFO_TYPE.GRAND_PRIX)
+                if (ri.SpecialModeRoom.IsShotMode && ri.GetRoomType() != RoomTypeFlags.TOURNEY
+                    && ri.GetRoomType() != RoomTypeFlags.SPECIAL_SHUFFLE_COURSE
+                    && ri.GetRoomType() != RoomTypeFlags.GRAND_PRIX)
                 {
-                    ri.special_flag_mod.short_game = false;
+                    ri.SpecialModeRoom.IsShotMode = false;
                 }
 
-                if (_channel.getProperty().natural)
+                if (_channel.getProperty().NaturalMode)
                 {
-                    ri.special_flag_mod.natural = true;
+                    ri.SpecialModeRoom.IsNaturalMode = true;
                 }
 
-                var flag = Player.UserInfo.block_flag.m_flag;
+                var flag = Player.UserInfo.BlockFlag.Flag;
 
-                if (flag.all_game && (ri.GetTipo() != ROOM_INFO_TYPE.LOUNGE || flag.lounge))
+                if (flag.AllGame && (ri.GetRoomType() != RoomTypeFlags.LOUNGE || flag.Lounge))
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar um sala, mas ele nao pode criar nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar um sala, mas ele nao pode criar nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         1, 0x780001));
                 }
 
-                switch (ri.GetTipo())
+                switch (ri.GetRoomType())
                 {
-                    case ROOM_INFO_TYPE.STROKE:
-                        if (flag.stroke)
+                    case RoomTypeFlags.STROKE:
+                        if (flag.Stroke)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + (_channel?.getId()) + "] tentou criar sala[TIPO=" + (ri.GetTipo()) + "], mas ele nao pode criar Stroke.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 2, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + (_channel?.getId()) + "] tentou criar sala[TIPO=" + (ri.GetRoomType()) + "], mas ele nao pode criar Stroke.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 2, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.MATCH:
-                        if (flag.match)
+                    case RoomTypeFlags.MATCH:
+                        if (flag.Match)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Match.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Match.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.TOURNEY:
-                        if (flag.tourney)
+                    case RoomTypeFlags.TOURNEY:
+                        if (flag.Tourney)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Tourney.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 4, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Tourney.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 4, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.TOURNEY_TEAM:
-                        if (flag.team_tourney)
+                    case RoomTypeFlags.TOURNEY_TEAM:
+                        if (flag.TeamTourney)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Team Tourney.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 5, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Team Tourney.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 5, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.GUILD_BATTLE:
-                        if (flag.guild_battle)
+                    case RoomTypeFlags.GUILD_BATTLE:
+                        if (flag.GuildBattle)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Guild Battle.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 6, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Guild Battle.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 6, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.PANG_BATTLE:
-                        if (flag.pang_battle)
+                    case RoomTypeFlags.PANG_BATTLE:
+                        if (flag.PangBattle)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Pang Battle.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Pang Battle.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.APPROCH:
-                        if (flag.approach)
+                    case RoomTypeFlags.APPROCH:
+                        if (flag.Approach)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Approach.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 8, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Approach.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 8, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.LOUNGE:
-                        if (flag.lounge)
+                    case RoomTypeFlags.LOUNGE:
+                        if (flag.Lounge)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Lounge.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 9, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Lounge.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 9, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.GRAND_ZODIAC_INT:
-                    case ROOM_INFO_TYPE.GRAND_ZODIAC_ADV:
-                    case ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE:
-                        if (flag.grand_zodiac)
+                    case RoomTypeFlags.GRAND_ZODIAC_INT:
+                    case RoomTypeFlags.GRAND_ZODIAC_ADV:
+                    case RoomTypeFlags.GRAND_ZODIAC_PRACTICE:
+                        if (flag.GrandZodiac)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Grand Zodiac.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Grand Zodiac.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.GRAND_PRIX:
-                        if (flag.grand_prix)
+                    case RoomTypeFlags.GRAND_PRIX:
+                        if (flag.GrandPrix)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Grand Prix.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 11, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Grand Prix.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 11, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE:
-                        if (flag.ssc)
+                    case RoomTypeFlags.SPECIAL_SHUFFLE_COURSE:
+                        if (flag.SpecialShufflerCourse)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Special Shuffle Course.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 12, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Special Shuffle Course.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 12, 0x770001));
                         }
                         break;
-                    case ROOM_INFO_TYPE.PRACTICE:
-                        if (flag.single_play)
+                    case RoomTypeFlags.PRACTICE:
+                        if (flag.Practice)
                         {
-                            throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas ele nao pode criar Practice.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 13, 0x770001));
+                            throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas ele nao pode criar Practice.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 13, 0x770001));
                         }
                         break;
                 }
 
-                if (ri.special_flag_mod.short_game && (flag.team_tourney || flag.short_game))
+                if (ri.SpecialModeRoom.IsShotMode && (flag.TeamTourney || flag.ShortGame))
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala Short Game, mas ele nao pode.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 770001));
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala Short Game, mas ele nao pode.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 770001));
                 }
 
-                if (ri.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE && ri.time_30s != (30 * 60000))
+                if (ri.GetRoomType() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE && ri.TimeMin != (30 * 60000))
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala[TIPO=" + ((ushort)ri.GetTipo()) + "], mas o tempo é diferente do esperado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 780002));
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala[TIPO=" + ((ushort)ri.GetRoomType()) + "], mas o tempo é diferente do esperado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 780002));
                 }
 
-                if ((ri.GetTipo() >= ROOM_INFO_TYPE.GRAND_ZODIAC_INT && ri.GetTipo() <= ROOM_INFO_TYPE.GRAND_ZODIAC_ADV) && !Player.UserInfo.UserCapabilities.game_master)
+                if ((ri.GetRoomType() >= RoomTypeFlags.GRAND_ZODIAC_INT && ri.GetRoomType() <= RoomTypeFlags.GRAND_ZODIAC_ADV) && !Player.UserInfo.UserCapabilities.IsGameMaster)
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala de Grand Zodiac Event sem ser GM.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 2, 760001));
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala de Grand Zodiac Event sem ser GM.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 2, 760001));
                 }
 
-                if (ri.GetTipo() == ROOM_INFO_TYPE.GRAND_PRIX)
+                if (ri.GetRoomType() == RoomTypeFlags.GRAND_PRIX)
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala Grand Prix indevidamente.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 15, 0x770001));
+                    throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala Grand Prix indevidamente.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 15, 0x770001));
                 }
 
-                ri.channel_rookie = true;
+                ri.IsChannelRookie = true;
 
-                if (ri.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE)
+                if (ri.GetRoomType() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE)
                 {
                     var pWi = Player.Inventory.FindWarehouseItemByTypeid(SPECIAL_SHUFFLE_COURSE_TICKET_TYPEID);
 
                     if (pWi == null)
                     {
-                        throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala Special Shuffle Course, mas ele nao tem o Ticket.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 9, 0));
+                        throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala Special Shuffle Course, mas ele nao tem o Ticket.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 9, 0));
                     }
 
                     if (pWi.STDA_C_ITEM_QNTD < 1)
                     {
-                        throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala Special Shuffle Course sem tickets suficientes.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0));
+                        throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] tentou criar a sala Special Shuffle Course sem tickets suficientes.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0));
                     }
 
                     stItem item = new stItem();
@@ -305,12 +305,12 @@ namespace Pangya_GameServer.Handles
 
                     if (ItemManager.removeItem(item, Player) <= 0)
                     {
-                        throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] erro ao remover Ticket SSC.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 11, 0));
+                        throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] erro ao remover Ticket SSC.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 11, 0));
                     }
 
-                    if (ri.special_flag_mod.short_game)
+                    if (ri.SpecialModeRoom.IsShotMode)
                     {
-                        ri.time_30s = 20 * 60000;
+                        ri.TimeMin = 20 * 60000;
                     }
                 }
 
@@ -320,11 +320,11 @@ namespace Pangya_GameServer.Handles
                 {
                     _channel?.DeleteInviteTimeResquestByInvited(Player);
 
-                    r = GameServer.getInstance().MakeRoom(_channel, ri, Player);
+                    r = GameServer.Instance.MakeRoom(_channel, ri, Player);
 
                     if (r == null)
                     {
-                        throw new exception("[Handle_PLAYER_MAKE_ROOM] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] Channel[ID=" + _channel?.getId() + "] erro na criacao da sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 8, 0));
+                        throw new exception("[Handle_PLAYER_MAKE_ROOM] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] Channel[ID=" + _channel?.getId() + "] erro na criacao da sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 8, 0));
                     }
 
                     _channel?.UpdatePlayerInfo(Player);
@@ -337,17 +337,17 @@ namespace Pangya_GameServer.Handles
 
                     _channel?.SendUpdateRoomInfo(r.GetInfo(), 1);
 
-                    if (r.GetTipo() != ROOM_INFO_TYPE.PRACTICE && r.GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+                    if (r.GetTipo() != RoomTypeFlags.PRACTICE && r.GetTipo() != RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
                     {
                         _channel?.SendUpdatePlayerInfo(Player, 3);
                     }
 
-                    if (r.GetTipo() == ROOM_INFO_TYPE.GUILD_BATTLE)
+                    if (r.GetTipo() == RoomTypeFlags.GUILD_BATTLE)
                     {
                         r.SendPlayerInfo(Player, 0);
                     }
 
-                    if (!r.IsWithBot() && !r.IsRoomGM() && (r.GetTipo() == ROOM_INFO_TYPE.TOURNEY || r.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE))
+                    if (!r.IsWithBot() && !r.IsRoomGM() && (r.GetTipo() == RoomTypeFlags.TOURNEY || r.GetTipo() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE))
                     {
                         try
                         {
@@ -379,7 +379,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_MAKE_ROOM][ErrorSystem] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_MAKE_ROOM][ErrorSystem] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x49);
                 p.WriteUInt16(2); // Error

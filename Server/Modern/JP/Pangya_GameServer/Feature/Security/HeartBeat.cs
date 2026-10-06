@@ -49,7 +49,7 @@ namespace Pangya_GameServer.Feature.Security
                 return 0;
             }
 
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                 $"[E_HEARTBIT] [{this.ValidCheckTick} < {diff}] [{tickCount}, {this.LastestCheckTick}] UID: {this.UID}",
                 type_msg.CL_FILE_LOG_AND_CONSOLE));
 

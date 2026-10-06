@@ -45,7 +45,7 @@ namespace Pangya_GameServer.Repository
             }
 
             // Prote��o contra os jogos random & 0x7F
-            if (sIff.getInstance().findCourse(((Convert.ToUInt32(sIff.getInstance().COURSE << 0x1A)) | (m_ccu.course_id & 0x7Fu))) == null)
+            if (sIff.Instance.findCourse(((Convert.ToUInt32(sIff.Instance.COURSE << 0x1A)) | (m_ccu.course_id & 0x7Fu))) == null)
             {
                 throw new exception("[CmdUpdateCoinCubeLocation::prepareConsulta][Error] m_ccu.course_id(" + Convert.ToString((ushort)m_ccu.course_id) + ") not exists in IFF_STRUCT", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
@@ -69,7 +69,7 @@ namespace Pangya_GameServer.Repository
 
                 if (m_ccu.cube.id == 0u)
                 {
-                    throw new exception("[CmdUpdateCoinCubeLocation::prepareConsulta][Error] invalid coin/cube id(" + Convert.ToString(m_ccu.cube.id) + ") to Update in Database", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                    throw new exception("[CmdUpdateCoinCubeLocation::prepareConsulta][Error] invalid coin/cube Login(" + Convert.ToString(m_ccu.cube.id) + ") to Update in Database", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                         4, 0));
                 }
               

@@ -19,7 +19,7 @@ namespace Pangya_GameServer.Handles
 
                 if (r == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[Lobby.Room::RequestOpenEditSaleShop][Error][WARNIG] PLAYER [UID=" + Player.UserInfo.uid + "] Channel[ID=" + Player.GetChannel().getId() + "] tentou abrir ou editar um/o personal shop para ele, mas nao esta em nenhum sala[numero=" + (Player.UserInfo.Member.sala_numero) + "]. Hacker ou Bug [Tem que enviar a resposta para o cliente, por que ainda nao esta enviando]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Lobby.Room::RequestOpenEditSaleShop][Error][WARNIG] Normal [UID=" + Player.UserInfo.UID + "] Channel[ID=" + Player.GetChannel().getId() + "] tentou abrir ou editar um/o personal ShopRoom para ele, mas nao esta em nenhum sala[RoomID=" + (Player.UserInfo.Member.RoomID) + "]. Hacker ou Bug [Tem que enviar a resposta para o cliente, por que ainda nao esta enviando]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return;
                 }
 
@@ -42,7 +42,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby.Room::RequestOpenEditSaleShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby.Room::RequestOpenEditSaleShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.ROOM) throw;
             }
         }

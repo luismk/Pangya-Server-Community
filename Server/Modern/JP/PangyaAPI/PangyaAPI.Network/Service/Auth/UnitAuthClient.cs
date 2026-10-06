@@ -54,7 +54,7 @@ where TId : struct, Enum
                 var stream = tcp.GetStream();
 
 #if DEBUG
-                _smp.message_pool.getInstance().push(new message("[UnitAuth] Connected to Auth!", type_msg.CL_ONLY_CONSOLE));
+                _smp.message_pool.getInstance.push(new message("[UnitAuth] Connected to Auth!", type_msg.CL_ONLY_CONSOLE));
 #endif
                 IsRunning = true;
                 var sendTask = FillSendAsync(stream, connectionCts.Token);
@@ -119,7 +119,7 @@ where TId : struct, Enum
         }
 
 #if DEBUG
-            _smp.message_pool.getInstance().push(new message($"[UnitAuthClient::HandlePacket][Debug] SEND[UID: " + _server_guid + ", PID: " + type + "]", type_msg.CL_ONLY_CONSOLE));
+            _smp.message_pool.getInstance.push(new message($"[UnitAuthClient::HandlePacket][Debug] SEND[UID: " + _server_guid + ", PID: " + type + "]", type_msg.CL_ONLY_CONSOLE));
 #else
 #endif
 
@@ -206,9 +206,9 @@ where TId : struct, Enum
 
         try
         {
-            CmdNewAuthServerKey cmd_nask = new CmdNewAuthServerKey(_owner.m_si.uid); // Waiter
+            CmdNewAuthServerKey cmd_nask = new CmdNewAuthServerKey(_owner.m_si.UID); // Waiter
 
-            snmdb.NormalManagerDB.getInstance().add(0,
+            snmdb.NormalManagerDB.Instance.add(0,
                 cmd_nask, null, null);
 
             if (cmd_nask.getException().getCodeError() != 0)
@@ -218,18 +218,18 @@ where TId : struct, Enum
 
             // Resposta para o Auth Server
             var p = new Packet(0x1);
-            p.WriteUInt32((uint)_owner.m_si.tipo);
-            p.WriteUInt32((uint)_owner.m_si.uid);
-            p.WriteString(_owner.m_si.nome);
+            p.WriteUInt32((uint)_owner.m_si.Type);
+            p.WriteUInt32((uint)_owner.m_si.UID);
+            p.WriteString(_owner.m_si.Name);
             p.WriteString(cmd_nask.getInfo());
-            p.WriteString(_owner.m_si.version_client);
-            p.WriteUInt32(_owner.m_si.packet_version);
+            p.WriteString(_owner.m_si.ClientVersion);
+            p.WriteUInt32(_owner.m_si.VersionPacket);
             Send(p);
         }
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestFirstPacketKey][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestFirstPacketKey][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -247,8 +247,8 @@ where TId : struct, Enum
                 // use um buffer pequeno ou reutilize o writer se sua arquitetura permitir
                 using (var p = new Packet(0xFF))
                 {
-                    p.WriteInt32(_owner.m_si.tipo);
-                    p.WriteInt32(_owner.m_si.uid);
+                    p.WriteInt32(_owner.m_si.Type);
+                    p.WriteInt32(_owner.m_si.UID);
 
                     // 4. Enviar o tempo do servidor (Unix Timestamp ou DateTime customizado)
                     p.WriteTime();
@@ -261,7 +261,7 @@ where TId : struct, Enum
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[KeepLive] Erro na sessão {_owner.m_si.uid}: {ex.Message}");
+                Debug.WriteLine($"[KeepLive] Erro na sessão {_owner.m_si.UID}: {ex.Message}");
                 break;
             }
 
@@ -289,13 +289,13 @@ where TId : struct, Enum
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestAskLogin][Log] Nao conseguiu logar com o Auth Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestAskLogin][Log] Nao conseguiu logar com o Auth Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestAskLogin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestAskLogin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -313,7 +313,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestShutdownServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestShutdownServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -330,7 +330,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestBroadcastNotice][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestBroadcastNotice][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -348,7 +348,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestBroadcastTicker][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestBroadcastTicker][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -366,7 +366,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestBroadcastCubeWinRare][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestBroadcastCubeWinRare][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -377,7 +377,7 @@ where TId : struct, Enum
 
             uint player_uid = _packet.ReadUInt32();
             uint server_uid = _packet.ReadUInt32();
-            byte force = _packet.ReadByte(); // Flag que força a disconectar o usuário
+            byte force = _packet.ReadByte(); // ServerFlag que força a disconectar o usuário
 
             _owner.authCmdDisconnectPlayer((server_uid),
                 (player_uid),
@@ -387,7 +387,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -404,7 +404,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestConfirmDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestConfirmDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -422,7 +422,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestNewMailArrivedMailBox][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestNewMailArrivedMailBox][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -440,7 +440,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestNewRate][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestNewRate][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -457,7 +457,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestReloadSystem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestReloadSystem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -481,7 +481,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -515,7 +515,7 @@ where TId : struct, Enum
         }
         catch (exception e)
         {
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -530,7 +530,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestSendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -545,7 +545,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::RequestSendReplyToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::RequestSendReplyToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -564,7 +564,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::SendConfirmDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::SendConfirmDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -582,7 +582,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::SendDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::SendDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -607,7 +607,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::SendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::SendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -625,7 +625,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::getInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::getInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -640,7 +640,7 @@ where TId : struct, Enum
 
             if (_packet.Size < 2)
             {
-                throw new exception("[UnitAuthClient::SendCommandToOtherServer][Error] Tentou enviar o comando[ID=" + Convert.ToString(_packet.Type) + "] para o outro server[UID=" + Convert.ToString(_server_uid) + "] com o Auth Server, mas o packet é invalido nao tem nem o id.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.UNIT_AUTH_SERVER_CONNECT,
+                throw new exception("[UnitAuthClient::SendCommandToOtherServer][Error] Tentou enviar o comando[ID=" + Convert.ToString(_packet.Type) + "] para o outro server[UID=" + Convert.ToString(_server_uid) + "] com o Auth Server, mas o packet é invalido nao tem nem o Login.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.UNIT_AUTH_SERVER_CONNECT,
                     1000, 0));
             }
 
@@ -671,7 +671,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::SendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::SendCommandToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 
@@ -686,7 +686,7 @@ where TId : struct, Enum
 
             if (_packet.Size < 2)
             {
-                throw new exception("[UnitAuthClient::SendReplyToOtherServer][Error] Tentou enviar a reposta[ID=" + Convert.ToString(_packet.Type) + "] para o outro server[UID=" + Convert.ToString(_server_uid) + "] com o Auth Server, mas o packet é invalido nao tem nem o id.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.UNIT_AUTH_SERVER_CONNECT,
+                throw new exception("[UnitAuthClient::SendReplyToOtherServer][Error] Tentou enviar a reposta[ID=" + Convert.ToString(_packet.Type) + "] para o outro server[UID=" + Convert.ToString(_server_uid) + "] com o Auth Server, mas o packet é invalido nao tem nem o Login.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.UNIT_AUTH_SERVER_CONNECT,
                     1000, 0));
             }
 
@@ -716,7 +716,7 @@ where TId : struct, Enum
         catch (exception e)
         {
 
-            _smp.message_pool.getInstance().push(new message("[UnitAuthClient::SendReplyToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[UnitAuthClient::SendReplyToOtherServer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 

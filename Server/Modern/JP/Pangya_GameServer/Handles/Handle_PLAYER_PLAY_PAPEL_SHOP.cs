@@ -24,18 +24,18 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // --- 1. VALIDAÇÕES ---
-                if (Player.UserInfo.block_flag.m_flag.papel_shop)
-                    throw new exception("[Lobby::HandlePlay][Error] PLAYER [UID=" + Player.UserInfo.uid + "] bloqueado.",
+                if (Player.UserInfo.BlockFlag.Flag.PapelShop)
+                    throw new exception("[Lobby::HandlePlay][Error] Normal [UID=" + Player.UserInfo.UID + "] bloqueado.",
                   ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3, 0x790001));
 
-                if (Player.UserInfo.Member.level < 1)
+                if (Player.UserInfo.Member.GameLevel < 1)
                     throw new exception("[Lobby::HandlePlay][Error] Level insuficiente.",
                  ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 8, 0x5900108));
 
-                var shopSystem = sPapelShopSystem.getInstance();
+                var shopSystem = sPapelShopSystem.Instance;
                 if (!shopSystem.isLoad()) shopSystem.load();
 
-                if (shopSystem.isLimittedPerDay() && Player.UserInfo.Member.PapelShop.remain_count <= 0)
+                if (shopSystem.isLimittedPerDay() && Player.UserInfo.Member.PapelShop.RemainCount <= 0)
                     throw new exception("[Lobby::HandlePlay][Warning] Limite diário atingido.",
                  ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x5900101));
 
@@ -81,7 +81,7 @@ namespace Pangya_GameServer.Handles
                 foreach (var ball in balls.Where(b => b.ctx_psi.tipo == PAPEL_SHOP_TYPE.PST_RARE))
                 {
                     sys_achieve.incrementCounter(0x6C400081u); // Rare Win
-                    NormalManagerDB.getInstance().add(19, new CmdInsertPapelShopRareWinLog(Player.UserInfo.uid, ball), null, null);
+                    NormalManagerDB.Instance.add(19, new CmdInsertPapelShopRareWinLog(Player.UserInfo.UID, ball), null, null);
                 }
 
                 // --- 5. RESPOSTAS  ---
@@ -139,8 +139,8 @@ namespace Pangya_GameServer.Handles
 
             // Pacote 0xFB (Update Count)
             var pFB = new Packet(0xFB);
-            var shop = sPapelShopSystem.getInstance();
-            pFB.WriteInt32(shop.isLimittedPerDay() ? Player.UserInfo.Member.PapelShop.remain_count : -1);
+            var shop = sPapelShopSystem.Instance;
+            pFB.WriteInt32(shop.isLimittedPerDay() ? Player.UserInfo.Member.PapelShop.RemainCount : -1);
             pFB.WriteInt32(shop.isLimittedPerDay() ? -2 : -3);
             Player.Send(pFB);
 

@@ -61,7 +61,7 @@ namespace Pangya_GameServer.Manager
 
         public WarehouseItemEx findWarehouseItemByTypeid(uint _typeid)
         {
-            if (sIff.getInstance().getItemGroupIdentify((_typeid)) == IFF_GROUP.ITEM && sIff.getInstance().getItemSubGroupIdentify24((_typeid)) > 1/*Passive Item*/)
+            if (sIff.Instance.getItemGroupIdentify((_typeid)) == IFF_GROUP.ITEM && sIff.Instance.getItemSubGroupIdentify24((_typeid)) > 1/*Passive Item*/)
             {
                 return Values.Where(c => c._typeid == _typeid)
                                              .OrderByDescending(c => c.STDA_C_ITEM_QNTD)
@@ -74,7 +74,7 @@ namespace Pangya_GameServer.Manager
 
         public WarehouseItemEx findWarehouseItemByTypeidAndId(uint _typeid, int _id)
         {
-            if (sIff.getInstance().getItemGroupIdentify((_typeid)) == IFF_GROUP.ITEM && sIff.getInstance().getItemSubGroupIdentify24((_typeid)) > 1/*Passive Item*/)
+            if (sIff.Instance.getItemGroupIdentify((_typeid)) == IFF_GROUP.ITEM && sIff.Instance.getItemSubGroupIdentify24((_typeid)) > 1/*Passive Item*/)
             {
                 return Values.Where(c => c.id == _id && c._typeid == _typeid)
                                              .OrderByDescending(c => c.STDA_C_ITEM_QNTD)

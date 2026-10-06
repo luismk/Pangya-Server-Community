@@ -35,23 +35,23 @@ namespace Pangya_GameServer.Handles
 
                 if (pClub == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, mas ele nao tem o ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, mas ele nao tem o ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         450, 0x5300451));
                 }
 
-                var clubset = sIff.getInstance().findClubSet(pClub._typeid);
+                var clubset = sIff.Instance.findClubSet(pClub._typeid);
 
                 if (clubset == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, mas nao existe o ClubSet no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, mas nao existe o ClubSet no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         451, 0x5300452));
                 }
 
-                var clubset_transform = sIff.getInstance().findClubSet(Player.Inventory.WorkshopTransform.transform_typeid);
+                var clubset_transform = sIff.Instance.findClubSet(Player.Inventory.WorkshopTransform.transform_typeid);
 
                 if (clubset_transform == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, mas o ClubSet Special nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, mas o ClubSet Special nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         452, 0x5300453));
                 }
 
@@ -67,7 +67,7 @@ namespace Pangya_GameServer.Handles
                 // Delete ClubSet que vai ser transformado no ClubSet Special
                 if (ItemManager.removeItem(item, Player) <= 0)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, nao conseguiu deletar o ClubSet[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "] que vai ser transformado no Special. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, nao conseguiu deletar o ClubSet[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "] que vai ser transformado no Special. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         453, 0x5300454));
                 }
 
@@ -87,7 +87,7 @@ namespace Pangya_GameServer.Handles
 
                 if (item._typeid == 0)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, nao conseguiu inicializar o ClubSet[TYPEID=" + (bi._typeid) + "]. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, nao conseguiu inicializar o ClubSet[TYPEID=" + (bi._typeid) + "]. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         454, 0x5300455));
                 }
 
@@ -96,7 +96,7 @@ namespace Pangya_GameServer.Handles
                 if ((rt = ItemManager.addItem(item,
                     Player, 0, 0)) < 0)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, nao conseguiu adicionar o ClubSet[TYPEID=" + (item._typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou transformar ClubSet[ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (Player.Inventory.WorkshopTransform.transform_typeid) + "] Special, nao conseguiu adicionar o ClubSet[TYPEID=" + (item._typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         455, 0x5300456));
                 }
 
@@ -106,7 +106,7 @@ namespace Pangya_GameServer.Handles
                 }
 
                 // Log, // Usa o clubset._typeid e Player._Inventory.cwtc.clubset_id por que já excluiu esse ClubSet o "pClub"
-                _smp.message_pool.getInstance().push(new message("[ClubSetWokShop::UpRankTransformConfirm][Sucess] PLAYER [UID=" + Player.UserInfo.uid + "] confirmou a transformacao do ClubSet[TYPEID=" + (clubset.ID) + ", ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "] Special", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ClubSetWokShop::UpRankTransformConfirm][Sucess] Normal [UID=" + Player.UserInfo.UID + "] confirmou a transformacao do ClubSet[TYPEID=" + (clubset.ID) + ", ID=" + (Player.Inventory.WorkshopTransform.clubset_id) + "] no ClubSet[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "] Special", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // UPDATE ON JOGO
                 p.init_plain(0x216);
@@ -147,7 +147,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestClubSetWorkShopUpRankTransformConfirm][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x242);
 

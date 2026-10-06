@@ -24,18 +24,18 @@ namespace Pangya_GameServer.Handles
         {
             try
             {
-                var r = Player.GetRoom() ?? throw new exception("[Error] sala[NUMERO=" + Player.UserInfo.Member.sala_numero + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                var r = Player.GetRoom() ?? throw new exception("[Error] sala[NUMERO=" + Player.UserInfo.Member.RoomID + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         10, 0));
 
-                if (r.GetTipo() != ROOM_INFO_TYPE.LOUNGE)
+                if (r.GetTipo() != RoomTypeFlags.LOUNGE)
                 {
-                    throw new exception("[Error] sala[NUMERO=" + Player.UserInfo.Member.sala_numero + "] nao é um lounge.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] sala[NUMERO=" + Player.UserInfo.Member.RoomID + "] nao é um Lounge.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         12, 0));
                 }
 
                 if (!Player.UserInfo.CharacterLoungeStates.TryGetValue(Player.Inventory.UserEquippedItem.CharacterEquiped.id, out StateCharacterLounge state))
                 {
-                    throw new exception("[Error] sala[NUMERO=" + Player.UserInfo.Member.sala_numero + "] nao tem os estados do character na lounge.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] sala[NUMERO=" + Player.UserInfo.Member.RoomID + "] nao tem os estados do character na Lounge.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         13, 0));
                 }
 
@@ -46,7 +46,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_PLAYER_STATE_CHARACTER_LOUNGE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_PLAYER_STATE_CHARACTER_LOUNGE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;

@@ -29,12 +29,12 @@ namespace Pangya_GameServer.Repository
         protected override Response prepareConsulta()
         {
             if (m_uid == 0)
-                throw new exception("[CmdShopGiftLog::prepareConsulta][Error] uid[value=" + (m_uid) + "] is invalid",
+                throw new exception("[CmdShopGiftLog::prepareConsulta][Error] UID[value=" + (m_uid) + "] is invalid",
                     STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB, 4, 0));
 
             var r = procedure(m_szConsulta, (m_uid) + ", " + (m_gift_id));
 
-            checkResponse(r, "nao conseguiu inserir log shop gift");
+            checkResponse(r, "nao conseguiu inserir log ShopRoom gift");
 
             return r;
         }

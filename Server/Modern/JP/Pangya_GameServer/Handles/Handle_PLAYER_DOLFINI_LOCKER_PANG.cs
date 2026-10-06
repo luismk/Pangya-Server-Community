@@ -31,7 +31,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
                 // Log de erro no console e arquivo
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_DOLFINI_LOCKER_PANG][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new message("[Handle_PLAYER_DOLFINI_LOCKER_PANG][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x172);
 

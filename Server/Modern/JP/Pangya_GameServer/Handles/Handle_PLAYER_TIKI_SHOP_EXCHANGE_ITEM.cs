@@ -46,10 +46,10 @@ namespace Pangya_GameServer.Handles
                 uint count = Packet.ReadUInt32();
 
                 if (count == 0 || count > 5)
-                    throw new exception($"[[Lobby.Room::RequestTikiShopExchangeItem][CHEAT] UID={Player.UserInfo.uid} count={count}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 450, 5200451));
+                    throw new exception($"[[Lobby.Room::RequestTikiShopExchangeItem][CHEAT] UID={Player.UserInfo.UID} count={count}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 450, 5200451));
 
                 if (Packet.Size < count * 8)
-                    throw new exception($"[[Lobby.Room::RequestTikiShopExchangeItem][CHEAT] pacote truncado UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 450, 5200452));
+                    throw new exception($"[[Lobby.Room::RequestTikiShopExchangeItem][CHEAT] pacote truncado UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 450, 5200452));
 
                 var r = Player.GetRoom();
 
@@ -60,24 +60,24 @@ namespace Pangya_GameServer.Handles
 
                     if (_item.Count == 0)
                     {
-                        throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + ", QNTD=" + (tsei.qntd) + "] no Tiki's Shop, mas nao conseguiu inicializar o item. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 900, 0x52000901));
+                        throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + ", QNTD=" + (tsei.qntd) + "] no Tiki's Shop, mas nao conseguiu inicializar o item. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 900, 0x52000901));
                     }
 
                     if (r != null && r.CheckPersonalShopItem(Player, tsei.id))
                     {
-                        throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + ", QNTD=" + (tsei.qntd) + "] no Tiki's Shop, mas o item esta sendo vendido no Personal shop dele. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1010, 0x5201010));
+                        throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + ", QNTD=" + (tsei.qntd) + "] no Tiki's Shop, mas o item esta sendo vendido no Personal ShopRoom dele. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1010, 0x5201010));
                     }
 
-                    var @base = sIff.getInstance().findCommomItem(tsei._typeid);
+                    var @base = sIff.Instance.findCommomItem(tsei._typeid);
 
                     if (@base == null || @base.ID == 0)
                     {
-                        throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + "] no Tiki's Shop, mas o item nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 901, 0x5200902));
+                        throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + "] no Tiki's Shop, mas o item nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 901, 0x5200902));
                     }
 
                     if (@base.ID != 0 && !@base.tiki.IsActived())
                     {
-                        throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + "] no Tiki's Shop, mas o item nao é valido para ser trocado. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 904, 0x5200905));
+                        throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + "] no Tiki's Shop, mas o item nao é valido para ser trocado. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 904, 0x5200905));
                     }
 
                     pang += @base.tiki.Tiki_Pang;
@@ -112,7 +112,7 @@ namespace Pangya_GameServer.Handles
 
                 if (ItemManager.removeItem(v_item, Player) <= 0)
                 {
-                    throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar item(ns)(" + s_item + "), mas nao conseguiu deletar ele(s).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 902, 0x5200903));
+                    throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar item(ns)(" + s_item + "), mas nao conseguiu deletar ele(s).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 902, 0x5200903));
                 }
 
                 if ((milage + item.qntd + bonus) > 1000)
@@ -124,7 +124,7 @@ namespace Pangya_GameServer.Handles
                 if (item.STDA_C_ITEM_QNTD != 0)
                 {
                     var rt = ItemManager.addItem(item, Player, 0, 0);
-                    if (rt < 0) throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou adicionar item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + ", QNTD=" + (item.STDA_C_ITEM_QNTD) + "], mas nao conseguiu.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 903, 0x5200904));
+                    if (rt < 0) throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou adicionar item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + ", QNTD=" + (item.STDA_C_ITEM_QNTD) + "], mas nao conseguiu.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 903, 0x5200904));
                     if (rt != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH) v_item.Add(item);
                 }
 
@@ -141,9 +141,9 @@ namespace Pangya_GameServer.Handles
                     if (pWi != null) item.id = pWi.id;
 
                     var rt = ItemManager.addItem(item, Player, 0, 0);
-                    if (rt < 0) throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou adicionar item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + ", QNTD=" + (item.STDA_C_ITEM_QNTD) + "], mas nao conseguiu.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 903, 0x5200904));
+                    if (rt < 0) throw new exception("[Lobby.Room::RequestTikiShopExchangeItem][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou adicionar item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + ", QNTD=" + (item.STDA_C_ITEM_QNTD) + "], mas nao conseguiu.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 903, 0x5200904));
 
-                    if (item.id == -1) _smp.message_pool.getInstance().push(new message("[TikiShopExchangeItem][Bug] PLAYER [UID=" + Player.UserInfo.uid + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    if (item.id == -1) _smp.LogManager.Instance.push(new AppMessage("[TikiShopExchangeItem][Bug] Normal [UID=" + Player.UserInfo.UID + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     if (rt != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH) v_item.Add(item);
 
                     sys_achieve.incrementCounter(0x6C4000C2u, (int)tiki_pts);
@@ -182,7 +182,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby.Room::RequestTikiShopExchangeItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby.Room::RequestTikiShopExchangeItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 p.init_plain(0x274);
                 p.WriteUInt32((ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL) ? ExceptionError.STDA_SYSTEM_ERROR_DECODE(e.getCodeError()) : 0x5200900);
                 Player.Send(p);

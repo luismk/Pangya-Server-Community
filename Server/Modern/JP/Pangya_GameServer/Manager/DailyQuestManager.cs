@@ -74,9 +74,9 @@ namespace Pangya_GameServer.Manager
             if (v_old_quest.Count == 0)
             { // Se n�o achou no que estava no server procura no banco de dados
 
-                CmdOldDailyQuestInfo cmd_odqi = new CmdOldDailyQuestInfo(_session.UserInfo.uid);
+                CmdOldDailyQuestInfo cmd_odqi = new CmdOldDailyQuestInfo(_session.UserInfo.UID);
 
-                snmdb.NormalManagerDB.getInstance().add(0,
+                snmdb.NormalManagerDB.Instance.add(0,
                     cmd_odqi, null, null);
 
                 if (cmd_odqi.getException().getCodeError() == 0)
@@ -100,10 +100,10 @@ namespace Pangya_GameServer.Manager
                 _session.UserInfo.DailyQuests._typeid[i] = _dqi._typeid[i];
 
                 // Clear(Limpa) Estruturas, temporarias
-                if ((qi = sIff.getInstance().findQuestItem(_dqi._typeid[i])) != null && qi.quest.qntd > 0)
+                if ((qi = sIff.Instance.findQuestItem(_dqi._typeid[i])) != null && qi.quest.qntd > 0)
                 {
 
-                    var ai = AchievementManager.createAchievement(_session.UserInfo.uid,
+                    var ai = AchievementManager.createAchievement(_session.UserInfo.UID,
                         qi, ACHIEVEMENT_STATUS.PENDENTING);
 
                     _session.UserInfo.Achievements.addAchievement(ai);
@@ -115,10 +115,10 @@ namespace Pangya_GameServer.Manager
             // Seta no banco de dados a data que o player add a nova quest
             _session.UserInfo.DailyQuests.current_date = UtilTime.GetLocalTimeAsUnix();
 
-            if (CommandDB.LoadDailyQuestCheck(_session.UserInfo.uid))
+            if (CommandDB.LoadDailyQuestCheck(_session.UserInfo.UID))
             {
                 // Update Last Quest Accept Player
-                snmdb.NormalManagerDB.getInstance().add(0, new CmdUpdateDailyQuestUser(_session.UserInfo.uid, _session.UserInfo.DailyQuests));
+                snmdb.NormalManagerDB.Instance.add(0, new CmdUpdateDailyQuestUser(_session.UserInfo.UID, _session.UserInfo.DailyQuests));
             }  
             return v_ADQU;
         }
@@ -214,28 +214,28 @@ namespace Pangya_GameServer.Manager
                         cii.clear();
                         cii.active = 1;
 
-                        if ((qs = sIff.getInstance().findQuestStuff(el._typeid)) != null)
+                        if ((qs = sIff.Instance.findQuestStuff(el._typeid)) != null)
                         {
                             cii._typeid = qs.counter_item._typeid[0];
                         }
                         else
                         {
-                            throw new exception("[DailyQuestManager::AcceptQuestUser][Error] nao encontrou o quest stuff[typeid=" + Convert.ToString(el._typeid) + "] no IFF QuestStuff, para o player: " + Convert.ToString(_session.UserInfo.uid), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
+                            throw new exception("[DailyQuestManager::AcceptQuestUser][Error] nao encontrou o quest stuff[typeid=" + Convert.ToString(el._typeid) + "] no IFF QuestStuff, para o player: " + Convert.ToString(_session.UserInfo.UID), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
                                 6, 0));
                         }
 
                         if ((el.counter_item_id = addCounterItemUser(_session, cii)) == -1)
                         {
-                            throw new exception("[DailyQuestManager::AcceptQuestUser][Error] nao conseguiu adicionar o counter item[TYPEID=" + Convert.ToString(cii._typeid) + "] no banco de dados para o player: " + Convert.ToString(_session.UserInfo.uid), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
+                            throw new exception("[DailyQuestManager::AcceptQuestUser][Error] nao conseguiu adicionar o counter item[TYPEID=" + Convert.ToString(cii._typeid) + "] no banco de dados para o player: " + Convert.ToString(_session.UserInfo.UID), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
                                 7, 0));
                         }
 
                         // Add Counter To Counter Item Map of Achievement 
                         it.Current.Value.map_counter_item[cii.id] = cii;  // sobrescreve se já existir
 
-                        // Atualiza o counter id da quest no banco de dados
-                        snmdb.NormalManagerDB.getInstance().add(0,
-                            new CmdUpdateQuestUser(_session.UserInfo.uid, el),
+                        // Atualiza o counter Login da quest no banco de dados
+                        snmdb.NormalManagerDB.Instance.add(0,
+                            new CmdUpdateQuestUser(_session.UserInfo.UID, el),
                             SQLDBResponse,
                             null);
                     }
@@ -243,18 +243,18 @@ namespace Pangya_GameServer.Manager
                     // Update Achievement, Status Active == 3
                     it.Current.Value.status = 3;
 
-                    snmdb.NormalManagerDB.getInstance().add(0,
-                        new CmdUpdateAchievementUser(_session.UserInfo.uid, it.Current.Value),
+                    snmdb.NormalManagerDB.Instance.add(0,
+                        new CmdUpdateAchievementUser(_session.UserInfo.UID, it.Current.Value),
                         SQLDBResponse,
                         null);
 
                     _session.UserInfo.DailyQuests.accept_date = UtilTime.GetLocalTimeAsUnix();
                      
-                    if (CommandDB.LoadDailyQuestCheck(_session.UserInfo.uid))
+                    if (CommandDB.LoadDailyQuestCheck(_session.UserInfo.UID))
                     {
                         // Update Last Quest Accept Player
-                        snmdb.NormalManagerDB.getInstance().add(0,
-                            new CmdUpdateDailyQuestUser(_session.UserInfo.uid, _session.UserInfo.DailyQuests),
+                        snmdb.NormalManagerDB.Instance.add(0,
+                            new CmdUpdateDailyQuestUser(_session.UserInfo.UID, _session.UserInfo.DailyQuests),
                             SQLDBResponse,
                             null);
                     } 
@@ -276,15 +276,15 @@ namespace Pangya_GameServer.Manager
             }
 
             // Add Counter Item
-            CmdAddCounterItem cmd_aci = new CmdAddCounterItem(_session.UserInfo.uid, // waitable
+            CmdAddCounterItem cmd_aci = new CmdAddCounterItem(_session.UserInfo.UID, // waitable
                 _cii._typeid, _cii.value);
 
-            snmdb.NormalManagerDB.getInstance().add(0,
+            snmdb.NormalManagerDB.Instance.add(0,
                 cmd_aci, null, null);
 
             if (cmd_aci.getException().getCodeError() != 0 || (_cii.id = cmd_aci.getId()) == -1)
             {
-                throw new exception("[DailyQuestManager::addCounterItemUser][Error] nao conseguiu adicionar o Counter Item[Typeid=" + Convert.ToString(_cii._typeid) + "] para o player: " + Convert.ToString(_session.UserInfo.uid), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
+                throw new exception("[DailyQuestManager::addCounterItemUser][Error] nao conseguiu adicionar o Counter Item[Typeid=" + Convert.ToString(_cii._typeid) + "] para o player: " + Convert.ToString(_session.UserInfo.UID), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
                     5, 0));
             }
 
@@ -299,12 +299,12 @@ namespace Pangya_GameServer.Manager
                 return;
             }
 
-            if (!sIff.getInstance().isLoad())
+            if (!sIff.Instance.isLoad())
             {
-                sIff.getInstance().Init();
+                sIff.Instance.Init();
             }
 
-            var map_qi = sIff.getInstance().getQuestItem(); // Daily Quest
+            var map_qi = sIff.Instance.getQuestItem(); // Daily Quest
 
             List<uint> a = new List<uint>();
             List<uint> b = new List<uint>();
@@ -353,13 +353,13 @@ namespace Pangya_GameServer.Manager
 
             CmdUpdateDailyQuest cmd_udq = new CmdUpdateDailyQuest(_dqi); // Waiter
 
-            snmdb.NormalManagerDB.getInstance().add(0,
+            snmdb.NormalManagerDB.Instance.add(0,
                 cmd_udq, SQLDBResponse, null);
 
             if (cmd_udq.getException().getCodeError() != 0)
             {
 
-                _smp.message_pool.getInstance().push(new message("[DailyQuestManager::updateDailyQuest][ErrorSystem] " + cmd_udq.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DailyQuestManager::updateDailyQuest][ErrorSystem] " + cmd_udq.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return; // Error sai da fun��o
             }
@@ -376,10 +376,10 @@ namespace Pangya_GameServer.Manager
            object _arg)
         {
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[DailyQuestManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DailyQuestManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -398,7 +398,7 @@ namespace Pangya_GameServer.Manager
 
                             // N�o conseguiu atualizar primeiro que outro sistema, ent�o pega a atualiza��o do outro sistema
                             //if (sgs::gs != null)
-                            GameServer.getInstance().UpdateDailyQuest(cmd_dqi.getInfo());
+                            GameServer.Instance.UpdateDailyQuest(cmd_dqi.getInfo());
                         }
 
                         break;

@@ -106,7 +106,7 @@ namespace Pangya_GameServer.Repository
                         }
                         catch (exception e)
                         {
-                            _smp.message_pool.getInstance().push(new message("[CmdMailBoxInfo2::LineResult][ErrorSystem][Error during translation] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[CmdMailBoxInfo2::LineResult][ErrorSystem][Error during translation] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
 
@@ -147,7 +147,7 @@ namespace Pangya_GameServer.Repository
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[channel::pacote04B][Error]: " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Channel::pacote04B][Error]: " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -163,7 +163,7 @@ namespace Pangya_GameServer.Repository
 
             var r = procedure(m_szConsulta, m_uid.ToString());
 
-            checkResponse(r, "Não conseguiu pegar todos os emails da caixa de correio do PLAYER[UID=" + m_uid + "]");
+            checkResponse(r, "Não conseguiu pegar todos os emails da caixa de correio do Normal[UID=" + m_uid + "]");
 
             return r;
         }

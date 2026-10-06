@@ -19,9 +19,9 @@ namespace Pangya_RankingServer.Handles
 
                 byte active = Packet.ReadByte();
 
-                // Log de monitoramento com o nome da classe
+                // Log de monitoramento com o Name da classe
                  
-                _smp.message_pool.getInstance().push(new message($"[{nameof(Handle_REQUEST_PLAYER_INFO)}][Log] PLAYER[UID: {uid}, ID: {id}] REQUEST INFO.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{nameof(Handle_REQUEST_PLAYER_INFO)}][Log] PLAYER[UID: {uid}, ID: {id}] REQUEST INFO.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // 1. Validação de Segurança Básica
                 if (uid == 0)
@@ -29,14 +29,14 @@ namespace Pangya_RankingServer.Handles
                     throw new Exception($"[{nameof(Handle_REQUEST_PLAYER_INFO)}] [PlayerInfo Error] Tentativa de request com UID zero.");
                 }
 
-                sRankRegistryManager.getInstance().sendPlayerFullInfo(Player, uid);
+                sRankRegistryManager.Instance.sendPlayerFullInfo(Player, uid);
             }
             catch (Exception e)
             {
                 // Log de erro formatado
                 string errorMsg = e is exception customEx ? customEx.getFullMessageError() : e.Message;
 
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(Handle_REQUEST_PLAYER_INFO)}] [Error] {errorMsg}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

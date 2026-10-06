@@ -17,7 +17,7 @@ public class Handle_PLAYER_COMET_REFILL : HandleBase<Player, Packet_EXAMPLE>
             uint item_typeid = Packet.ReadUInt32();
             uint ball_typeid = Packet.ReadUInt32();
 
-            if (!sCometRefillSystem.getInstance().isLoad()) sCometRefillSystem.getInstance().load();
+            if (!sCometRefillSystem.Instance.isLoad()) sCometRefillSystem.Instance.load();
 
             var pBall = Player.Inventory.FindWarehouseItemByTypeid(ball_typeid);
             var pItem = Player.Inventory.FindWarehouseItemByTypeid(item_typeid);
@@ -25,10 +25,10 @@ public class Handle_PLAYER_COMET_REFILL : HandleBase<Player, Packet_EXAMPLE>
             if (pBall == null || pItem == null || pItem.STDA_C_ITEM_QNTD < 1)
                 throw new exception("Item ou bola faltando", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x5600101));
 
-            var ctx = sCometRefillSystem.getInstance().findCometRefill(pItem._typeid);
+            var ctx = sCometRefillSystem.Instance.findCometRefill(pItem._typeid);
             if (ctx == null) throw new exception("Refill nao no sistema", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 8, 0x5600100));
 
-            var qntd = sCometRefillSystem.getInstance().drawsCometRefill(ctx);
+            var qntd = sCometRefillSystem.Instance.drawsCometRefill(ctx);
 
             stItem it_rm = new stItem { type = 2, id = (int)pItem.id, _typeid = pItem._typeid, qntd = 1, STDA_C_ITEM_QNTD = -1 };
             if (ItemManager.removeItem(it_rm, Player) <= 0) throw new exception("Erro remover", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 6, 0x5600106));
@@ -45,7 +45,7 @@ public class Handle_PLAYER_COMET_REFILL : HandleBase<Player, Packet_EXAMPLE>
         }
         catch (exception e)
         {
-            _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_COMET_REFILL][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_COMET_REFILL][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             p.init_plain(0x197);
             p.WriteByte(0);
             p.WriteZero(10);

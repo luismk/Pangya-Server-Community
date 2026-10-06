@@ -57,7 +57,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_ps.id == 0Ul)
             {
-                throw new exception("[CmdAddLoginRewardPlayer::lineResult][Error] nao conseguiu adicionar player no Login Reward[ID=" + Convert.ToString(m_id) + "] por que m_ps.id retornado is invalid(" + Convert.ToString(m_ps.id) + ").", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdAddLoginRewardPlayer::lineResult][Error] nao conseguiu adicionar player no Login Reward[ID=" + Convert.ToString(m_id) + "] por que m_ps.Login retornado is invalid(" + Convert.ToString(m_ps.id) + ").", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                 3, 0));
             }
         }
@@ -73,7 +73,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_ps.uid == 0u)
             {
-                throw new exception("[CmdAddLoginRewardPlayer::prepareConsulta][Error] m_ps.uid is invalid(" + Convert.ToString(m_ps.uid) + ")", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdAddLoginRewardPlayer::prepareConsulta][Error] m_ps.UID is invalid(" + Convert.ToString(m_ps.uid) + ")", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
@@ -82,7 +82,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_id) + ", " + Convert.ToString(m_ps.uid) + ", " + Convert.ToString(m_ps.count_days) + ", " + Convert.ToString(m_ps.count_seq) + ", " + (m_ps.is_clear ? "1" : "0") + ", " + makeText(_formatDate(m_ps.update_date.ConvertTime())));
 
-            checkResponse(r, "nao conseguiu adicionar o PLAYER[" + m_ps.toString() + "] do Login Reward[ID=" + Convert.ToString(m_id) + "]");
+            checkResponse(r, "nao conseguiu adicionar o Normal[" + m_ps.toString() + "] do Login Reward[ID=" + Convert.ToString(m_id) + "]");
 
             return r;
         }

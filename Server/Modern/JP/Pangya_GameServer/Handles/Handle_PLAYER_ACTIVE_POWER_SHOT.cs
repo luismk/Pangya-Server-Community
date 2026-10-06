@@ -23,14 +23,14 @@ namespace Pangya_GameServer.Handles
 
             try
             {
-                var r = Player.GetGameRoom() ?? throw new exception("[Handle_PLAYER_ACTIVE_POWER_SHOT][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou ativar power shot, mas a sala [NUMERO=" + Player.UserInfo.Member.sala_numero + "] não foi encontrada. Hacker ou Bug",
+                var r = Player.GetGameRoom() ?? throw new exception("[Handle_PLAYER_ACTIVE_POWER_SHOT][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou ativar power shot, mas a sala [NUMERO=" + Player.UserInfo.Member.RoomID + "] não foi encontrada. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x5900801));
                 
                 r.RequestActivePowerShot(Player, Packet);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_ACTIVE_POWER_SHOT][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_ACTIVE_POWER_SHOT][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;

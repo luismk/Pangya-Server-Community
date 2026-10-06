@@ -21,11 +21,11 @@ namespace Pangya_LoginServer.PangyaEnums
         /// </summary>
         CLIENT_REQ_KICK = 0x04,
         /// <summary>
-        /// Seta primeiro nickname do usuário
+        /// Seta primeiro NickName do usuário
         /// </summary>
         CLIENT_REQ_SET_NICK = 0x06,//SEQUENCIA[0] 
         /// <summary>
-        /// Ocorre quando o cliente clica em Confirmar (se o nickname está disponível), 
+        /// Ocorre quando o cliente clica em Confirmar (se o NickName está disponível), 
         /// </summary>
         CLIENT_REQ_CONFIRM_SET_NICK = 0x07,//SEQUENCIA[1] 
         /// <summary>

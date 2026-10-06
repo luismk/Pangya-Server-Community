@@ -21,9 +21,9 @@ namespace Pangya_GameServer.Handles
                 {
                     //lembro que tem como desmembrar a mesnagem
                 }
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_EXCEPTION_PLAYER_REQ_MESSAGE][Log] PLAYER[UID=" + (Player.UserInfo.uid) + ", EXTIPO="  + ((ushort)tipo) + ", MSG=" + exception_msg + "]", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_EXCEPTION_PLAYER_REQ_MESSAGE][Log] Normal[UID=" + (Player.UserInfo.UID) + ", EXTIPO="  + ((ushort)tipo) + ", MSG=" + exception_msg + "]", type_msg.CL_ONLY_CONSOLE));
                 //
-                GameServer.getInstance().Disconnect(Player);//send desconection
+                GameServer.Instance.Disconnect(Player);//send desconection
             }
             catch (Exception)
             {

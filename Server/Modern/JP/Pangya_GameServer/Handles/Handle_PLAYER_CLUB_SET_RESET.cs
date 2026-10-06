@@ -37,7 +37,7 @@ namespace Pangya_GameServer.Handles
 
                 if (item_typeid != 0x1A00024B && item_typeid != 0x1A000247)
                 {
-                    throw new exception("[Lobby::RequestClubSetReset][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas o item[TYPEID=" + (item_typeid) + "] é desconhecido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetReset][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas o item[TYPEID=" + (item_typeid) + "] é desconhecido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         505, 0x5300506));
                 }
 
@@ -45,13 +45,13 @@ namespace Pangya_GameServer.Handles
 
                 if (pWi == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetReset][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas ele nao tem o item[TYPEID=" + (item_typeid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetReset][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas ele nao tem o item[TYPEID=" + (item_typeid) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         500, 0x5300501));
                 }
 
                 if (pWi.STDA_C_ITEM_QNTD < 1)
                 {
-                    throw new exception("[Lobby::RequestClubSetReset][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas ele nao tem quantidade suficiente do item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + ", QNTD=" + (pWi.STDA_C_ITEM_QNTD) + ", Request=1]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetReset][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas ele nao tem quantidade suficiente do item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + ", QNTD=" + (pWi.STDA_C_ITEM_QNTD) + ", Request=1]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         501, 0x5300502));
                 }
 
@@ -59,15 +59,15 @@ namespace Pangya_GameServer.Handles
 
                 if (pClub == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetReset][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas ele nao tem o ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetReset][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas ele nao tem o ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         502, 0x5300503));
                 }
 
-                var clubset = sIff.getInstance().findClubSet(pClub._typeid);
+                var clubset = sIff.Instance.findClubSet(pClub._typeid);
 
                 if (clubset == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetReset][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas o ClubSet nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetReset][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas o ClubSet nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         503, 0x5300504));
                 }
 
@@ -76,15 +76,15 @@ namespace Pangya_GameServer.Handles
 
                 if (rank_base == -1 || rank == -1)
                 {
-                    throw new exception("[Lobby::RequestClubSetReset][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], nao conseguiu pegar o Rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + ", rank=" + (rank) + ", rank_base=" + (rank_base) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetReset][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], nao conseguiu pegar o Rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + ", RankPosition=" + (rank) + ", rank_base=" + (rank_base) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         505, 0x5300506));
                 }
 
-                var rank_up_exp = sIff.getInstance().findClubSetWorkShopRankExp(clubset.work_shop.tipo_rank_s);
+                var rank_up_exp = sIff.Instance.findClubSetWorkShopRankExp(clubset.work_shop.tipo_rank_s);
 
                 if (rank_up_exp == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetReset][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas nao encontrou o Rank Up Exp[tipo=" + (clubset.work_shop.tipo_rank_s) + "] no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetReset][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas nao encontrou o Rank Up Exp[Type=" + (clubset.work_shop.tipo_rank_s) + "] no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         504, 0x5300505));
                 }
 
@@ -99,7 +99,7 @@ namespace Pangya_GameServer.Handles
 
                 if (ItemManager.removeItem(item, Player) <= 0)
                 {
-                    throw new exception("[Lobby::RequestClubSetReset][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas nao conseguiu remover o Item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "]. ErrorSystem", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetReset][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou resetar ClubSet[ID=" + (clubset_id) + "], mas nao conseguiu remover o Item[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + "]. ErrorSystem", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         506, 0x5300507));
                 }
 
@@ -124,7 +124,7 @@ namespace Pangya_GameServer.Handles
                     {
                         for (var j = 0u; j < (uint)pClub.c[i]; ++j)
                         {
-                            if ((enchant = sIff.getInstance().findEnchant(((Convert.ToUInt32(sIff.getInstance().ENCHANT) << 26) | (i << 20) + j))) != null)
+                            if ((enchant = sIff.Instance.findEnchant(((Convert.ToUInt32(sIff.Instance.ENCHANT) << 26) | (i << 20) + j))) != null)
                             {
                                 pang += enchant.Pang;
                             }
@@ -186,20 +186,20 @@ namespace Pangya_GameServer.Handles
                 // UPDATE ON DB
 
                 // Reset ON DB ClubSet Workshop
-                NormalManagerDB.getInstance().add(12,
-                     new CmdUpdateClubSetWorkshop(Player.UserInfo.uid,
+                NormalManagerDB.Instance.add(12,
+                     new CmdUpdateClubSetWorkshop(Player.UserInfo.UID,
                          pClub,
                          CmdUpdateClubSetWorkshop.FLAG.F_RESET),
                     null, null);
 
                 // Reset ON DB ClubSet Stats
-                NormalManagerDB.getInstance().add(8,
-                     new CmdUpdateClubSetStats(Player.UserInfo.uid,
+                NormalManagerDB.Instance.add(8,
+                     new CmdUpdateClubSetStats(Player.UserInfo.UID,
                          pClub, 0),
                     null, null);
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[ClubSet::Reset][Sucess] PLAYER [UID=" + Player.UserInfo.uid + "] resetou o ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "] " + (item_typeid == 0x1A00024B ? ("Hard[Pang=" + (pang) + ", Mastery=" + (mastery) + "] Item") : "Soft Item"), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ClubSet::Reset][Sucess] Normal [UID=" + Player.UserInfo.UID + "] resetou o ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "] " + (item_typeid == 0x1A00024B ? ("Hard[Pang=" + (pang) + ", Mastery=" + (mastery) + "] Item") : "Soft Item"), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // UPDATE ON JOGO
                 p.init_plain(0x216);
@@ -239,7 +239,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestClubSetReset][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestClubSetReset][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x247);
 

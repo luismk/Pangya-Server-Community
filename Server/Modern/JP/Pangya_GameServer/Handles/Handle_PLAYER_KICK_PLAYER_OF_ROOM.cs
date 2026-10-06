@@ -39,20 +39,20 @@ namespace Pangya_GameServer.Handles
 
                 if (r == null)
                 {
-                    throw new exception("[Handle_PLAYER_KICK_PLAYER_OF_ROOM][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou chutar um PLAYER [UID=" + (uid) + "] da sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas sala nao existe. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_KICK_PLAYER_OF_ROOM][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou chutar um Normal [UID=" + (uid) + "] da sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas sala nao existe. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         10, 0));
                 }
 
-                if (r.GetMaster() != Player.UserInfo.uid)
+                if (r.GetMaster() != Player.UserInfo.UID)
                 {
-                    throw new exception("[Handle_PLAYER_KICK_PLAYER_OF_ROOM][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou chutar um PLAYER [UID=" + (uid) + "] da sala[NUMERO=" + r.GetRoomId() + "], mas o Player nao é master da sala para poder chutar(kick) o Player. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_KICK_PLAYER_OF_ROOM][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou chutar um Normal [UID=" + (uid) + "] da sala[NUMERO=" + r.GetRoomId() + "], mas o Player nao é Master da sala para poder chutar(kick) o Player. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         11, 0));
                 }
 
                 // Se não for GM, não pode kikar o Player da sala com jogo em andamento
-                if (!Player.UserInfo.UserCapabilities.game_master && r.CurrentGame != null)
+                if (!Player.UserInfo.UserCapabilities.IsGameMaster && r.CurrentGame != null)
                 {
-                    throw new exception("[Handle_PLAYER_KICK_PLAYER_OF_ROOM][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou chutar um PLAYER [UID=" + (uid) + "] da sala[NUMERO=" + r.GetRoomId() + "], mas o Player é GM para poder chutar o Player da sala com o jogo em andamento.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_KICK_PLAYER_OF_ROOM][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou chutar um Normal [UID=" + (uid) + "] da sala[NUMERO=" + r.GetRoomId() + "], mas o Player é GM para poder chutar o Player da sala com o jogo em andamento.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         13, 0));
                 }
 
@@ -60,17 +60,17 @@ namespace Pangya_GameServer.Handles
 
                 if (PlayerKick == null)
                 {
-                    throw new exception("[Handle_PLAYER_KICK_PLAYER_OF_ROOM][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou chutar um PLAYER [UID=" + (uid) + "] da sala[NUMERO=" + r.GetRoomId() + "], mas o Player nao existe na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_KICK_PLAYER_OF_ROOM][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou chutar um Normal [UID=" + (uid) + "] da sala[NUMERO=" + r.GetRoomId() + "], mas o Player nao existe na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         12, 0));
                 }
 
-                if (PlayerKick.UserInfo.uid == Player.UserInfo.uid)
+                if (PlayerKick.UserInfo.UID == Player.UserInfo.UID)
                 {
                     // Enviamos um aviso para o chat do próprio GM em vez de dar erro fatal
                     Player.SendChatNotice("no executed, other Player");
 
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[Handle_PLAYER_KICK_FROM_ROOM][Warning] GM {Player.UserInfo.nickname} tentou se auto-desconectar (Bloqueado).",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[Handle_PLAYER_KICK_FROM_ROOM][Warning] GM {Player.UserInfo.NickName} tentou se auto-desconectar (Bloqueado).",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     return; // Interrompe a execução aqui
@@ -84,7 +84,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[channel:Handle_PLAYER_KICK_PLAYER_OF_ROOM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Channel:Handle_PLAYER_KICK_PLAYER_OF_ROOM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         await Task.CompletedTask;

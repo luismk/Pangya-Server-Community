@@ -60,7 +60,7 @@ namespace Pangya_GameServer.Models
         public byte box_qntd; // Quantidade de box que a miss�o d�
         public eMISSION_TYPE tipo = new eMISSION_TYPE(); // Tipo da miss�o = Co-op, free-for-all; Players Reward (one player, all players, Everybody who clears)
         public int[] condition = new int[2]; // Condi��es da miss�o, 1 e 2
-        public string nick = ""; // Nick name do player se a miss�o tiver uma condi��o para o player
+        public string nick = ""; // Nick Name do player se a miss�o tiver uma condi��o para o player
     }
 
     public class mission_approach_ex : mission_approach
@@ -77,7 +77,7 @@ namespace Pangya_GameServer.Models
             is_player_uid = false;
         }
 
-        public bool is_player_uid; // Tem que colocar o player uid e o nick do player
+        public bool is_player_uid; // Tem que colocar o player UID e o nick do player
     }
 
     public class mission_approach_dados
@@ -274,7 +274,7 @@ namespace Pangya_GameServer.Models
             _packet.WriteUInt32(uid);
             _packet.WriteSByte(position);
             _packet.WriteUInt32(box);
-            if (state.ucState != 0)//igual a zero tacada normal sem certa ou fazer algo
+            if (state.ucState != 0)//igual a zero tacada Normal sem certa ou fazer algo
             {
                 _packet.WriteUInt32(uint.MaxValue);
                 _packet.WriteUInt32(0);

@@ -18,7 +18,7 @@ namespace Pangya_AuthServer.Handles
         public override async Task Handle()
         {
             // Initial log to track raw packet arrival (Hexdump)
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                 $"[Handle_PLAYER_LOGIN][Debug] Packet Received: {Packet.Log()}",
                 type_msg.CL_ONLY_FILE_LOG));
 
@@ -33,28 +33,28 @@ namespace Pangya_AuthServer.Handles
                 uint packetVersion = Packet.ReadUInt32();
 
                 // 2. Check for duplicate Player/server login
-                var existingSession = AuthServer.getInstance().FindPlayer(uid);
+                var existingSession = AuthServer.Instance.FindPlayer(uid);
                 if (existingSession != null)
                 {
-                    AuthServer.getInstance().Disconnect(existingSession);
-                    _smp.message_pool.getInstance().push(new message(
+                    AuthServer.Instance.Disconnect(existingSession);
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[Handle_PLAYER_LOGIN][Warning] Duplicate login detected: ID={userId}, UID={uid}. Dropping old Player.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 // 3. Map to Player data
                 Player.UserInfo.tipo = serverType;
-                Player.UserInfo.uid = uid;
-                Player.UserInfo.id = userId;
-                Player.UserInfo.nickname = userId;
+                Player.UserInfo.UID = uid;
+                Player.UserInfo.Login = userId;
+                Player.UserInfo.NickName = userId;
 
                 // 4. Database Key Validation
                 CmdAuthServerKey cmd_ask = new CmdAuthServerKey((int)uid);
-                snmdb.NormalManagerDB.getInstance().add(0, cmd_ask);
+                snmdb.NormalManagerDB.Instance.add(0, cmd_ask);
 
                 if (cmd_ask.getException().getCodeError() != 0)
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[Handle_PLAYER_LOGIN][DB Error] UID={uid}: {cmd_ask.getException().getFullMessageError()}",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return;
@@ -66,7 +66,7 @@ namespace Pangya_AuthServer.Handles
                 if (authInfo == null || !authInfo.checkKey(loginKey))
                 {
                     string expected = authInfo?.key ?? "NULL";
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[Handle_PLAYER_LOGIN][Security Alert] Invalid Key for {userId} (UID: {uid}). Received: {loginKey}, Expected: {expected}",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -76,7 +76,7 @@ namespace Pangya_AuthServer.Handles
 
                 // 6. Update state and confirm authorization
                 authInfo.valid = 0;
-                snmdb.NormalManagerDB.getInstance().add(2, new CmdUpdateAuthServerKey(authInfo));
+                snmdb.NormalManagerDB.Instance.add(2, new CmdUpdateAuthServerKey(authInfo));
 
                 Player.Authorized = true;
 
@@ -87,13 +87,13 @@ namespace Pangya_AuthServer.Handles
                 }
 
                 // Final success log
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_LOGIN][Sucess] SERVER[ID: {userId}, UID: {uid}, OID: {Player.ConnectionID}]",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_LOGIN][Critical] Exception: {ex.Message}{Environment.NewLine}{ex.StackTrace}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

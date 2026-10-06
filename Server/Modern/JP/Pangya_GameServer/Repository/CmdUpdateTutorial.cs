@@ -52,7 +52,7 @@ namespace Pangya_GameServer.Repository
 
             var r = _update(m_szConsulta[0] + Convert.ToString(m_ti.rookie) + m_szConsulta[1] + Convert.ToString(m_ti.beginner) + m_szConsulta[2] + Convert.ToString(m_ti.advancer) + m_szConsulta[3] + Convert.ToString(m_uid));
 
-            checkResponse(r, "nao conseguiu Atualizar o Tutorial[Rookie=" + Convert.ToString(m_ti.rookie) + ", Beginner=" + Convert.ToString(m_ti.beginner) + ", Advancer=" + Convert.ToString(m_ti.advancer) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu Atualizar o Tutorial[Rookie=" + Convert.ToString(m_ti.rookie) + ", Beginner=" + Convert.ToString(m_ti.beginner) + ", Advancer=" + Convert.ToString(m_ti.advancer) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

@@ -3,7 +3,7 @@ using Pangya_GameServer.Engine;
 using Pangya_GameServer.Feature;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Repository;
 using Pangya_GameServer.Roms;
@@ -24,7 +24,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Pangya_GameServer.Models.DefineConstants;
-using static Pangya_GameServer.Models.PlayerGameInfo;
+using static Pangya_GameServer.ModelsGameInfo;
 namespace Pangya_GameServer.Engine
 {
     public class CourseManager : IDisposable
@@ -44,16 +44,16 @@ namespace Pangya_GameServer.Engine
 
         protected int m_seed_rand_game = new int();
 
-        protected RoomInfo m_ri;
+        protected GameRoomInfoModel m_ri;
 
-        protected HolesRain m_holes_rain = new HolesRain(); // N�mero de holes que est� chovendo no course
-        protected ConsecutivosHolesRain m_chr = new ConsecutivosHolesRain(); // N�mero de chuva em holes consecutivos, 2, 3 e 4+
+        protected HolesRain m_holes_rain = new HolesRain(); // N�mero de holes que est� chovendo no CourseIndex
+        protected ConsecutivosHolesRain m_chr = new ConsecutivosHolesRain(); // N�mero de Rain em holes consecutivos, 2, 3 e 4+
 
-        protected bool m_grand_prix_special_hole; // Flag de special hole Grand Prix, true tem special hole, false n�o tem
+        protected bool m_grand_prix_special_hole; // ServerFlag de Special hole Grand Prix, true tem Special hole, false n�o tem
 
         private short m_flag_cube_coin; // 1 Tem Cube e Coin, 0 sem
         private bool disposedValue;
-        public CourseManager(RoomInfo _ri,
+        public CourseManager(GameRoomInfoModel _ri,
             bool _channel_rookie,
             float _star,
             uint _rate_rain,
@@ -78,7 +78,7 @@ namespace Pangya_GameServer.Engine
 
             init_hole();
 
-            init_dados_rain(); // Inicializar os dados de chuva no course, para ser usado no achievement
+            init_dados_rain(); // Inicializar os dados de Rain no CourseIndex, para ser usado no achievement
 
             // Deixa esse s� com int16(short), por que s� vejo n�mero baixo, n�o passa do valor m�ximo do int16
             m_seed_rand_game = Random.Shared.Next(1, short.MaxValue);
@@ -129,7 +129,7 @@ namespace Pangya_GameServer.Engine
 
             if (it.Value == null)
             {
-                _smp.message_pool.getInstance().push(new message("[Course::findHoleBySeq][WARNIG] nao encontrou a seq[value=" + Convert.ToString(_seq) + "] no map de hole. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Course::findHoleBySeq][WARNIG] nao encontrou a seq[value=" + Convert.ToString(_seq) + "] no map de hole. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return it.Value;
@@ -253,7 +253,7 @@ namespace Pangya_GameServer.Engine
                     _p.WriteUInt32(el2.id);
                     _p.WriteUInt32(el2.flag_unknown);
                     _p.WriteUInt32(el.Value.getCourse());
-                    _p.WriteByte((byte)(el.Value.getModo() == ROOM_INFO_MODO.M_REPEAT ? el.Value.getHoleRepeat() : el.Value.GetRoomId()));
+                    _p.WriteByte((byte)(el.Value.getModo() == RoomHoleType.M_REPEAT ? el.Value.getHoleRepeat() : el.Value.GetRoomId()));
                     _p.WriteByte(el.Key - 1); // Index
                     _p.WriteInt16(m_flag_cube_coin);
                     _p.Write(el2.location.x);//float
@@ -274,7 +274,7 @@ namespace Pangya_GameServer.Engine
             return m_holes_rain.getCountHolesRainBySeq(_seq);
         }
 
-        // retorna Media de tacadas do course para fazer par em todos os holes
+        // retorna Media de tacadas do CourseIndex para fazer par em todos os holes
         public float getMediaAllParHoles()
         {
 
@@ -328,7 +328,7 @@ namespace Pangya_GameServer.Engine
             // Grand Prix Special Hole
             if (m_ri.grand_prix.active == 1 && m_ri.grand_prix.dados_typeid > 0)
             {
-                var sh = sIff.getInstance().findGrandPrixSpecialHole(m_ri.grand_prix.rank_typeid);
+                var sh = sIff.Instance.findGrandPrixSpecialHole(m_ri.grand_prix.rank_typeid);
                 
                 if (sh.Any())
                 {
@@ -340,7 +340,7 @@ namespace Pangya_GameServer.Engine
 
                     // Completa até 18
                     for (short i = (short)(m_seq.Count + 1); i <= 18; i++)
-                        m_seq.Add(new Sequencia((byte)m_ri.course, i));
+                        m_seq.Add(new Sequencia((byte)m_ri.CourseIndex, i));
 
                     m_grand_prix_special_hole = true;
                     return;
@@ -367,19 +367,19 @@ namespace Pangya_GameServer.Engine
             }
 
             // Normal modes
-            switch (m_ri.GetModo())
+            switch (m_ri.GetHoleType())
             {
-                case ROOM_INFO_MODO.M_FRONT:
-                case ROOM_INFO_MODO.M_REPEAT:
+                case RoomHoleType.M_FRONT:
+                case RoomHoleType.M_REPEAT:
                     AddSequence(1, 18);
                     break;
 
-                case ROOM_INFO_MODO.M_BACK:
+                case RoomHoleType.M_BACK:
                     AddSequence(10, 18);
                     AddSequence(1, 9);
                     break;
 
-                case ROOM_INFO_MODO.M_RANDOM:
+                case RoomHoleType.M_RANDOM:
                     {
                         short rand = (short)Random.Shared.Next(1, 18); // 1 a 17
                         for (int i = 0; i < 18; i++)
@@ -387,12 +387,12 @@ namespace Pangya_GameServer.Engine
                     }
                     break;
 
-                case ROOM_INFO_MODO.M_SHUFFLE:
+                case RoomHoleType.M_SHUFFLE:
                     foreach (var v in Shuffle18())
                         m_seq.Add(new Sequencia(v));
                     break;
 
-                case ROOM_INFO_MODO.M_SHUFFLE_COURSE:
+                case RoomHoleType.M_SHUFFLE_COURSE:
                     {
 
                         short hole_ssc = (short)(Random.Shared.Next(2) + 1); // 1 ou 2
@@ -418,16 +418,16 @@ namespace Pangya_GameServer.Engine
                 cube_coin.enable_coin = 1;
 
                 // Type Cube Game Mode
-                if (m_ri.GetModo() == ROOM_INFO_MODO.M_REPEAT)
+                if (m_ri.GetHoleType() == RoomHoleType.M_REPEAT)
                 {
                     cube_coin.type = 1;
                 }
-                else if (m_ri.GetTipo() == ROOM_INFO_TYPE.STROKE || m_ri.GetTipo() == ROOM_INFO_TYPE.TOURNEY || m_ri.GetTipo() == ROOM_INFO_TYPE.GUILD_BATTLE || m_ri.GetTipo() == ROOM_INFO_TYPE.MATCH || m_ri.GetTipo() == ROOM_INFO_TYPE.PRACTICE || m_ri.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE)
+                else if (m_ri.GetRoomType() == RoomTypeFlags.STROKE || m_ri.GetRoomType() == RoomTypeFlags.TOURNEY || m_ri.GetRoomType() == RoomTypeFlags.GUILD_BATTLE || m_ri.GetRoomType() == RoomTypeFlags.MATCH || m_ri.GetRoomType() == RoomTypeFlags.PRACTICE || m_ri.GetRoomType() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE)
                 {
                     cube_coin.type = 2;
                 }
 
-                switch (m_ri.typeid_artefatic)
+                switch (m_ri.ItemIDArtifact)
                 {
                     case ORCHID_BLOSSOM_ART: // 1 a 8m
                         m_wind_range[1] = 8;
@@ -449,7 +449,7 @@ namespace Pangya_GameServer.Engine
                     try
                     {
 
-                        var gp = sIff.getInstance().findGrandPrixData(m_ri.grand_prix.dados_typeid);
+                        var gp = sIff.Instance.findGrandPrixData(m_ri.grand_prix.dados_typeid);
 
                         // Grand Prix Data -> Rule
                         if (gp != null)
@@ -480,14 +480,14 @@ namespace Pangya_GameServer.Engine
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message("[Course::init_hole][Error] tentou pegar o Grand Prix[TYPEID=" + Convert.ToString(m_ri.grand_prix.dados_typeid) + "] no IFF_STRUCT do server mais ele nao existe. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Course::init_hole][Error] tentou pegar o Grand Prix[TYPEID=" + Convert.ToString(m_ri.grand_prix.dados_typeid) + "] no IFF_STRUCT do server mais ele nao existe. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                     }
                     catch (exception e)
                     {
 
-                        _smp.message_pool.getInstance().push(new message("[Course::init_hole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Course::init_hole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
                 }
@@ -496,7 +496,7 @@ namespace Pangya_GameServer.Engine
                     m_wind_range[1] = 5;
                 }
 
-                byte new_course = (byte)((byte)m_ri.course & 0x7F);
+                byte new_course = (byte)((byte)m_ri.CourseIndex & 0x7F);
                 byte pin = 0;
                 byte weather = 0;
 
@@ -521,10 +521,10 @@ namespace Pangya_GameServer.Engine
 
                 byte course_id = 0;
 
-                foreach (var el in sIff.getInstance().getCourse())
+                foreach (var el in sIff.Instance.getCourse())
                 {
 
-                    course_id = (byte)sIff.getInstance().getItemIdentify(el.ID);
+                    course_id = (byte)sIff.Instance.getItemIdentify(el.ID);
 
                     if (course_id != 17 && course_id != 0x40)
                     {
@@ -539,23 +539,23 @@ namespace Pangya_GameServer.Engine
                     cube_coin.enable_cube = 0;
                     cube_coin.enable_coin = 0;
 
-                    if (i <= m_ri.qntd_hole)
+                    if (i <= m_ri.HoleCount)
                     {
 
-                        if (m_ri.modo == (int)ROOM_INFO_MODO.M_REPEAT && i == 1)
+                        if (m_ri.HoleMode == (int)RoomHoleType.M_REPEAT && i == 1)
                         {
                             wind = shuffleWind(i);
                         }
-                        else if (m_ri.modo != (int)ROOM_INFO_MODO.M_REPEAT)
+                        else if (m_ri.HoleMode != (int)RoomHoleType.M_REPEAT)
                         {
                             wind = shuffleWind(i);
                         }
 
-                        if (m_ri.fixed_hole == 7 && i == 1)
+                        if (m_ri.HoleFixed == 7 && i == 1)
                         {
                             pin = (byte)(Random.Shared.Next() % 3);
                         }
-                        else if (m_ri.fixed_hole != 7)
+                        else if (m_ri.HoleFixed != 7)
                         {
                             pin = (byte)(Random.Shared.Next() % 3);
                         }
@@ -598,12 +598,12 @@ namespace Pangya_GameServer.Engine
                             }
                         }
 
-                        if (m_ri.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE && m_ri.GetModo() == ROOM_INFO_MODO.M_SHUFFLE_COURSE)
+                        if (m_ri.GetRoomType() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE && m_ri.GetHoleType() == RoomHoleType.M_SHUFFLE_COURSE)
                         {
 
                             if (i == 18) // Ultimo Hole � do SSC
                             {
-                                new_course = (byte)ROOM_INFO_COURSE.CHRONICLE_1_CHAOS;
+                                new_course = (byte)RoomCourseFlags.CHRONICLE_1_CHAOS;
                             }
                             else
                             {
@@ -637,8 +637,8 @@ namespace Pangya_GameServer.Engine
                             // A fun��o init_seq j� inicializa a sequ�ncia se for Grand Prix e se ele tiver Special Hole
                             m_hole.Add(i, new HoleManager(m_seq[(short)(i - 1)].Course,
                                 m_seq[(i - 1)].m_hole, pin,
-                               (ROOM_INFO_MODO)(m_ri.modo),
-                                m_ri.hole_repeat,
+                               (RoomHoleType)(m_ri.HoleMode),
+                                m_ri.IDHoleRepeted,
                                 weather, wind.wind,
                              wind.degree.getDegree(),
                                 cube_coin));
@@ -648,8 +648,8 @@ namespace Pangya_GameServer.Engine
                         {
                             m_hole.Add(i, new HoleManager(new_course,
                                 m_seq[(i - 1)].m_hole, pin,
-                               (ROOM_INFO_MODO)(m_ri.modo),
-                                m_ri.hole_repeat,
+                               (RoomHoleType)(m_ri.HoleMode),
+                                m_ri.IDHoleRepeted,
                                     weather, wind.wind,
                                     wind.degree.getDegree(),
                                 cube_coin));
@@ -661,8 +661,8 @@ namespace Pangya_GameServer.Engine
                         m_hole.Add(i, new HoleManager(new_course,
                             m_seq[(short)(i - 1)].m_hole,
                             (byte)(Random.Shared.Next() % 3),
-                            (ROOM_INFO_MODO)(m_ri.modo),
-                            m_ri.hole_repeat,
+                            (RoomHoleType)(m_ri.HoleMode),
+                            m_ri.IDHoleRepeted,
                             weather, wind.wind,
                            wind.degree.getDegree(),
                             cube_coin)); 
@@ -680,10 +680,10 @@ namespace Pangya_GameServer.Engine
         {
             try
             {
-                // Inicializa dados de chuva em holes consecutivos
+                // Inicializa dados de Rain em holes consecutivos
                 m_chr.clear();
 
-                // Inicializa dados do n�mero de holes com chuva
+                // Inicializa dados do n�mero de holes com Rain
                 m_holes_rain.clear();
 
                 uint count = 0;
@@ -692,7 +692,7 @@ namespace Pangya_GameServer.Engine
                 {
 
                     // Quantidade de holes que tem o Game
-                    if (el.Key <= m_ri.qntd_hole)
+                    if (el.Key <= m_ri.HoleCount)
                     {
 
                         if (el.Value.getWeather() == 2)
@@ -704,8 +704,8 @@ namespace Pangya_GameServer.Engine
                             count++;
                         }
 
-                        // �ltimo hole ou acabou a sequ�ncia de chuva consecutivas
-                        if (count > 1u && (el.Value.getWeather() != 2 || el.Key == m_ri.qntd_hole))
+                        // �ltimo hole ou acabou a sequ�ncia de Rain consecutivas
+                        if (count > 1u && (el.Value.getWeather() != 2 || el.Key == m_ri.HoleCount))
                         {
 
                             if (count >= 4) // 4 ou mais Holes consecutivos

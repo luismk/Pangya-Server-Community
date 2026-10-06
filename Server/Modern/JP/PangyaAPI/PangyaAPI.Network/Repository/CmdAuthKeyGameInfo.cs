@@ -32,7 +32,7 @@ namespace PangyaAPI.Network.Repository
                 if (m_akgi.key[0] == '\0')
                     throw new Exception("[CmdAuthKeyGameInfo::lineResult][Error] a consulta retornou uma auth key login invalid");
                 if (m_akgi.server_uid != m_server_uid)
-                    throw new Exception("[CmdAuthKeyGameInfo::lineResult][Error] o server uid retornado na consulta nao é igual ao requisitado. server uid req: "
+                    throw new Exception("[CmdAuthKeyGameInfo::lineResult][Error] o server UID retornado na consulta nao é igual ao requisitado. server UID req: "
                             + (m_server_uid).ToString() + " != " + (m_akgi.server_uid).ToString());
 
             }
@@ -50,7 +50,7 @@ namespace PangyaAPI.Network.Repository
 
             var r = procedure("pangya.ProcGetAuthKeyGame", m_uid.ToString() + "," + m_server_uid.ToString());
 
-            checkResponse(r, "nao conseguiu pegar o auth key game do player: " + (m_uid) + ", do server uid: " + (m_server_uid));
+            checkResponse(r, "nao conseguiu pegar o auth key game do player: " + (m_uid) + ", do server UID: " + (m_server_uid));
             return r;
         }
 

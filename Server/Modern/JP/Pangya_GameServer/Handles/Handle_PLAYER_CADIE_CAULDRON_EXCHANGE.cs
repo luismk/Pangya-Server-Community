@@ -27,43 +27,43 @@ namespace Pangya_GameServer.Handles
             var m_ci = Player.GetChannel();
             try
             {
-                if (Player.UserInfo.block_flag.m_flag.cadie_recycle)
-                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][BLOCK] UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 8, 0x790001));
+                if (Player.UserInfo.BlockFlag.Flag.CadieRecycle)
+                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][BLOCK] UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 8, 0x790001));
 
                 ushort seq = Packet.ReadUInt16();
                 uint clientRequested = Packet.ReadUInt32();
                 byte count = Packet.ReadByte();
 
                 if (count == 0 || count > 4)
-                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] UID={Player.UserInfo.uid} count={count}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 450, 5200451));
+                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] UID={Player.UserInfo.UID} count={count}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 450, 5200451));
 
                 if (Packet.Size < count * 8)
-                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] pacote truncado UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 450, 5200452));
+                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] pacote truncado UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 450, 5200452));
 
                 CadieExchangeItem[] cei = new CadieExchangeItem[count];
                 for (int i = 0; i < count; i++)
                     cei[i] = new CadieExchangeItem().ToRead(Packet);
 
-                var cmb = sIff.getInstance().findCadieMagicBox((uint)(seq + 1));
+                var cmb = sIff.Instance.findCadieMagicBox((uint)(seq + 1));
                 if (cmb == null || cmb.seq != seq + 1 || !cmb.active.IsTrue())
-                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] Seq inválida UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 451, 5200452));
+                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] Seq inválida UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 451, 5200452));
 
-                if (Player.UserInfo.Member.level < cmb.level)
-                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][LEVEL] UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 454, 5200455));
+                if (Player.UserInfo.Member.GameLevel < cmb.level)
+                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][LEVEL] UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 454, 5200455));
 
                 for (int i = 0; i < count; i++)
                 {
                     if (cmb.item_trade.ID[i] != 0 && cmb.item_trade.ID[i] != cei[i]._typeid)
-                        throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] item mismatch UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 453, 5200454));
+                        throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] item mismatch UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 453, 5200454));
 
                     cei[i].QtyPerExchange = cmb.item_trade.Qty[i];
                 }
 
                 if (ItemManager.isTimeItem(new stItem.stDate.stDateSys(cmb.date.Start, cmb.date.End)) && !ItemManager.betweenTimeSystem(new stItem.stDate.stDateSys(cmb.date.Start, cmb.date.End)))
-                    throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar item no CadieCauldron, mas o item[Seq=" + (seq + 1) + "] nao esta mais na data[temporario]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 455, 5200456));
+                    throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar item no CadieCauldron, mas o item[Seq=" + (seq + 1) + "] nao esta mais na data[temporario]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 455, 5200456));
 
-                if (cmb.Box_Random_ID == 0 && !sIff.getInstance().IsCanOverlapped(cmb.item_receive.ID) && Player.Inventory.ownerItem(cmb.item_receive.ID))
-                    throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar item[Seq=" + (seq + 1) + ", TYPEID_RCV=" + (cmb.item_receive.ID) + "] no Cauldron que ele ja possui e nao pode ter duplicata", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 458, 5200459));
+                if (cmb.Box_Random_ID == 0 && !sIff.Instance.IsCanOverlapped(cmb.item_receive.ID) && Player.Inventory.ownerItem(cmb.item_receive.ID))
+                    throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar item[Seq=" + (seq + 1) + ", TYPEID_RCV=" + (cmb.item_receive.ID) + "] no Cauldron que ele ja possui e nao pode ter duplicata", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 458, 5200459));
 
                 uint safeExchangeCount = clientRequested;
                 for (int i = 0; i < count; i++)
@@ -73,7 +73,7 @@ namespace Pangya_GameServer.Handles
                 }
 
                 if (safeExchangeCount == 0)
-                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] safeExchangeCount=0 UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 902, 0xDEAD0003));
+                    throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][CHEAT] safeExchangeCount=0 UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 902, 0xDEAD0003));
 
                 var r = Player.GetRoom();
 
@@ -81,13 +81,13 @@ namespace Pangya_GameServer.Handles
                 {
                     ulong totalQty = (ulong)cmb.item_trade.Qty[i] * safeExchangeCount;
                     if (totalQty > uint.MaxValue)
-                        throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][OVERFLOW] UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 904, 0xDEAD0005));
+                        throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][OVERFLOW] UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 904, 0xDEAD0005));
 
                     if (ItemManager.exchangeCadieMagicBox(Player, cei[i]._typeid, cei[i].id, (uint)totalQty) <= 0)
-                        throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][Error][CT] troca inválida UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 457, 5200458));
+                        throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][Error][CT] troca inválida UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 457, 5200458));
 
                     if (r != null && r.CheckPersonalShopItem(Player, cei[i].id))
-                        throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][Error] UID={Player.UserInfo.uid}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1010, 0x5201010));
+                        throw new exception($"[[Lobby.Room::RequestCadieCauldronExchange][Error] UID={Player.UserInfo.UID}", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1010, 0x5201010));
                 }
 
                 List<stItem> v_remove = new List<stItem>();
@@ -104,21 +104,21 @@ namespace Pangya_GameServer.Handles
                 }
 
                 if (ItemManager.removeItem(v_remove, Player) <= 0)
-                    throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] problemas ao remover(s) item(ns) do PLAYER [UID=" + Player.UserInfo.uid + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 461, 5200462));
+                    throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] problemas ao remover(s) item(ns) do Normal [UID=" + Player.UserInfo.UID + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 461, 5200462));
 
                 if (cmb.Box_Random_ID > 0)
                 {
-                    var cmbr_iff = sIff.getInstance().findCadieMagicBoxRandom(cmb.Box_Random_ID);
-                    if (!cmbr_iff.Any()) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] PLAYER [UID=" + Player.UserInfo.uid + "] CadieMagicBoxRandom[ID=" + (cmb.Box_Random_ID) + "] empty", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 456, 5200457));
+                    var cmbr_iff = sIff.Instance.findCadieMagicBoxRandom(cmb.Box_Random_ID);
+                    if (!cmbr_iff.Any()) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] Normal [UID=" + Player.UserInfo.UID + "] CadieMagicBoxRandom[ID=" + (cmb.Box_Random_ID) + "] empty", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 456, 5200457));
 
                     LotterySystem lottery = new LotterySystem();
                     foreach (var el in cmbr_iff) lottery.Add(el.Value.item_random.Rate, el);
                     var lc = lottery.SpinRoleta();
-                    if (lc == null) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] PLAYER [UID=" + Player.UserInfo.uid + "] nao conseguiu sortear um item do caddie magic box random[ID=" + (cmb.Box_Random_ID) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 461, 5200462));
+                    if (lc == null) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] Normal [UID=" + Player.UserInfo.UID + "] nao conseguiu sortear um item do caddie magic box random[ID=" + (cmb.Box_Random_ID) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 461, 5200462));
                     var cmbr = (CadieMagicBoxRandom)lc.Value;
-                    if (cmbr == null) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] PLAYER [UID=" + Player.UserInfo.uid + "] valor retornado do sorteio is invalid(null)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 462, 5200463));
-                    var item_random = sIff.getInstance().findCommomItem(cmbr.item_random.ID);
-                    if (item_random == null) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] PLAYER [UID=" + Player.UserInfo.uid + "] o item random[TYPEID=" + (cmbr.item_random.ID) + "] que esta no IFF_STRUCT do server nao existe no IFF do server. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 463, 5200464));
+                    if (cmbr == null) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] Normal [UID=" + Player.UserInfo.UID + "] valor retornado do sorteio is invalid(null)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 462, 5200463));
+                    var item_random = sIff.Instance.findCommomItem(cmbr.item_random.ID);
+                    if (item_random == null) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] Normal [UID=" + Player.UserInfo.UID + "] o item random[TYPEID=" + (cmbr.item_random.ID) + "] que esta no IFF_STRUCT do server nao existe no IFF do server. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 463, 5200464));
 
                     bi.id = -1; bi._typeid = cmbr.item_random.ID; bi.qntd = cmbr.item_random.Qty;
                     bi.time = (short)(item_random.Shop.flag_shop.time_shop.active && item_random.Shop.flag_shop.time_shop.dia > 0 ? item_random.Shop.flag_shop.time_shop.dia : 0);
@@ -134,15 +134,15 @@ namespace Pangya_GameServer.Handles
                 if (ItemManager.isSetItem(item._typeid))
                 {
                     var v_stItem = ItemManager.GetItemOfSetItem(Player, item._typeid, false, 1);
-                    if (v_stItem.Any()) foreach (var el in v_stItem) if ((sIff.getInstance().IsCanOverlapped(el._typeid) && sIff.getInstance().getItemGroupIdentify(el._typeid) != IFF_GROUP.CAD_ITEM) || ! Player.Inventory.ownerItem(el._typeid)) v_item.Add(new stItem(el));
-                    else throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar um set item que nao tem item, item typeid: " + (bi._typeid), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 461, 0x5200062));
+                    if (v_stItem.Any()) foreach (var el in v_stItem) if ((sIff.Instance.IsCanOverlapped(el._typeid) && sIff.Instance.getItemGroupIdentify(el._typeid) != IFF_GROUP.CAD_ITEM) || ! Player.Inventory.ownerItem(el._typeid)) v_item.Add(new stItem(el));
+                    else throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar um set item que nao tem item, item typeid: " + (bi._typeid), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 461, 0x5200062));
                 }
                 else v_item.Add(new stItem(item));
 
-                if (v_item.Count == 0) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] problemas ao inicializar o item[TYPEID=" + (bi._typeid) + "] para o PLAYER [UID=" + Player.UserInfo.uid + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 459, 5200460));
+                if (v_item.Count == 0) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] problemas ao inicializar o item[TYPEID=" + (bi._typeid) + "] para o Normal [UID=" + Player.UserInfo.UID + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 459, 5200460));
 
                 var rai = ItemManager.addItem(v_item, Player, 0, 0);
-                if (rai.fails.Count > 0 && rai.type != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] problemas ao adicionar o item[TYPEID=" + (bi._typeid) + "] para o PLAYER [UID=" + Player.UserInfo.uid + "] ", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 460, 5200461));
+                if (rai.fails.Count > 0 && rai.type != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH) throw new exception("[Lobby.Room::RequestCadieCauldronExchange][Error] problemas ao adicionar o item[TYPEID=" + (bi._typeid) + "] para o Normal [UID=" + Player.UserInfo.UID + "] ", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 460, 5200461));
 
                 if (item._typeid == 0x1A000083) Player.Inventory.CouponGacha.partial_ticket += item.STDA_C_ITEM_QNTD;
                 if (v_item.Count > 0) item = v_item[0];
@@ -168,7 +168,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby.Room::RequestCadieCauldronExchange][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby.Room::RequestCadieCauldronExchange][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 p.init_plain(0x22F);
                 p.WriteUInt32((ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL) ? ExceptionError.STDA_SYSTEM_ERROR_DECODE(e.getCodeError()) : 5200450);
                 Player.Send(p);

@@ -9,8 +9,8 @@ namespace Pangya_GameServer.Feature.GM
     {
         public async Task Execute(Player s, Packet packet)
         {
-            _smp.message_pool.getInstance().push(new message(
-             $"[GM-Action] Por: {s.UserInfo.nickname} (UID: {s.UserInfo.uid})",
+            _smp.LogManager.Instance.push(new AppMessage(
+             $"[GM-Action] Por: {s.UserInfo.NickName} (UID: {s.UserInfo.UID})",
              type_msg.CL_ONLY_CONSOLE));
         }
     }

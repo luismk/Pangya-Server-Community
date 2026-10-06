@@ -41,14 +41,14 @@ namespace PangyaAPI.DataBase.Models
                             func.Invoke(id, _pangya_db, arg);
                         }
                         else
-                            _smp.message_pool.getInstance().push(new message("[NormalDB::mgs_t::execFunc][Log] func is null", type_msg.CL_ONLY_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[NormalDB::mgs_t::execFunc][Log] func is null", type_msg.CL_ONLY_CONSOLE));
 
                     }
                     sucess = true; 
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[NormalDB::mgs_t::execFunc][Error] " + e.getFullMessageError(), 0));
+                    _smp.LogManager.Instance.push(new AppMessage("[NormalDB::mgs_t::execFunc][Error] " + e.getFullMessageError(), 0));
                 }
             }
 
@@ -64,13 +64,13 @@ namespace PangyaAPI.DataBase.Models
                     if (!sucess)
                         _pangya_db.exec();
                     else
-                        _smp.message_pool.getInstance().push(new message("[NormalDB::mgs_t::execQuery][Log] bug", type_msg.CL_ONLY_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[NormalDB::mgs_t::execQuery][Log] bug", type_msg.CL_ONLY_CONSOLE));
 
                     sucess = true;
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[NormalDB::mgs_t::execQuery][Error] " + e.getFullMessageError(), 0));
+                    _smp.LogManager.Instance.push(new AppMessage("[NormalDB::mgs_t::execQuery][Error] " + e.getFullMessageError(), 0));
                     throw;
                 }
             }

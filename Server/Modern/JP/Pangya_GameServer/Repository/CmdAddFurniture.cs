@@ -77,7 +77,7 @@ namespace Pangya_GameServer.Repository
     m_mri.location.r);
             var r = procedure(m_szConsulta,  parametros);
                 
-            checkResponse(r, "nao conseguiu adicionar o Furniture[TYPEID=" + m_mri._typeid + "] para o PLAYER[UID=" + m_uid +"]");
+            checkResponse(r, "nao conseguiu adicionar o Furniture[TYPEID=" + m_mri._typeid + "] para o Normal[UID=" + m_uid +"]");
 
             return r;
         }

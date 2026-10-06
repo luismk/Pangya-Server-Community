@@ -92,7 +92,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid_sell) + ", " + Convert.ToString(m_uid_buy) + ", " + Convert.ToString(m_item_id) + ", " + Convert.ToString(m_type_iff));
 
-            checkResponse(r, "nao conseguiu transferir o item[ID=" + Convert.ToString(m_item_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid_sell) + "] para o PLAYER[UID=" + Convert.ToString(m_uid_buy) + "]");
+            checkResponse(r, "nao conseguiu transferir o item[ID=" + Convert.ToString(m_item_id) + "] do Normal[UID=" + Convert.ToString(m_uid_sell) + "] para o Normal[UID=" + Convert.ToString(m_uid_buy) + "]");
 
             return r;
         }

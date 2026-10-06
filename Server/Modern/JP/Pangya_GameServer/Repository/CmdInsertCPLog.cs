@@ -70,7 +70,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString((ushort)m_cp_log.getType()) + ", " + Convert.ToString(m_cp_log.getMailId()) + ", " + Convert.ToString(m_cp_log.getCookie()) + ", " + Convert.ToString(m_cp_log.getItemCount()));
 
-            checkResponse(r, "nao conseguiu inserir o CPLog[" + m_cp_log.toString() + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu inserir o CPLog[" + m_cp_log.toString() + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

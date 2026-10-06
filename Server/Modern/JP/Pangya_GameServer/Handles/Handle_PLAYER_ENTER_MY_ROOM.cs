@@ -21,7 +21,7 @@ namespace Pangya_GameServer.Handles
 
                 // Envio do Pacote 0x168 (Dados do Personagem/Estado)
                 var p168 = new Packet(0x168);
-                p168.WriteBytes(pri.ToArrayEx());
+                p168.WriteBytes(pri.ToArray(WithCharacter: true));
                 Player.Send(p168);
 
                 // Envio do Pacote 0x12D (Itens do MyRoom - Posters/Móveis)
@@ -40,58 +40,58 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
-                    $"[MyRoom::Enter] Player[UID: {Player.UserInfo.uid}] Error: {e.getFullMessageError()}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[MyRoom::Enter] Player[UID: {Player.UserInfo.UID}] Error: {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         await Task.CompletedTask;
         }
 
-        private PlayerRoomInfoEx BuildPlayerRoomInfo(Player s)
+        private PlayerRoomInfo BuildPlayerRoomInfo(Player s)
         {
             var ui = s.UserInfo;
             var inv = s.Inventory;
 
-            var pri = new PlayerRoomInfoEx
+            var pri = new PlayerRoomInfo
             {
-                oid = s.ConnectionID,
-                uid = ui.uid,
-                nickname = ui.nickname,
-                guild_name = ui.Guild.name,
-                guild_uid = ui.Guild.uid,
-                guild_mark_img = ui.Guild.mark_emblem,
-                guild_mark_index = ui.Guild.index_mark_emblem,
-                level = ui.Member.level,
-                position = 0,
-                capability = ui.UserCapabilities,
-                title = inv.UserEquipment.m_title,
-                avg_score = ui.Statistics.getMediaScore(),
-                place = new PlayerPlace(0x0A), // My Room State
-                state_action = { posture = ui.PostureRoom, animation = ui.LoungeState },
-                location = new PlayerRoomInfo.stLocation { x = ui.CurrentLocation.x, z = ui.CurrentLocation.z, y = ui.CurrentLocation.r },
-                shop = new PlayerRoomInfo.PersonShop(),
-                flag_item_boost = inv.CheckHaveItemBoost(),
-                convidado = 0
+                OID = s.ConnectionID,
+                UID = ui.UID,
+                NickName = ui.NickName,
+                GuildName = ui.Guild.name,
+                GuildIndex = ui.Guild.uid,
+                GuildMark = ui.Guild.mark_emblem,
+                GuildMarkIndex = ui.Guild.index_mark_emblem,
+                GameLevel = ui.Member.GameLevel,
+                RankPosition = 0,
+                Capability = ui.UserCapabilities,
+                TitleSkin = inv.UserEquipment.m_title,
+                AvengeScore = ui.Statistics.getMediaScore(),
+                LadderGrade = 0, // My Room State
+                Action = { Posture = ui.PostureRoom, Animation = ui.LoungeState },
+                LocationInfo = new PlayerRoomLocationInfo { X = ui.CurrentLocation.x, Z = ui.CurrentLocation.z, Y = ui.CurrentLocation.r },
+                ShopRoom = new PlayerRoomInfoShop(),
+                ItemSpecial = inv.CheckHaveItemBoost(),
+                Invite = 0
             };
 
             // Setup de Skin e Personagem
             if (inv.UserEquippedItem.CharacterEquiped != null)
             {
-                pri.ci = inv.UserEquippedItem.CharacterEquiped;
-                pri.char_typeid = inv.UserEquippedItem.CharacterEquiped._typeid;
-                pri.skin = (uint[])inv.UserEquipment.skin_typeid.Clone();
-                pri.skin[4] = 0; // Cut-in fix para exibição correta
+                pri.CharacterInfo = inv.UserEquippedItem.CharacterEquiped;
+                pri.CharacterID = inv.UserEquippedItem.CharacterEquiped._typeid;
+                pri.ItemSkin = (uint[])inv.UserEquipment.skin_typeid.Clone();
+                pri.ItemSkin[4] = 0; // Cut-in fix para exibição correta
             }
 
             // Mascot
             if (inv.UserEquippedItem.MascotEquiped != null)
-                pri.mascot_typeid = inv.UserEquippedItem.MascotEquiped._typeid;
+                pri.MascotID = inv.UserEquippedItem.MascotEquiped._typeid;
 
             // Flags de Estado
-            pri.state_flag.master = 1;
-            pri.state_flag.ready = 1;
-            pri.state_flag.sexo = ui.Member.sexo;
+            pri.State.Master = 1;
+            pri.State.Ready = 1;
+            pri.State.Gender = ui.Member.Gender;
 
             // Lógica de Ícones (Quit Rate / Angel)
             UpdatePlayerIcons(s, pri);
@@ -102,19 +102,19 @@ namespace Pangya_GameServer.Handles
         private void UpdatePlayerIcons(Player s, PlayerRoomInfo pri)
         {
             float quitRate = s.UserInfo.Statistics.getQuitRate();
-            bool isBeginnerPlus = s.UserInfo.Member.level >= 6 && s.UserInfo.Statistics.jogado >= 50;
+            bool isBeginnerPlus = s.UserInfo.Member.GameLevel >= 6 && s.UserInfo.Statistics.jogado >= 50;
 
             if (isBeginnerPlus)
             {
-                if (quitRate < GOOD_PLAYER_ICON) pri.state_flag.azinha = 1;
-                else if (quitRate < QUITER_ICON_2) pri.state_flag.quiter_1 = 1;
-                else pri.state_flag.quiter_2 = 1;
+                if (quitRate < GOOD_PLAYER_ICON) pri.State.Wings = 1;
+                else if (quitRate < QUITER_ICON_2) pri.State.Quit10Porcent = 1;
+                else pri.State.Quit20Porcent = 1;
             }
 
             // Angel Icon
             if (s.Inventory.UserEquippedItem.CharacterEquiped != null && quitRate < GOOD_PLAYER_ICON)
             {
-                pri.icon_angel = s.Inventory.UserEquippedItem.CharacterEquiped.AngelEquiped();
+                pri.StateAngel.Value = s.Inventory.UserEquippedItem.CharacterEquiped.AngelEquiped();
             }
         }
     }

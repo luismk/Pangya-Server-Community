@@ -37,7 +37,7 @@ namespace Pangya_GameServer.Repository
 
             var r = _update(m_szConsulta[0] + Convert.ToString(m_check) + m_szConsulta[1] + Convert.ToString(m_uid) + m_szConsulta[2] + Convert.ToString(m_id));
 
-            checkResponse(r, "nao conseguiu atualizar o Aviso[check=" + (m_check != 0 ? "ON" : "OFF") + "] de ferias do Caddie[ID=" + Convert.ToString(m_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o Aviso[check=" + (m_check != 0 ? "ON" : "OFF") + "] de ferias do Caddie[ID=" + Convert.ToString(m_id) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

@@ -60,6 +60,6 @@ namespace Pangya_GameServer.Repository
         private List<stItemReward> m_item = new List<stItemReward>();
 
 
-        private const string m_szConsulta = "SELECT typeid, qntd, qntd_time, rate FROM pangya.pangya_golden_time_item WHERE golden_time_id = ";
+        private const string m_szConsulta = "SELECT typeid, qntd, qntd_time, Rate FROM pangya.pangya_golden_time_item WHERE golden_time_id = ";
     }
 }

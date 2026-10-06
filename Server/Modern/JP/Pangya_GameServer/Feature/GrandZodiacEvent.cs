@@ -52,7 +52,7 @@ namespace Pangya_GameServer.Feature
         {
             CmdGrandZodiacEventInfo cmd_bgei = new CmdGrandZodiacEventInfo(); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                  cmd_bgei);
 
             if (cmd_bgei.getException().getCodeError() != 0)
@@ -60,7 +60,7 @@ namespace Pangya_GameServer.Feature
                 throw cmd_bgei.getException();
             }
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_bgei, null, null);
 
             if (cmd_bgei.getException().getCodeError() != 0)
@@ -71,7 +71,7 @@ namespace Pangya_GameServer.Feature
             m_rt = cmd_bgei.getInfo();
             // Log  
             if (m_rt.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacEvent::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacEvent::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             m_load = true;
 
@@ -81,7 +81,7 @@ namespace Pangya_GameServer.Feature
         {
             if (!isLoad())
             {
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacEvent::checkTimeToMakeRoom][Error] GrandZodiac Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacEvent::checkTimeToMakeRoom][Error] GrandZodiac Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return false;
             }
 
@@ -96,7 +96,7 @@ namespace Pangya_GameServer.Feature
             if (!isLoad())
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacEvent::setSendedMessage][Error] GrandZodiac Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacEvent::setSendedMessage][Error] GrandZodiac Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -127,7 +127,7 @@ namespace Pangya_GameServer.Feature
             if (!isLoad())
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacEvent::setSendedMessage][Error] GrandZodiac Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacEvent::setSendedMessage][Error] GrandZodiac Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -148,7 +148,7 @@ namespace Pangya_GameServer.Feature
             if (!isLoad())
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiacEvent::getInterval][Error] GrandZodiac Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiacEvent::getInterval][Error] GrandZodiac Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return null;
             }

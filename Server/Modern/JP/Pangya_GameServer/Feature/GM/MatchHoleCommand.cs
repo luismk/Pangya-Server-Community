@@ -24,8 +24,8 @@ namespace Pangya_GameServer.Feature.GM
                 var room = session.GetRoom();
 
                 // 2. Log de auditoria (Console)
-                _smp.message_pool.getInstance().push(new message(
-                    $"[GM-Action] Executor: {session.UserInfo.nickname} (UID: {session.UserInfo.uid}) | Command: MatchHole | Value: {holeCount}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[GM-Action] Executor: {session.UserInfo.NickName} (UID: {session.UserInfo.UID}) | Command: MatchHole | Value: {holeCount}",
                     type_msg.CL_ONLY_CONSOLE));
 
                 // 3. Validação de Estado
@@ -41,13 +41,13 @@ namespace Pangya_GameServer.Feature.GM
                 {
                     room.SetQntdHole((byte)holeCount);
                     room.SendHeadRoom();
-                    GameServer.getInstance().sendUpdateRoomInfo(room, 3);
-                    _smp.message_pool.getInstance().push(new message($"[MatchHoleCommand][Sucess] ROOM[ID: {room.GetRoomId()}, UPDATE: {holeCount}, NICK: {session.UserInfo.nickname}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    GameServer.Instance.sendUpdateRoomInfo(room, 3);
+                    _smp.LogManager.Instance.push(new AppMessage($"[MatchHoleCommand][Sucess] ROOM[ID: {room.GetRoomId()}, UPDATE: {holeCount}, NICK: {session.UserInfo.NickName}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[MatchHoleCommand][Error] {e.Message} | StackTrace: {e.StackTrace}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

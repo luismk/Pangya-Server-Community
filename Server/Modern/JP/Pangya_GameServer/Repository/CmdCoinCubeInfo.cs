@@ -41,7 +41,7 @@ namespace Pangya_GameServer.Repository
 
                 if (!Course_info.ContainsKey(course_id))
                 {
-                    _smp.message_pool.getInstance().push(new message("[CmdCoinCubeInfo::lineResult][Warning] nao conseguiu adicionar o course[ID=" + Convert.ToString((ushort)course_id) + ", ACTIVE=" + Convert.ToString(active) + "] no map<>.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[CmdCoinCubeInfo::lineResult][Warning] nao conseguiu adicionar o CourseIndex[ID=" + Convert.ToString((ushort)course_id) + ", ACTIVE=" + Convert.ToString(active) + "] no map<>.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -56,7 +56,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta);
 
-            checkResponse(r, "nao conseguiu pegar coin cube info dos course");
+            checkResponse(r, "nao conseguiu pegar coin cube info dos CourseIndex");
 
             return r;
         }
@@ -64,6 +64,6 @@ namespace Pangya_GameServer.Repository
         private Dictionary<byte, bool> Course_info = new Dictionary<byte, bool>();
         private CourseCtx _CourseCtx;
         private ConcurrentDictionary<uint, CourseCtx> CourseCtxes = new ConcurrentDictionary<uint, CourseCtx>();
-        private const string m_szConsulta = "SELECT course_id, active FROM pangya.pangya_coin_cube_info";
+        private const string m_szConsulta = "SELECT course_id, State FROM pangya.pangya_coin_cube_info";
     }
 }

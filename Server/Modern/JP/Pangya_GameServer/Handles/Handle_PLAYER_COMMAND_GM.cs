@@ -43,7 +43,7 @@ namespace Pangya_GameServer.Handles
                 // 3. Validação de Segurança (Gatekeeper)
                 if (cmdId != COMMON_CMD_GM.CCG_IDENTITY)//se for diferente, ele confisca.
                 {
-                    if (!Player.UserInfo.UserCapabilities.game_master)
+                    if (!Player.UserInfo.UserCapabilities.IsGameMaster)
                     {
                         LogSecurityAlert(Player, cmdId);
                         return;
@@ -78,8 +78,8 @@ namespace Pangya_GameServer.Handles
             catch (Exception ex)
             {
                 // Tratamento de erro centralizado para evitar crash da Task de rede
-                _smp.message_pool.getInstance().push(new message(
-                    $"[Handle_GM Error] UID:{Player.UserInfo.uid} | Ex: {ex.Message}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[Handle_GM Error] UID:{Player.UserInfo.UID} | Ex: {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 Player.SendChatNotice("command by GM.");
@@ -88,30 +88,30 @@ namespace Pangya_GameServer.Handles
 
         private void UpdatePlayerCapability(Player s)
         {
-            // Se o Player está invisível (visible > 0), resetamos a capability visual 
+            // Se o Player está invisível (Visible > 0), resetamos a Capability visual 
             // para garantir que o cliente não exiba ícones de GM indevidamente
-            s.UserInfo.Member.capability = (s.m_gi.visible > 0) ? new uCapability() : s.UserInfo.UserCapabilities;
+            s.UserInfo.Member.Capability = (s.m_gi.visible > 0) ? new PlayerCapability() : s.UserInfo.UserCapabilities;
         }
 
         #region Helpers de Log (Auditoria)
 
         private void LogCommandExecution(Player s, COMMON_CMD_GM cmdId)
         {
-            _smp.message_pool.getInstance().push(new message(
-               $"[GM-Command] Executado: {cmdId} | Por: {s.UserInfo.nickname} (UID: {s.UserInfo.uid})",
+            _smp.LogManager.Instance.push(new AppMessage(
+               $"[GM-Command] Executado: {cmdId} | Por: {s.UserInfo.NickName} (UID: {s.UserInfo.UID})",
                type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
 
         private void LogSecurityAlert(Player s, COMMON_CMD_GM cmdId)
         {
-            _smp.message_pool.getInstance().push(new message(
-                $"[SECURITY-ALERT] Tentativa de uso de comando GM sem permissão! UID: {s.UserInfo.uid} | CMD: {cmdId}",
+            _smp.LogManager.Instance.push(new AppMessage(
+                $"[SECURITY-ALERT] Tentativa de uso de comando GM sem permissão! UID: {s.UserInfo.UID} | CMD: {cmdId}",
                 type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
 
         private void LogUnknownCommand(COMMON_CMD_GM cmdId)
         {
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                 $"[GM-Warning] Comando recebido mas não implementado: {cmdId}",
                 type_msg.CL_FILE_LOG_AND_CONSOLE));
         }

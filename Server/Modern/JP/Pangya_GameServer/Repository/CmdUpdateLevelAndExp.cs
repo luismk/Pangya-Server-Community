@@ -35,9 +35,9 @@ namespace Pangya_GameServer.Repository
             }
 
 
-            var r = _update("UPDATE pangya.user_info SET level = " + Convert.ToString((ushort)m_level) + ", Xp = " + Convert.ToString(m_exp) + " WHERE UID = " + Convert.ToString(m_uid));
+            var r = _update("UPDATE pangya.user_info SET Level = " + Convert.ToString((ushort)m_level) + ", Xp = " + Convert.ToString(m_exp) + " WHERE UID = " + Convert.ToString(m_uid));
 
-            checkResponse(r, "nao conseguiu atualizar Level[value=" + Convert.ToString((ushort)m_level) + "] Exp[value=" + Convert.ToString(m_exp) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar Level[value=" + Convert.ToString((ushort)m_level) + "] Exp[value=" + Convert.ToString(m_exp) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

@@ -57,7 +57,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_uid == 0u)
             {
-                throw new exception("[CmdUpdateLastPlayerGame::prepareConsulta][Error] uid is invalid(0)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdUpdateLastPlayerGame::prepareConsulta][Error] UID is invalid(0)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
@@ -80,7 +80,7 @@ namespace Pangya_GameServer.Repository
 
             var r = procedure(m_szConsulta, Convert.ToString(m_uid) + param);
 
-            checkResponse(r, "nao conseguiu atualizar o Last 5 Player Game do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o Last 5 Player Game do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

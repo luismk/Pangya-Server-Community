@@ -99,7 +99,7 @@ namespace Pangya_GameServer.Repository
 
                 if (uid_req != m_uid)
                 {
-                    throw new exception("[CmdFindDolfiniLockerItem::lineResult][Error] O dolfini info requerido retornou um uid diferente. UID_req: " + Convert.ToString(m_uid) + " != " + Convert.ToString(uid_req), STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
+                    throw new exception("[CmdFindDolfiniLockerItem::lineResult][Error] O dolfini info requerido retornou um UID diferente. UID_req: " + Convert.ToString(m_uid) + " != " + Convert.ToString(uid_req), STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                         3, 0));
                 }
             }
@@ -120,7 +120,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_typeid));
 
-            checkResponse(r, "nao conseguiu encontrar o DolfiniLockerItem[TYPEID=" + Convert.ToString(m_typeid) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu encontrar o DolfiniLockerItem[TYPEID=" + Convert.ToString(m_typeid) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

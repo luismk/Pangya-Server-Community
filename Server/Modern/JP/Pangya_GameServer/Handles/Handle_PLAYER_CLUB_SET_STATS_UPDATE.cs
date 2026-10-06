@@ -42,21 +42,21 @@ namespace Pangya_GameServer.Handles
 
                     if (pWi == null)
                     {
-                        throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou " + (opt == 1 ? "updar" : "desupar") + " stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "] que ele nao possui. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou " + (opt == 1 ? "updar" : "desupar") + " stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "] que ele nao possui. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             600, 0x5200601));
                     }
 
                     if (stat > (int)CharacterInfo.Stats.S_CURVE)
                     {
-                        throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou " + (opt == 1 ? "updar" : "desupar") + " um stat[value=" + ((ushort)stat) + "] que nao existe do ClubSet[ID=" + (item_id) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou " + (opt == 1 ? "updar" : "desupar") + " um stat[value=" + ((ushort)stat) + "] que nao existe do ClubSet[ID=" + (item_id) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             604, 0x5200605));
                     }
 
-                    var clubset = sIff.getInstance().findClubSet(pWi._typeid);
+                    var clubset = sIff.Instance.findClubSet(pWi._typeid);
 
                     if (clubset == null)
                     {
-                        throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou " + (opt == 1 ? "updar" : "desupar") + " stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "] que nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou " + (opt == 1 ? "updar" : "desupar") + " stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "] que nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             601, 0x5200602));
                     }
 
@@ -65,17 +65,17 @@ namespace Pangya_GameServer.Handles
 
                         if (((clubset.SlotStats.getSlot[stat] - clubset.Stats.getSlot[stat]) + pWi.clubset_workshop.c[stat]) < (pWi.c[stat] + 1))
                         {
-                            throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "], mas ele ja upou todos os slot's disponiveis. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "], mas ele ja upou todos os slot's disponiveis. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 602, 0x5200603));
                         }
 
-                        uint enchant_typeid = (uint)((sIff.getInstance().ENCHANT << 26) | (stat << 20) + pWi.c[stat]);
+                        uint enchant_typeid = (uint)((sIff.Instance.ENCHANT << 26) | (stat << 20) + pWi.c[stat]);
 
-                        var enchant = sIff.getInstance().findEnchant(enchant_typeid);
+                        var enchant = sIff.Instance.findEnchant(enchant_typeid);
 
                         if (enchant == null)
                         {
-                            throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou upar stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "], mas nao tem o enchant[TYPEID=" + (enchant_typeid) + "] no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou upar stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "], mas nao tem o enchant[TYPEID=" + (enchant_typeid) + "] no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 603, 0x5200604));
                         }
 
@@ -85,8 +85,8 @@ namespace Pangya_GameServer.Handles
                         pWi.c[stat]++;
 
                         // Update ON DB
-                        NormalManagerDB.getInstance().add(8,
-                             new CmdUpdateClubSetStats(Player.UserInfo.uid,
+                        NormalManagerDB.Instance.add(8,
+                             new CmdUpdateClubSetStats(Player.UserInfo.UID,
                                  pWi, (uint)enchant.Pang),
                             null, null);
 
@@ -110,7 +110,7 @@ namespace Pangya_GameServer.Handles
 
                         if ((pWi.c[stat] - 1) < 0)
                         {
-                            throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou desupar stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "], mas ele ja desupou tudo que podia. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Lobby::RequestClubSetStatsUpdate][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou desupar stat[value=" + ((ushort)stat) + "] do ClubSet[ID=" + (item_id) + "], mas ele ja desupou tudo que podia. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 605, 0x5200606));
                         }
 
@@ -118,8 +118,8 @@ namespace Pangya_GameServer.Handles
                         pWi.c[stat]--;
 
                         // Update ON DB
-                        NormalManagerDB.getInstance().add(8,
-                             new CmdUpdateClubSetStats(Player.UserInfo.uid,
+                        NormalManagerDB.Instance.add(8,
+                             new CmdUpdateClubSetStats(Player.UserInfo.UID,
                                  pWi, 0),
                             null, null);
 
@@ -146,7 +146,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestClubSetStatsUpdate][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestClubSetStatsUpdate][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xA5);
 

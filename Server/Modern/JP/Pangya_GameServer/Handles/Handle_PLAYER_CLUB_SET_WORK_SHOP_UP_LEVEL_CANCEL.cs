@@ -34,27 +34,27 @@ namespace Pangya_GameServer.Handles
 
                 if (pClub == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevelCancel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou cancelar o up level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[ID=" + (Player.Inventory.WorkshopLastUpLevel.clubset_id) + "], mas ele nao tem esse ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevelCancel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou cancelar o up Level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[ID=" + (Player.Inventory.WorkshopLastUpLevel.clubset_id) + "], mas ele nao tem esse ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         250, 0x5300251));
                 }
 
                 if (Player.Inventory.WorkshopLastUpLevel.stat > 4)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevelCancel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou cancelar o up level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[ID=" + (Player.Inventory.WorkshopLastUpLevel.clubset_id) + "], mas o stat é desconhecido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevelCancel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou cancelar o up Level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[ID=" + (Player.Inventory.WorkshopLastUpLevel.clubset_id) + "], mas o stat é desconhecido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         251, 0x5300252));
                 }
 
-                var clubset = sIff.getInstance().findClubSet(pClub._typeid);
+                var clubset = sIff.Instance.findClubSet(pClub._typeid);
 
                 if (clubset == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevelCancel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou cancelar o up level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[ID=" + (Player.Inventory.WorkshopLastUpLevel.clubset_id) + "], mas o ClubSet nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevelCancel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou cancelar o up Level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[ID=" + (Player.Inventory.WorkshopLastUpLevel.clubset_id) + "], mas o ClubSet nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         252, 0x5300253));
                 }
 
                 if (clubset.work_shop.total_recovery <= (uint)pClub.clubset_workshop.recovery_pts)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevelCancel][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou cancelar o up level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[ID=" + (Player.Inventory.WorkshopLastUpLevel.clubset_id) + "], mas o ele nao pode mais cancelar ja gastou todos os seus pts de recovery[ClubSet_IFF_recovery=" + (clubset.work_shop.total_recovery) + ", ClubSet_recovery=" + (pClub.clubset_workshop.recovery_pts) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpLevelCancel][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou cancelar o up Level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[ID=" + (Player.Inventory.WorkshopLastUpLevel.clubset_id) + "], mas o ele nao pode mais cancelar ja gastou todos os seus pts de recovery[ClubSet_IFF_recovery=" + (clubset.work_shop.total_recovery) + ", ClubSet_recovery=" + (pClub.clubset_workshop.recovery_pts) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         253, 0x5300254));
                 }
 
@@ -75,14 +75,14 @@ namespace Pangya_GameServer.Handles
                 item.clubset_workshop.recovery = pClub.clubset_workshop.recovery_pts;
 
                 // UPDATE ON DB
-                NormalManagerDB.getInstance().add(12,
-                     new CmdUpdateClubSetWorkshop(Player.UserInfo.uid,
+                NormalManagerDB.Instance.add(12,
+                     new CmdUpdateClubSetWorkshop(Player.UserInfo.UID,
                          pClub,
                          CmdUpdateClubSetWorkshop.FLAG.F_UP_LEVEL_CANCEL),
                      null, null);
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[ClubSetWorkshop::UpLevelCancel][Sucess] PLAYER [UID=" + Player.UserInfo.uid + "] cancelou o Up Level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ClubSetWorkshop::UpLevelCancel][Sucess] Normal [UID=" + Player.UserInfo.UID + "] cancelou o Up Level[stat=" + (Player.Inventory.WorkshopLastUpLevel.stat) + "] do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // UPDATE ON JOGO
                 p.init_plain(0x216);
@@ -115,7 +115,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestClubSetWorkShopUpLevelCancel][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestClubSetWorkShopUpLevelCancel][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x23F);
 

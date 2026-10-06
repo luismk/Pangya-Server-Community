@@ -66,6 +66,6 @@ namespace Pangya_GameServer.Repository
 
         private Dictionary<uint, CardPack> m_card_pack = new Dictionary<uint, CardPack>();
 
-        private const string m_szConsulta = "SELECT B.typeid as CardPack, B.quantidade as qntd, B.tipo as Vol, B.rate_N, B.rate_R, B.rate_SR, B.rate_SC, 				A.typeid, A.probabilidade as prob, A.tipo FROM pangya.pangya_new_cards A INNER JOIN pangya.pangya_new_card_pack B ON A.pack = B.tipo";
+        private const string m_szConsulta = "SELECT B.typeid as CardPack, B.quantidade as qntd, B.Type as Vol, B.rate_N, B.rate_R, B.rate_SR, B.rate_SC, 				A.typeid, A.probabilidade as prob, A.Type FROM pangya.pangya_new_cards A INNER JOIN pangya.pangya_new_card_pack B ON A.pack = B.Type";
     }
 }

@@ -91,8 +91,8 @@ public class PangyaThread : IDisposable
         }
         catch (Exception e)
         {
-            _smp.message_pool.getInstance().push(
-                new message($"[PangyaThread][Error Type {m_tipo}] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)
+            _smp.LogManager.Instance.push(
+                new AppMessage($"[PangyaThread][Error Type {m_tipo}] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE)
             );
         }
         finally

@@ -70,7 +70,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString((ushort)m_ms.tipo) + ", " + Convert.ToString((ushort)(m_ms.course & 0x7F)) + ", " + Convert.ToString(m_ms.tacada) + ", " + Convert.ToString(m_ms.putt) + ", " + Convert.ToString(m_ms.hole) + ", " + Convert.ToString(m_ms.fairway) + ", " + Convert.ToString(m_ms.hole_in) + ", " + Convert.ToString(m_ms.putt_in) + ", " + Convert.ToString(m_ms.total_score) + ", " + Convert.ToString((short)m_ms.best_score) + ", " + Convert.ToString(m_ms.best_pang) + ", " + Convert.ToString(m_ms.character_typeid) + ", " + Convert.ToString((ushort)m_ms.event_score) + ", " + Convert.ToString((ushort)m_assist));
 
-            checkResponse(r, "nao conseguiu atualizar o record(MapStatistics) dados[COURSE=" + Convert.ToString((ushort)(m_ms.course & 0x7F)) + ", TIPO=" + Convert.ToString((ushort)m_ms.tipo) + ", ASSIST=" + Convert.ToString((ushort)m_assist) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o record(MapStatistics) dados[COURSE=" + Convert.ToString((ushort)(m_ms.course & 0x7F)) + ", TIPO=" + Convert.ToString((ushort)m_ms.tipo) + ", ASSIST=" + Convert.ToString((ushort)m_assist) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

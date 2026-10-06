@@ -38,13 +38,13 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta);
 
-            checkResponse(r, "nao conseguiu pegar os papel shop itens");
+            checkResponse(r, "nao conseguiu pegar os papel ShopRoom itens");
 
             return r;
         }
 
         private List<ctx_papel_shop_item> m_ctx_psi = new List<ctx_papel_shop_item>();
 
-        private const string m_szConsulta = "SELECT typeid, probabilidade, numero, tipo, active FROM pangya.pangya_papel_shop_item";
+        private const string m_szConsulta = "SELECT typeid, probabilidade, RoomID, Type, State FROM pangya.pangya_papel_shop_item";
     }
 }

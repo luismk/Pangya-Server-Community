@@ -61,7 +61,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_cei.parts_id) + ", " + Convert.ToString(m_cei.parts_typeid) + ", " + Convert.ToString(m_cei._typeid) + ", " + Convert.ToString(m_cei.slot));
 
-            checkResponse(r, "nao conseguiu remover card[TYPEID=" + Convert.ToString(m_cei._typeid) + "] equipado no Character[TYPEID=" + Convert.ToString(m_cei.parts_typeid) + ", ID=" + Convert.ToString(m_cei.parts_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu remover card[TYPEID=" + Convert.ToString(m_cei._typeid) + "] equipado no Character[TYPEID=" + Convert.ToString(m_cei.parts_typeid) + ", ID=" + Convert.ToString(m_cei.parts_id) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

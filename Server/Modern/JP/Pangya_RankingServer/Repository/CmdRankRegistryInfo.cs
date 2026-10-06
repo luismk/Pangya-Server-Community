@@ -49,7 +49,7 @@ namespace Pangya_RankingServer.Repository
                         // Substitui e loga
                         m_entry[km].Add(kp, rr);
 
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[CmdRankRegistryInfo::lineResult][Log] Player[UID={rr.getUID()}] Atualizou o registro no rank registry map. " +
                             $"REGISTRY_ANT[UID={existingRR.getUID()}, CURRENT_POSITION={existingRR.getCurrentPosition()}], " +
                             $"REGISTRY_NEW[UID={rr.getUID()}, CURRENT_POSITION={rr.getCurrentPosition()}].",

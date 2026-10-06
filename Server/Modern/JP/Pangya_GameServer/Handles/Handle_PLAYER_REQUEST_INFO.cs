@@ -39,16 +39,16 @@ namespace Pangya_GameServer.Handles
             catch (Exception e)
             {
                 // Log de erro e resposta de falha
-                _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_INFO_REQUEST][Error] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_INFO_REQUEST][Error] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 Player.Send(Handle_PACKET_RESPONSE.pacote089(0));
             }
         }
 
         private PlayerInfo? GetOnlinePlayerInfo(uint uid, Player session)
         {
-            if (uid == Player.UserInfo.uid) return Player.UserInfo;
+            if (uid == Player.UserInfo.UID) return Player.UserInfo;
 
-            var target = GameServer.getInstance().FindPlayer(uid);
+            var target = GameServer.Instance.FindPlayer(uid);
             return target?.UserInfo;
         }
 
@@ -57,7 +57,7 @@ namespace Pangya_GameServer.Handles
             // Validação de GM
             if (IsRestrictedGM(Player, pi))
             {
-                Player.Send(Handle_PACKET_RESPONSE.pacote089(pi.uid, season, 3));
+                Player.Send(Handle_PACKET_RESPONSE.pacote089(pi.UID, season, 3));
                 return;
             }
 
@@ -66,7 +66,7 @@ namespace Pangya_GameServer.Handles
             var ci = inventory.FindCharacterById(inventory.UserEquipment.character_id) ?? new CharacterInfo();
 
             // Envio de pacotes para Jogador Online
-            SendPlayerPackets(Player, pi.uid, season,
+            SendPlayerPackets(Player, pi.UID, season,
                 pi.Member, ci, inventory.UserEquipment, pi.Statistics, pi.Guild,
                 pi.NaturalMapStatistics.Where(m => m.best_score != 127).ToList(),
                 pi.NaturalMapStatisticsAll.Where(m => m.best_score != 127).ToList(),
@@ -82,10 +82,10 @@ namespace Pangya_GameServer.Handles
 
         private async void HandleOfflinePlayerInfo(Player session, uint uid, byte season)
         {
-            // Busca MemberInfo primeiro para checar GM 
+            // Busca PlayerMemberInfo primeiro para checar GM 
             var mi = CommandDB.LoadMemberInfo(uid);
              
-            if (uid != Player.UserInfo.uid && !Player.UserInfo.UserCapabilities.game_master && mi.capability.game_master)
+            if (uid != Player.UserInfo.UID && !Player.UserInfo.UserCapabilities.IsGameMaster && mi.Capability.IsGameMaster)
             {
                 Player.Send(Handle_PACKET_RESPONSE.pacote089(uid, season, 3));
                 return;
@@ -114,7 +114,7 @@ namespace Pangya_GameServer.Handles
 
         // Helper para centralizar o envio da "enxurrada" de pacotes
         private void SendPlayerPackets(Player session, uint uid, byte season,
-            MemberInfo mi, CharacterInfo ci, UserEquip ue, UserInfo ui, GuildInfo gi,
+            PlayerMemberInfo mi, CharacterInfo ci, UserEquip ue, PlayerUserStatistics ui, GuildInfo gi,
             List<MapStatisticsEx> ms_na, List<MapStatisticsEx> msa_na,
             List<MapStatisticsEx> ms_gp, List<MapStatisticsEx> msa_gp,
             List<MapStatisticsEx> ms_no, List<MapStatisticsEx> msa_no,
@@ -136,7 +136,7 @@ namespace Pangya_GameServer.Handles
         }
 
         private bool IsRestrictedGM(Player session, PlayerInfo targetPi)
-            => Player.UserInfo.uid != targetPi.uid && !Player.UserInfo.UserCapabilities.game_master && targetPi.UserCapabilities.game_master;
+            => Player.UserInfo.UID != targetPi.UID && !Player.UserInfo.UserCapabilities.IsGameMaster && targetPi.UserCapabilities.IsGameMaster;
          
         private async Task<(List<MapStatisticsEx> Normal, List<MapStatisticsEx> Assist)> GetOfflineStats(uint uid, byte season, CmdMapStatistics.TYPE_MODO modo)
         { 

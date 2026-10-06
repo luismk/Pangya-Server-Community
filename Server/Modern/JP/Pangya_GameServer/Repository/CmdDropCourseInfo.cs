@@ -47,7 +47,7 @@ namespace Pangya_GameServer.Repository
 
                 Course.Add(dc.course, dc);
             }
-            else // J� tem, adiciona o item ao course
+            else // J� tem, adiciona o item ao CourseIndex
             {
                 Course[dc.course].v_item.Add(di);
             }
@@ -70,6 +70,6 @@ namespace Pangya_GameServer.Repository
 
         private Dictionary<byte, DropSystem.stDropCourse> Course = new Dictionary<byte, DropSystem.stDropCourse>();
 
-        private const string m_szConsulta = "SELECT course, tipo, typeid, quantidade, probabilidade_3H, probabilidade_6H, probabilidade_9H, probabilidade_18H, active FROM pangya.pangya_new_course_drop_item WHERE active = 1";
+        private const string m_szConsulta = "SELECT CourseIndex, Type, typeid, quantidade, probabilidade_3H, probabilidade_6H, probabilidade_9H, probabilidade_18H, State FROM pangya.pangya_new_course_drop_item WHERE State = 1";
     }
 }

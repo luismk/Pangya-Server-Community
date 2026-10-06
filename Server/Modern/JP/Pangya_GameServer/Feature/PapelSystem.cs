@@ -56,7 +56,7 @@ namespace Pangya_GameServer.Feature
             // Load Config
             var cmd_psc = new CmdPapelShopConfig(); // Waiter
 
-NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
+NormalManagerDB.Instance.add(0, cmd_psc, null, null);
 
             if (cmd_psc.getException().getCodeError() != 0)
                 throw cmd_psc.getException();
@@ -66,7 +66,7 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
             // Laod Coupon(s)
             var cmd_psCoupon = new CmdPapelShopCoupon(); // Waiter
 
-           NormalManagerDB.getInstance().add(0, cmd_psCoupon, null, null);
+           NormalManagerDB.Instance.add(0, cmd_psCoupon, null, null);
 
             if (cmd_psCoupon.getException().getCodeError() != 0)
                 throw cmd_psCoupon.getException();
@@ -76,7 +76,7 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
             // Load Item(s)
             CmdPapelShopItem cmd_psi = new CmdPapelShopItem(); // Waiter
 
-            NormalManagerDB.getInstance().add(0, cmd_psi, null, null);
+            NormalManagerDB.Instance.add(0, cmd_psi, null, null);
 
             if (cmd_psi.getException().getCodeError() != 0)
                 throw cmd_psi.getException();
@@ -84,7 +84,7 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
             m_ctx_psi = cmd_psi.getInfo();
 
             if (m_ctx_psc.Count == 0 || m_ctx_psi.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[PapelShopSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PapelShopSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // Carregado com sucesso!
             m_load = true;
@@ -120,7 +120,7 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
             {
                 _session.UserInfo.Member.PapelShop = new PlayerPapelShopInfo();
             }
-            else if(checkUpdate(_session.UserInfo.Member.papel_shop_last_update))
+            else if(checkUpdate(_session.UserInfo.Member.PapelShopLastUpdate))
             {
                 // Update Papel Shop Last Day Update of Player
                 UpdateDayPlayer(_session);
@@ -145,13 +145,13 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
 
                 CmdUpdatePapelShopConfig cmd_upsc = new CmdUpdatePapelShopConfig(m_ctx_ps); // Waiter
 
-                NormalManagerDB.getInstance().add(0,
+                NormalManagerDB.Instance.add(0,
                     cmd_upsc,
                     SQLDBResponse, null);
 
                 if (cmd_upsc.getException().getCodeError() != 0)
                 {
-                    _smp.message_pool.getInstance().push(new message("[PapelShopSystem::UpdateDay][ErrorSystem] " + cmd_upsc.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[PapelShopSystem::UpdateDay][ErrorSystem] " + cmd_upsc.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     return; // Error Sai da função
                 }
@@ -162,7 +162,7 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
 
                     m_ctx_ps = cmd_upsc.getInfo();
 
-                    _smp.message_pool.getInstance().push(new message("[PapelShopSystem::UpdateDay][Sucess] UPDATE[" + cmd_upsc.getInfo().toString() + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[PapelShopSystem::UpdateDay][Sucess] UPDATE[" + cmd_upsc.getInfo().toString() + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -172,41 +172,41 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
         { 
 
             // Update Time                          
-            _session.UserInfo.Member.papel_shop_last_update.CreateTime();
+            _session.UserInfo.Member.PapelShopLastUpdate.CreateTime();
             if (_PS_COM_REDUCE_LIMIT)
             {
                 // Atualiza o contador de quantas vez o player pode jogar no dia
-                _session.UserInfo.Member.PapelShop.remain_count = _session.UserInfo.Member.PapelShop.limit_count;
+                _session.UserInfo.Member.PapelShop.RemainCount = _session.UserInfo.Member.PapelShop.LimitCount;
 
                 // Só aumenta o limite, se o player não jogou todo o seu limite
-                if (_session.UserInfo.Member.PapelShop.current_count < _session.UserInfo.Member.PapelShop.limit_count)
+                if (_session.UserInfo.Member.PapelShop.CurrentCount < _session.UserInfo.Member.PapelShop.LimitCount)
                 {
 
-                    if (_session.UserInfo.Member.PapelShop.limit_count < 50)
+                    if (_session.UserInfo.Member.PapelShop.LimitCount < 50)
                     {
-                        _session.UserInfo.Member.PapelShop.limit_count = 50;
+                        _session.UserInfo.Member.PapelShop.LimitCount = 50;
                     }
-                    else if (_session.UserInfo.Member.PapelShop.limit_count < 100)
+                    else if (_session.UserInfo.Member.PapelShop.LimitCount < 100)
                     {
-                        _session.UserInfo.Member.PapelShop.limit_count = 100;
+                        _session.UserInfo.Member.PapelShop.LimitCount = 100;
                     }
                 }
             }
             else
             {
-                _session.UserInfo.Member.PapelShop.remain_count = _session.UserInfo.Member.PapelShop.limit_count = 100;
+                _session.UserInfo.Member.PapelShop.RemainCount = _session.UserInfo.Member.PapelShop.LimitCount = 100;
             }
             // Reseta o Atual Contador do player
-            _session.UserInfo.Member.PapelShop.current_count = 0;
+            _session.UserInfo.Member.PapelShop.CurrentCount = 0;
 
             // Log
-            _smp.message_pool.getInstance().push(new message("[PapelShopSystem::UpdateDayPlayer][Log] PLAYER[UID: " + Convert.ToString(_session.UserInfo.uid) + "] UPDATE LIMIT[REMAIN=" + Convert.ToString(_session.UserInfo.Member.PapelShop.remain_count) + ", CURRENT=" + Convert.ToString(_session.UserInfo.Member.PapelShop.current_count) + ", LIMIT=" + Convert.ToString(_session.UserInfo.Member.PapelShop.limit_count) + ", LAST_UPDATE=" + UtilTime.FormatDate(_session.UserInfo.Member.papel_shop_last_update) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[PapelShopSystem::UpdateDayPlayer][Log] Normal[UID: " + Convert.ToString(_session.UserInfo.UID) + "] UPDATE LIMIT[REMAIN=" + Convert.ToString(_session.UserInfo.Member.PapelShop.RemainCount) + ", CURRENT=" + Convert.ToString(_session.UserInfo.Member.PapelShop.CurrentCount) + ", LIMIT=" + Convert.ToString(_session.UserInfo.Member.PapelShop.LimitCount) + ", LAST_UPDATE=" + UtilTime.FormatDate(_session.UserInfo.Member.PapelShopLastUpdate) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // UPDATE ON DB
-           NormalManagerDB.getInstance().add(2,
-                new CmdUpdatePapelShopInfo(_session.UserInfo.uid,
+           NormalManagerDB.Instance.add(2,
+                new CmdUpdatePapelShopInfo(_session.UserInfo.UID,
                     _session.UserInfo.Member.PapelShop,
-                    _session.UserInfo.Member.papel_shop_last_update),
+                    _session.UserInfo.Member.PapelShopLastUpdate),
                 SQLDBResponse, null);
         }
 
@@ -216,39 +216,39 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
             if (isLimittedPerDay())
             {
 
-                _session.UserInfo.Member.PapelShop.current_count++;
+                _session.UserInfo.Member.PapelShop.CurrentCount++;
 
                 if (_PS_COM_REDUCE_LIMIT)
                 {
-                    if (--_session.UserInfo.Member.PapelShop.remain_count == 0)
+                    if (--_session.UserInfo.Member.PapelShop.RemainCount == 0)
                     { // Zerou tira 50 do limite do player
 
                         // Não diminui o limite deixa ele em 100 por dia mesmo
-                        if (_session.UserInfo.Member.PapelShop.limit_count > 50)
+                        if (_session.UserInfo.Member.PapelShop.LimitCount > 50)
                         {
-                            _session.UserInfo.Member.PapelShop.limit_count = 50;
+                            _session.UserInfo.Member.PapelShop.LimitCount = 50;
                         }
-                        if (_session.UserInfo.Member.PapelShop.limit_count > 30)
+                        if (_session.UserInfo.Member.PapelShop.LimitCount > 30)
                         {
-                            _session.UserInfo.Member.PapelShop.limit_count = 30;
+                            _session.UserInfo.Member.PapelShop.LimitCount = 30;
                         }
                         else
                         {
-                            _session.UserInfo.Member.PapelShop.limit_count = 30;
+                            _session.UserInfo.Member.PapelShop.LimitCount = 30;
                         }
                     }
                 }
                 else
                 {
 #pragma warning disable CS0162 // Código inacessível detectado
-                    --_session.UserInfo.Member.PapelShop.remain_count;
+                    --_session.UserInfo.Member.PapelShop.RemainCount;
 #pragma warning restore CS0162 // Código inacessível detectado
                 }
                 // UPDATE ON DB
-              NormalManagerDB.getInstance().add(2,
-                    new CmdUpdatePapelShopInfo(_session.UserInfo.uid,
+              NormalManagerDB.Instance.add(2,
+                    new CmdUpdatePapelShopInfo(_session.UserInfo.UID,
                         _session.UserInfo.Member.PapelShop,
-                        _session.UserInfo.Member.papel_shop_last_update),
+                        _session.UserInfo.Member.PapelShopLastUpdate),
                     SQLDBResponse, null);
             }
 
@@ -272,7 +272,7 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
             return m_ctx_ps.price_big;
         }
 
-        // Check if he has coupon, return id or -1 if not
+        // Check if he has coupon, return Login or -1 if not
         /*static*/
         public WarehouseItemEx hasCoupon(Player _session)
         {  
@@ -409,7 +409,7 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
 
                 // Add Ball ao vector de bolas dropadas
                 v_ball.Add(ctx_b);
-                //salva o ultimo id
+                //salva o ultimo Login
                 _type_id = ctx_b.ctx_psi._typeid;
                 // Decrementa o num_ball, que uma bola já foi dropada
                 num_ball--;
@@ -461,7 +461,7 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
 
 
                 // Player já tem o item, e nao pode ter duplicate, sortea um novo para ele
-                if ((!sIff.getInstance().IsCanOverlapped(ctx_psi._typeid) || sIff.getInstance().getItemGroupIdentify(ctx_psi._typeid) == IFF_GROUP.CAD_ITEM) && _session.Inventory.ownerItem(ctx_psi._typeid))
+                if ((!sIff.Instance.IsCanOverlapped(ctx_psi._typeid) || sIff.Instance.getItemGroupIdentify(ctx_psi._typeid) == IFF_GROUP.CAD_ITEM) && _session.Inventory.ownerItem(ctx_psi._typeid))
                 {
                     continue;
                 }
@@ -502,8 +502,8 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
             LotterySystem lottery = new LotterySystem();
 
             // Pega o Rate do Game Server
-            var rate_cookie_server = GameServer.getInstance().getInfo().rate.papel_shop_cookie_item / 100.0f;
-            var rate_rare_server = GameServer.getInstance().getInfo().rate.papel_shop_rare_item / 100.0f;
+            var rate_cookie_server = GameServer.Instance.getInfo().Rate.PapelShopCookieItem / 100.0f;
+            var rate_rare_server = GameServer.Instance.getInfo().Rate.PapelShopRareItem / 100.0f;
 
             foreach (var el in m_ctx_psi)
             {
@@ -546,7 +546,7 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
                 }
 
                 // Player já tem o item, e nao pode ter duplicate, sortea um novo para ele
-                if ((!sIff.getInstance().IsCanOverlapped(ctx_psi._typeid) || sIff.getInstance().getItemGroupIdentify(ctx_psi._typeid) == IFF_GROUP.CAD_ITEM) && _session.Inventory.ownerItem(ctx_psi._typeid))
+                if ((!sIff.Instance.IsCanOverlapped(ctx_psi._typeid) || sIff.Instance.getItemGroupIdentify(ctx_psi._typeid) == IFF_GROUP.CAD_ITEM) && _session.Inventory.ownerItem(ctx_psi._typeid))
                 {
                     continue;
                 }
@@ -589,10 +589,10 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
             if (_arg == null)
             {
             }
-            // Por Hora só sai, depois faço outro tipo de tratamento se precisar
+            // Por Hora só sai, depois faço outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[PapelShopSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PapelShopSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -604,15 +604,15 @@ NormalManagerDB.getInstance().add(0, cmd_psc, null, null);
 
                         if (cmd_upsc.isUpdated())
                         {
-                            _smp.message_pool.getInstance().push(new message("[PapelShopSystem::SQLDBResponse][Debug] Atualizou Papel Shop Config[" + cmd_upsc.getInfo().toString() + "] com sucesso", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[PapelShopSystem::SQLDBResponse][Debug] Atualizou Papel Shop Config[" + cmd_upsc.getInfo().toString() + "] com sucesso", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                         else
                         {
 
-                            // Não conseguiu atualizar papel shop config, por que outro sistema atualizou primeiro, atualiza o papel shop config com os dados retornados
-                            sPapelShopSystem.getInstance().updateConfig(cmd_upsc.getInfo());
+                            // Não conseguiu atualizar papel ShopRoom config, por que outro sistema atualizou primeiro, atualiza o papel ShopRoom config com os dados retornados
+                            sPapelShopSystem.Instance.updateConfig(cmd_upsc.getInfo());
 
-                            _smp.message_pool.getInstance().push(new message("[PapelShopSystem::SQLDBResposne][Log] Atualizou Papel Shop Config[" + cmd_upsc.getInfo().toString() + "] com os dados do DB, mas quem atualizou no DB foi outro sistema.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[PapelShopSystem::SQLDBResposne][Log] Atualizou Papel Shop Config[" + cmd_upsc.getInfo().toString() + "] com os dados do DB, mas quem atualizou no DB foi outro sistema.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                         break;

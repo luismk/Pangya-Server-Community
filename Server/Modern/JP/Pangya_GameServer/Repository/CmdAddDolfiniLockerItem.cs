@@ -58,9 +58,9 @@ namespace Pangya_GameServer.Repository
 
             if (m_dli.item.id <= 0
             || m_dli.item._typeid == 0
-                || sIff.getInstance().getItemGroupIdentify(m_dli.item._typeid) != IFF_GROUP.PART)
+                || sIff.Instance.getItemGroupIdentify(m_dli.item._typeid) != IFF_GROUP.PART)
             {
-                throw new exception("[CmdAddDolfiniLockerItem][Error] PLAYER[UID=" + Convert.ToString(m_uid) + "] -> Item[TYPEID=" + Convert.ToString(m_dli.item._typeid) + ", ID=" + Convert.ToString(m_dli.item.id) + "] invalid for put in Dolfini Locker", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdAddDolfiniLockerItem][Error] Normal[UID=" + Convert.ToString(m_uid) + "] -> Item[TYPEID=" + Convert.ToString(m_dli.item._typeid) + ", ID=" + Convert.ToString(m_dli.item.id) + "] invalid for put in Dolfini Locker", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
@@ -69,7 +69,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_dli.item.id));
 
-            checkResponse(r, "nao conseguiu colocar o item[TYPEID=" + Convert.ToString(m_dli.item._typeid) + ", ID=" + Convert.ToString(m_dli.item.id) + "] no Dolfini Locker do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu colocar o item[TYPEID=" + Convert.ToString(m_dli.item._typeid) + ", ID=" + Convert.ToString(m_dli.item.id) + "] no Dolfini Locker do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

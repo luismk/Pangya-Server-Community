@@ -56,7 +56,7 @@ namespace Pangya_GameServer.Feature
                     _session.UserInfo.Attendance.now = _session.UserInfo.Attendance.after;
                     _session.UserInfo.Attendance.after.clear();
 
-                   snmdb.NormalManagerDB.getInstance().add(1, new CmdUpdateAttendanceReward(_session.UserInfo.uid, _session.UserInfo.Attendance), SQLDBResponse, null);
+                   snmdb.NormalManagerDB.Instance.add(1, new CmdUpdateAttendanceReward(_session.UserInfo.UID, _session.UserInfo.Attendance), SQLDBResponse, null);
                 }
                 else
                 {
@@ -67,7 +67,7 @@ namespace Pangya_GameServer.Feature
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[AttendanceRewardSystem::checkAttendance][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[AttendanceRewardSystem::checkAttendance][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 using (var p = new Packet())
                 {
@@ -87,10 +87,10 @@ namespace Pangya_GameServer.Feature
             try
             {
                 if (_session.UserInfo.Attendance.login == 1)
-                    throw new exception($"[AttendanceRewardSystem::requestUpdateCountLogin][Error] UID={_session.UserInfo.uid} já pegou prêmio.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ATTENDANCE_REWARD_SYSTEM, 8, 0));
+                    throw new exception($"[AttendanceRewardSystem::requestUpdateCountLogin][Error] UID={_session.UserInfo.UID} já pegou prêmio.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ATTENDANCE_REWARD_SYSTEM, 8, 0));
 
                 if (!passedOneDay(_session))
-                    throw new exception($"[AttendanceRewardSystem::requestUpdateCountLogin][Error] UID={_session.UserInfo.uid} tempo insuficiente.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ATTENDANCE_REWARD_SYSTEM, 8, 1));
+                    throw new exception($"[AttendanceRewardSystem::requestUpdateCountLogin][Error] UID={_session.UserInfo.UID} tempo insuficiente.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ATTENDANCE_REWARD_SYSTEM, 8, 1));
 
                 if (_session.UserInfo.Attendance.counter++ == 0 || _session.UserInfo.Attendance.now._typeid == 0)
                 {
@@ -107,7 +107,7 @@ namespace Pangya_GameServer.Feature
                 stItem item = new stItem { type = 2, id = -1, _typeid = _session.UserInfo.Attendance.now._typeid, qntd = (int)_session.UserInfo.Attendance.now.qntd };
                 item.STDA_C_ITEM_QNTD = (short)item.qntd;
 
-                MailManager.SendMessageWithItem(0, _session.UserInfo.uid, "Your Attendance rewards have arrived", item);
+                MailManager.SendMessageWithItem(0, _session.UserInfo.UID, "Your Attendance rewards have arrived", item);
 
                 // Sorteia próximo (Tipo 2 se for múltiplo de 10)
                 byte nextType = (byte)(((_session.UserInfo.Attendance.counter + 1) % 10 == 0) ? 2 : 1);
@@ -115,7 +115,7 @@ namespace Pangya_GameServer.Feature
                 _session.UserInfo.Attendance.after._typeid = nextReward._typeid;
                 _session.UserInfo.Attendance.after.qntd = nextReward.qntd;
 
-               snmdb.NormalManagerDB.getInstance().add(1, new CmdUpdateAttendanceReward(_session.UserInfo.uid, _session.UserInfo.Attendance));
+               snmdb.NormalManagerDB.Instance.add(1, new CmdUpdateAttendanceReward(_session.UserInfo.UID, _session.UserInfo.Attendance));
 
                 sendGrandPrixTicket(_session);
 
@@ -129,7 +129,7 @@ namespace Pangya_GameServer.Feature
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[AttendanceRewardSystem::requestUpdateCountLogin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[AttendanceRewardSystem::requestUpdateCountLogin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 using (var p = new Packet())
                 {
@@ -151,7 +151,7 @@ namespace Pangya_GameServer.Feature
             // Carrega os Itens do Attendance Reward
             var cmd_aric = new CmdAttendanceRewardItemInfo(); // Waiter
 
-            NormalManagerDB.getInstance().add(0, cmd_aric, null, null);
+            NormalManagerDB.Instance.add(0, cmd_aric, null, null);
 
             if (cmd_aric.getException().getCodeError() != 0)
                 throw cmd_aric.getException();
@@ -159,7 +159,7 @@ namespace Pangya_GameServer.Feature
             v_item = cmd_aric.getInfo();
 
             if (v_item.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[AttendanceRewardSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[AttendanceRewardSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // Carregou com sucesso
             m_load = true;
@@ -206,7 +206,7 @@ namespace Pangya_GameServer.Feature
                     var rt = RetAddItem.ERROR;
 
                     if ((rt = ItemManager.addItem(item, _session, 0, 0)) < 0/*Error*/)
-                        throw new exception("[AttendanceRewardSystem::sendGrandPrixTicket][Error] PLAYER[UID=" + (_session.UserInfo.uid)
+                        throw new exception("[AttendanceRewardSystem::sendGrandPrixTicket][Error] Normal[UID=" + (_session.UserInfo.UID)
                             + "] tentou adicionar o Grand Prix Ticket do login, mas nao conseguiu. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ATTENDANCE_REWARD_SYSTEM, 9, 0));
 
 
@@ -216,7 +216,7 @@ namespace Pangya_GameServer.Feature
 
                         var msg = "Your Attendance rewards have arrived!"; //envia no email, na proxima vez que ele logar, ele já ver o item
 
-                        MailManager.SendMessageWithItem(0, _session.UserInfo.uid, msg, item);
+                        MailManager.SendMessageWithItem(0, _session.UserInfo.UID, msg, item);
                     }
 
                 }
@@ -253,7 +253,7 @@ namespace Pangya_GameServer.Feature
                     var rt = RetAddItem.ERROR;
 
                     if ((rt = ItemManager.addItem(item, _session, 0, 0)) < 0/*Error*/)
-                        throw new exception("[AttendanceRewardSystem::sendBotTicket][Error] PLAYER[UID=" + (_session.UserInfo.uid)
+                        throw new exception("[AttendanceRewardSystem::sendBotTicket][Error] Normal[UID=" + (_session.UserInfo.UID)
                             + "] tentou adicionar o Key of fortune do login, mas nao conseguiu. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ATTENDANCE_REWARD_SYSTEM, 9, 0));
 
 
@@ -263,7 +263,7 @@ namespace Pangya_GameServer.Feature
 
                         var msg = "Special Daily Login Prize!"; //envia no email, na proxima vez que ele logar, ele já ver o item
 
-                        MailManager.SendMessageWithItem(0, _session.UserInfo.uid, msg, item);
+                        MailManager.SendMessageWithItem(0, _session.UserInfo.UID, msg, item);
                     }
                 }
             }
@@ -298,7 +298,7 @@ namespace Pangya_GameServer.Feature
                     var rt = RetAddItem.ERROR;
 
                     if ((rt = ItemManager.addItem(item, _session, 0, 0)) < 0/*Error*/)
-                        throw new exception("[AttendanceRewardSystem::sendFortuneKey][Error] PLAYER[UID=" + (_session.UserInfo.uid)
+                        throw new exception("[AttendanceRewardSystem::sendFortuneKey][Error] Normal[UID=" + (_session.UserInfo.UID)
                             + "] tentou adicionar o Key of fortune do login, mas nao conseguiu. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ATTENDANCE_REWARD_SYSTEM, 9, 0));
 
 
@@ -308,7 +308,7 @@ namespace Pangya_GameServer.Feature
 
                         var msg = "Special Daily Login Prize!"; //envia no email, na proxima vez que ele logar, ele já ver o item
 
-                        MailManager.SendMessageWithItem(0, _session.UserInfo.uid, msg, item);
+                        MailManager.SendMessageWithItem(0, _session.UserInfo.UID, msg, item);
                     }
                 }
             }
@@ -339,7 +339,7 @@ namespace Pangya_GameServer.Feature
                 }
                 else
                 {
-                    var collection = v_item.ToList();//nao tem o de cima, vou pegar do tipo '0'
+                    var collection = v_item.ToList();//nao tem o de cima, vou pegar do Type '0'
                     foreach (var item in collection)
                         lottery.Add(400, item);
                 }
@@ -384,10 +384,10 @@ namespace Pangya_GameServer.Feature
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[AttendanceRewardSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[AttendanceRewardSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -396,7 +396,7 @@ namespace Pangya_GameServer.Feature
                 case 1: // Update Attendance Reward Player
                     {
                         var cmd_uar = (CmdUpdateAttendanceReward)(_pangya_db);
-                        _smp.message_pool.getInstance().push(new message("[AttendanceRewardSystem::SQLDBResponse][Debug] PLAYER[UID=" + (cmd_uar.getUID()) + "] Atualizou Attendance Reward com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[AttendanceRewardSystem::SQLDBResponse][Debug] Normal[UID=" + (cmd_uar.getUID()) + "] Atualizou Attendance Reward com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         break;
                     }

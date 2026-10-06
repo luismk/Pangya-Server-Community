@@ -28,38 +28,38 @@ namespace Pangya_GameServer.Handles
                 sbyte channel = Packet.ReadSByte();
 
                 // No padrão de Handle, o enterChannel geralmente é disparado pelo ChannelManager ou PlayerService
-                var c = GameServer.getInstance().EnterChannel(Player, channel);
+                var c = GameServer.Instance.EnterChannel(Player, channel);
 
                 if (c != null)
                 {
-                    if (!sAttendanceRewardSystem.getInstance().isLoad())
-                        sAttendanceRewardSystem.getInstance().load();
+                    if (!sAttendanceRewardSystem.Instance.isLoad())
+                        sAttendanceRewardSystem.Instance.load();
 
                     var m_ari = Player.UserInfo.Attendance;
 
                     // Lógica de Recompensa de Presença (Attendance)
                     if (m_ari.login == 2 || m_ari.login == 3)
                     { 
-                        sAttendanceRewardSystem.getInstance().sendGrandPrixTicket(Player);
-                        sAttendanceRewardSystem.getInstance().sendFortuneKey(Player);
-                        sAttendanceRewardSystem.getInstance().sendBotTicket(Player);
+                        sAttendanceRewardSystem.Instance.sendGrandPrixTicket(Player);
+                        sAttendanceRewardSystem.Instance.sendFortuneKey(Player);
+                        sAttendanceRewardSystem.Instance.sendBotTicket(Player);
                     }
                     else
                     {
-                        if (sAttendanceRewardSystem.getInstance().passedOneDay(Player))
+                        if (sAttendanceRewardSystem.Instance.passedOneDay(Player))
                         { 
-                            sAttendanceRewardSystem.getInstance().sendGrandPrixTicket(Player);
-                            sAttendanceRewardSystem.getInstance().sendFortuneKey(Player);
-                            sAttendanceRewardSystem.getInstance().sendBotTicket(Player);
+                            sAttendanceRewardSystem.Instance.sendGrandPrixTicket(Player);
+                            sAttendanceRewardSystem.Instance.sendFortuneKey(Player);
+                            sAttendanceRewardSystem.Instance.sendBotTicket(Player);
                         }
                     }
 
-                    _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_ENTER_CHANNEL][Sucess] PLAYER[UID: {Player.UserInfo.uid}, CID: {channel}] ENTER TO CHANNEL.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_ENTER_CHANNEL][Sucess] Normal[UID: {Player.UserInfo.UID}, CID: {channel}] ENTER TO CHANNEL.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_ENTER_CHANNEL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_ENTER_CHANNEL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         await Task.CompletedTask;

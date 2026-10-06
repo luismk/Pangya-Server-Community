@@ -44,7 +44,7 @@ namespace Pangya_GameServer.Repository
 
             var r = _update(m_szConsulta[0] + (m_ci.mastery) + m_szConsulta[1] + (m_uid) + m_szConsulta[2] + (m_ci.id));
 
-            checkResponse(r, "nao conseguiu atualizar Character[TYPEID=" + (m_ci._typeid) + ", ID=" + (m_ci.id) + "] Mastery[value=" + (m_ci.mastery) + "] do PLAYER[UID=" + (m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar Character[TYPEID=" + (m_ci._typeid) + ", ID=" + (m_ci.id) + "] Mastery[value=" + (m_ci.mastery) + "] do Normal[UID=" + (m_uid) + "]");
 
             return r;
         }

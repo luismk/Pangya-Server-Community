@@ -1,6 +1,6 @@
 using Pangya_GameServer.Engine;
 using Pangya_GameServer.Flags;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.Roms;
 using Pangya_GameServer.Server;
 using Pangya_GameServer.Session;
@@ -21,36 +21,36 @@ namespace Pangya_GameServer.Handles
                 var _channel = Player.GetChannel();
 
                 if (_channel == null)
-                    throw new exception("[Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] tentou trocar info da sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas a sala nao esta em um canal.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] tentou trocar info da sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas a sala nao esta em um canal.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                         10, 0));
 
 
                 var room = Player.GetRoom();
 
                 if (room == null) 
-                    throw new exception("[Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] Channel[ID=" + +Player.GetChannel().getId() + "] tentou trocar info da sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas a sala nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] Channel[ID=" + +Player.GetChannel().getId() + "] tentou trocar info da sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas a sala nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                         10, 0));
 
 
                 if (room.GameRun())
                 {
-                    throw new exception("[Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] Channel[ID=" + +Player.GetChannel().getId() + "] tentou trocar info da sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas a sala ja foi iniciada.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] Channel[ID=" + +Player.GetChannel().getId() + "] tentou trocar info da sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas a sala ja foi iniciada.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                       10, 0));
                 }
 
-                if (room.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+                if (room.GetTipo() == RoomTypeFlags.LOUNGE)
                 {
-                    throw new exception("[Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + "] Channel[ID=" + +Player.GetChannel().getId() + "] tentou trocar info da sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas a sala nao contem essa funcao.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + "] Channel[ID=" + +Player.GetChannel().getId() + "] tentou trocar info da sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas a sala nao contem essa funcao.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                     10, 0));
                 }
                  
                 byte num_info;
                 short roomId;
 
-                if (room.GetMaster() != Player.UserInfo.uid)
+                if (room.GetMaster() != Player.UserInfo.UID)
                 {
-                    if (!Player.UserInfo.UserCapabilities.game_master)
-                        throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou trocar o info da sala[NUMERO=" + room.GetRoomId() + ", MASTER=" + Convert.ToString(room.GetMaster()) + "], mas nao pode trocar o info da sala sem ser master.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    if (!Player.UserInfo.UserCapabilities.IsGameMaster)
+                        throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + "] tentou trocar o info da sala[NUMERO=" + room.GetRoomId() + ", MASTER=" + Convert.ToString(room.GetMaster()) + "], mas nao pode trocar o info da sala sem ser Master.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         11, 0));
                 }
 
@@ -59,7 +59,7 @@ namespace Pangya_GameServer.Handles
 
                 if (num_info <= 0)
                 {
-                    throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou trocar o info da sala[NUMERO=" + room.GetRoomId() + ", MASTER=" + Convert.ToString(room.GetMaster()) + "], mas nao tem nenhum info para trocar do buffer do cliente.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + "] tentou trocar o info da sala[NUMERO=" + room.GetRoomId() + ", MASTER=" + Convert.ToString(room.GetMaster()) + "], mas nao tem nenhum info para trocar do buffer do cliente.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         8, 0));
                 }
 
@@ -73,7 +73,7 @@ namespace Pangya_GameServer.Handles
                             {
                                 var title = Packet.ReadString();
 
-                                if ((room.GetTipo() == ROOM_INFO_TYPE.PRACTICE || room.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE) && title.CompareTo("Single Player Practice Mode") != 0)
+                                if ((room.GetTipo() == RoomTypeFlags.PRACTICE || room.GetTipo() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE) && title.CompareTo("Single Player Practice Mode") != 0)
                                     room.SetNome("Single Player Practice Mode");
                                 else
                                     room.SetNome(title);
@@ -83,8 +83,8 @@ namespace Pangya_GameServer.Handles
                             {
                                 var pwd = Packet.ReadString();
 
-                                if (!string.IsNullOrEmpty(pwd) && pwd.Length > 8 && (room.GetTipo() == ROOM_INFO_TYPE.PRACTICE || room.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE))
-                                    ThrowHackException(Player, "tamanho da str da senha na sala inválida: " + room.GetTipo());
+                                if (!string.IsNullOrEmpty(pwd) && pwd.Length > 8 && (room.GetTipo() == RoomTypeFlags.PRACTICE || room.GetTipo() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE))
+                                    ThrowHackException(Player, "tamanho da str da Password na sala inválida: " + room.GetTipo());
 
                                 room.SetSenha(pwd);
                             }
@@ -92,23 +92,23 @@ namespace Pangya_GameServer.Handles
                         case ROOM_INFO_CHANGE.TIPO:
                             {
                                 var T8 = Packet.ReadByte();
-                                if (Enum.IsDefined(typeof(ROOM_INFO_TYPE), T8))
+                                if (Enum.IsDefined(typeof(RoomTypeFlags), T8))
                                 {
                                     room.SetType(T8);
                                 }
                                 else
-                                    ThrowHackException(Player, "falha ao setar o tipo: " + room.GetTipo());
+                                    ThrowHackException(Player, "falha ao setar o Type: " + room.GetTipo());
                             }
                             break;
                         case ROOM_INFO_CHANGE.COURSE:
                             {
                                 var T8 = Packet.ReadByte();
-                                if (Enum.IsDefined(typeof(ROOM_INFO_COURSE), T8))
+                                if (Enum.IsDefined(typeof(RoomCourseFlags), T8))
                                 {
                                     room.SetCourse(T8);
                                 }
                                 else
-                                    ThrowHackException(Player, "falha ao setar o course: " + room.GetTipo());
+                                    ThrowHackException(Player, "falha ao setar o CourseIndex: " + room.GetTipo());
                             }
                             break;
                         case ROOM_INFO_CHANGE.QNTD_HOLE:
@@ -117,7 +117,7 @@ namespace Pangya_GameServer.Handles
                         case ROOM_INFO_CHANGE.MODO:
                             {
                                 var T8 = Packet.ReadByte();
-                                if (Enum.IsDefined(typeof(ROOM_INFO_MODO), T8))
+                                if (Enum.IsDefined(typeof(RoomHoleType), T8))
                                 {
                                     room.SetModo(T8);
                                 }
@@ -140,7 +140,7 @@ namespace Pangya_GameServer.Handles
                                 if (!(T8 <= room.Players.Count))
                                     room.SetMaxUsers(T8);
                                 else
-                                    ThrowHackException(Player, "falha ao setar o numero de maximo de Players: " + room.GetTipo());
+                                    ThrowHackException(Player, "falha ao setar o RoomID de maximo de Players: " + room.GetTipo());
                             }
                             break;
                         case ROOM_INFO_CHANGE.TEMPO_30S:
@@ -172,15 +172,15 @@ namespace Pangya_GameServer.Handles
                                 var value = Packet.ReadUInt32();
                                 var natural = new SpecialModeFlag(value);
 
-                                if (!natural.natural && GameServer.getInstance().getInfo().propriedade.natural)
+                                if (!natural.IsNaturalMode && GameServer.Instance.getInfo().Property.NaturalMode)
                                 {
-                                    natural.natural = true;
+                                    natural.IsNaturalMode = true;
                                 }
-                                room.SetNatural(natural.ulNaturalAndShortGame);
+                                room.SetNatural(natural.Value);
                                 break;
                             }
                         default:
-                            throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou trocar info da sala[NUMERO=" + room.GetRoomId() + ", MASTER=" + Convert.ToString(room.GetMaster()) + "], mas info change é desconhecido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                            throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + "] tentou trocar info da sala[NUMERO=" + room.GetRoomId() + ", MASTER=" + Convert.ToString(room.GetMaster()) + "], mas info change é desconhecido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                                 9, 0));
                     }
                 }
@@ -191,7 +191,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_CHANGE_INFO_ROOM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_CHANGE_INFO_ROOM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) != STDA_ERROR_TYPE.ROOM)
                 {
@@ -204,10 +204,10 @@ namespace Pangya_GameServer.Handles
         /// <summary>
         /// so vai ser permitido, se passar pelas verificacoes.
         /// </summary>
-        /// <param name="session"></param>
-        /// <param name="ri"></param>
-        /// <param name="_ChannelInfo"></param>
-        private void HandleChangeRoom(Player session, RoomInfo ri, ChannelInfo? _ChannelInfo)
+        /// <param Name="session"></param>
+        /// <param Name="ri"></param>
+        /// <param Name="_ChannelInfo"></param>
+        private void HandleChangeRoom(Player session, GameRoomInfoModel ri, ChannelInfo? _ChannelInfo)
         {
             try
             {
@@ -228,19 +228,19 @@ namespace Pangya_GameServer.Handles
                 ValidateHoleCount(Player, ri);
                 ValidateForbiddenModes(Player, ri);
 
-                switch (ri.GetTipo())
+                switch (ri.GetRoomType())
                 {
-                    case ROOM_INFO_TYPE.STROKE:
+                    case RoomTypeFlags.STROKE:
                         ValidateStrokeSpecific(Player, ri);
                         break;
-                    case ROOM_INFO_TYPE.PANG_BATTLE:
+                    case RoomTypeFlags.PANG_BATTLE:
                         ValidatePangBattleSpecific(Player, ri);
                         break;
-                    case ROOM_INFO_TYPE.MATCH: // se MATCH corresponde ao VS/Approach no seu enum
-                    case ROOM_INFO_TYPE.APPROCH:
+                    case RoomTypeFlags.MATCH: // se MATCH corresponde ao VS/Approach no seu enum
+                    case RoomTypeFlags.APPROCH:
                         ValidateVsApproach(Player, ri, _ChannelInfo);
                         break;
-                    case ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE:
+                    case RoomTypeFlags.SPECIAL_SHUFFLE_COURSE:
                         ValidateShuffleSpecific(Player, ri);
                         break;
                     default:
@@ -254,81 +254,81 @@ namespace Pangya_GameServer.Handles
             }
         }
 
-        private void ValidateRoomTime(Player session, RoomInfo ri, ChannelInfo m_ci)
+        private void ValidateRoomTime(Player session, GameRoomInfoModel ri, ChannelInfo m_ci)
         {
-            switch (ri.GetTipo())
+            switch (ri.GetRoomType())
             {
-                case ROOM_INFO_TYPE.STROKE:
-                    if (ri.qntd_hole == 3 || ri.qntd_hole == 6 || ri.qntd_hole == 9 || ri.qntd_hole == 18)
+                case RoomTypeFlags.STROKE:
+                    if (ri.HoleCount == 3 || ri.HoleCount == 6 || ri.HoleCount == 9 || ri.HoleCount == 18)
                     {
                         ValidateTimeVs(Player, ri, 40, 60, 120, 300);
                     }
                     else
-                        ThrowHackException(Player, $"time_vs inválido: {ri.time_vs}");
+                        ThrowHackException(Player, $"TimeSec inválido: {ri.TimeSec}");
                     break;
 
-                case ROOM_INFO_TYPE.MATCH:
-                case ROOM_INFO_TYPE.PANG_BATTLE:
-                    if (ri.qntd_hole == 6 || ri.qntd_hole == 9 || ri.qntd_hole == 18)
+                case RoomTypeFlags.MATCH:
+                case RoomTypeFlags.PANG_BATTLE:
+                    if (ri.HoleCount == 6 || ri.HoleCount == 9 || ri.HoleCount == 18)
                     {
                         ValidateTimeVs(Player, ri, 30, 40, 60, 120, 300);
                     }
                     else
-                        ThrowHackException(Player, $"time_vs inválido: {ri.time_vs}");
+                        ThrowHackException(Player, $"TimeSec inválido: {ri.TimeSec}");
                     break;
-                case ROOM_INFO_TYPE.PRACTICE:
-                case ROOM_INFO_TYPE.TOURNEY:
-                    // Tournament: pode ter short_game / natural branches; time_30s used (ms)
-                    if (ri.special_flag_mod != null)
+                case RoomTypeFlags.PRACTICE:
+                case RoomTypeFlags.TOURNEY:
+                    // Tournament: pode ter ShortGame / NaturalMode branches; TimeMin used (ms)
+                    if (ri.SpecialModeRoom != null)
                     {
-                        if (ri.special_flag_mod.short_game)
+                        if (ri.SpecialModeRoom.IsShotMode)
                         {
-                            if (ri.qntd_hole == 9 || ri.qntd_hole == 18)
+                            if (ri.HoleCount == 9 || ri.HoleCount == 18)
                                 ValidateTime30s(Player, ri, 15, 30, 20, 25, 35);
                             else
-                                ThrowHackException(Player, $"time_30s inválido: {ri.time_30s / 60000}");
+                                ThrowHackException(Player, $"TimeMin inválido: {ri.TimeMin / 60000}");
                         }
-                        else if (ri.special_flag_mod.natural)
+                        else if (ri.SpecialModeRoom.IsNaturalMode)
                         {
-                            if (ri.qntd_hole == 9)
+                            if (ri.HoleCount == 9)
                                 ValidateTime30s(Player, ri, 15, 30, 20, 25, 35);
-                            else if (ri.qntd_hole == 18)
+                            else if (ri.HoleCount == 18)
                                 ValidateTime30s(Player, ri, 15, 30, 20, 25, 35);
                             else
-                                ThrowHackException(Player, $"time_30s inválido: {ri.time_30s / 60000}");
+                                ThrowHackException(Player, $"TimeMin inválido: {ri.TimeMin / 60000}");
                         }
                     }
                     else
                     {
-                        if (ri.qntd_hole == 9)
+                        if (ri.HoleCount == 9)
                             ValidateTime30s(Player, ri, 15, 20, 25, 30);
-                        else if (ri.qntd_hole == 18)
+                        else if (ri.HoleCount == 18)
                             ValidateTime30s(Player, ri, 35, 40, 45, 50, 55);
                         else
-                            ThrowHackException(Player, $"time_30s inválido: {ri.time_30s / 60000}");
+                            ThrowHackException(Player, $"TimeMin inválido: {ri.TimeMin / 60000}");
                     }
                     break;
 
-                case ROOM_INFO_TYPE.GUILD_BATTLE:
-                    if (ri.qntd_hole == 9)
+                case RoomTypeFlags.GUILD_BATTLE:
+                    if (ri.HoleCount == 9)
                         ValidateTime30s(Player, ri, 15, 20, 25, 30);
-                    else if (ri.qntd_hole == 18)
+                    else if (ri.HoleCount == 18)
                         ValidateTime30s(Player, ri, 35, 40, 45, 50, 55);
                     else
-                        ThrowHackException(Player, $"time_30s inválido: {ri.time_30s / 60000}");
+                        ThrowHackException(Player, $"TimeMin inválido: {ri.TimeMin / 60000}");
                     break;
-                case ROOM_INFO_TYPE.APPROCH:
-                    if (ri.qntd_hole == 3 || ri.qntd_hole == 6 || ri.qntd_hole == 9)
+                case RoomTypeFlags.APPROCH:
+                    if (ri.HoleCount == 3 || ri.HoleCount == 6 || ri.HoleCount == 9)
                         ValidateTime30s(Player, ri, 40);
                     else
-                        ThrowHackException(Player, $"time_30s inválido: {ri.time_30s / 1000}");
+                        ThrowHackException(Player, $"TimeMin inválido: {ri.TimeMin / 1000}");
                     break;
 
-                case ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE:
-                    if (ri.qntd_hole == 18)
+                case RoomTypeFlags.SPECIAL_SHUFFLE_COURSE:
+                    if (ri.HoleCount == 18)
                         ValidateTime30s(Player, ri, 40);
                     else
-                        ThrowHackException(Player, $"time_30s inválido: {ri.time_30s / 60000}");
+                        ThrowHackException(Player, $"TimeMin inválido: {ri.TimeMin / 60000}");
                     break;
 
                 default:
@@ -337,62 +337,62 @@ namespace Pangya_GameServer.Handles
         }
 
         // --------- Stroke specific checks (shotTime, Modo for 18H, holes set) ----------
-        private void ValidateStrokeSpecific(Player session, RoomInfo ri)
+        private void ValidateStrokeSpecific(Player session, GameRoomInfoModel ri)
         {
-            // hole count already validado em ValidateHoleCount; validar shotTime (time_vs) em segundos permitidos
+            // hole count already validado em ValidateHoleCount; validar shotTime (TimeSec) em segundos permitidos
             uint[] allowedShotSeconds = [40, 60, 120, 300];
-            if (!allowedShotSeconds.Contains(ri.time_vs / 1000))
+            if (!allowedShotSeconds.Contains(ri.TimeSec / 1000))
                 ThrowHackException(Player, "ShotTime inválido (Stroke)");
 
             // Se 18 holes então Modo deve ser 0 ou 3
-            if (ri.qntd_hole == 18)
+            if (ri.HoleCount == 18)
             {
-                if (ri.modo != 0 && ri.modo != 3)
+                if (ri.HoleMode != 0 && ri.HoleMode != 3)
                     ThrowHackException(Player, "Modo inválido no Stroke 18H");
             }
         }
 
         // --------- Pang Battle specific ----------
-        private void ValidatePangBattleSpecific(Player session, RoomInfo ri)
+        private void ValidatePangBattleSpecific(Player session, GameRoomInfoModel ri)
         {
             // Modo valid
-            if (ri.modo != 0 && ri.modo != 3)
+            if (ri.HoleMode != 0 && ri.HoleMode != 3)
                 ThrowHackException(Player, "Modo inválido no Pang Battle");
 
             // shotTime valid (seconds)
             uint[] allowedShotSeconds = [30, 40, 60, 120, 300];
-            if (!allowedShotSeconds.Contains(ri.time_vs / 1000))
+            if (!allowedShotSeconds.Contains(ri.TimeSec / 1000))
                 ThrowHackException(Player, "ShotTime inválido no Pang Battle");
         }
 
         // --------- VS / APPROACH (game type 4 / 5) ----------
-        private void ValidateVsApproach(Player session, RoomInfo ri, ChannelInfo m_ci)
+        private void ValidateVsApproach(Player session, GameRoomInfoModel ri, ChannelInfo m_ci)
         {
-            if (ri.GetTipo() == ROOM_INFO_TYPE.MATCH)
+            if (ri.GetRoomType() == RoomTypeFlags.MATCH)
             {
                 // gameTimeLimit checks (valores em milissegundos como no C++)
-                if (ri.qntd_hole == 9)
+                if (ri.HoleCount == 9)
                 {
                     uint[] allowed = [900000, 1200000, 1500000, 1800000];
-                    if (!allowed.Contains(ri.time_vs))
+                    if (!allowed.Contains(ri.TimeSec))
                         ThrowHackException(Player, "gameTimeLimit inválido para 9H");
                 }
-                else if (ri.qntd_hole == 18)
+                else if (ri.HoleCount == 18)
                 {
                     uint[] allowed = [1800000, 2100000, 2400000, 2700000, 3000000];
-                    if (!allowed.Contains(ri.time_vs))
+                    if (!allowed.Contains(ri.TimeSec))
                         ThrowHackException(Player, "gameTimeLimit inválido para 18H");
 
-                    if (ri.modo != 0 && ri.modo != 3)//nao tenho ideia do que seja 'Modo', deve ser o 'mode/modo'
+                    if (ri.HoleMode != 0 && ri.HoleMode != 3)//nao tenho ideia do que seja 'Modo', deve ser o 'mode/HoleMode'
                         ThrowHackException(Player, "Modo inválido em 18H");
                 }
-                else if (ri.qntd_hole == 6)
+                else if (ri.HoleCount == 6)
                 {
                     uint[] allowed = [1800000, 2100000, 2400000, 2700000, 40000];
-                    if (!allowed.Contains(ri.time_vs))
+                    if (!allowed.Contains(ri.TimeSec))
                         ThrowHackException(Player, "gameTimeLimit inválido para 6H");
 
-                    if (ri.modo != 0 && ri.modo != 3)//nao tenho ideia do que seja 'Modo', deve ser o 'mode/modo'
+                    if (ri.HoleMode != 0 && ri.HoleMode != 3)//nao tenho ideia do que seja 'Modo', deve ser o 'mode/HoleMode'
                         ThrowHackException(Player, "Modo inválido em 6");
                 }
 
@@ -401,16 +401,16 @@ namespace Pangya_GameServer.Handles
 
                 // UserLimit válido? (4,10,20,30) — GMs podem usar 100 ou 200
                 int[] allowedPlayers = [4, 10, 20, 30];
-                if (!allowedPlayers.Contains(ri.max_player) && !Player.UserInfo.UserCapabilities.game_master)
+                if (!allowedPlayers.Contains(ri.MaxUsers) && !Player.UserInfo.UserCapabilities.IsGameMaster)
                     ThrowHackException(Player, "UserLimit inválido no Match");
             }
             else
             {
                 // gameTimeLimit checks (valores em milissegundos como no C++)
-                if (ri.qntd_hole == 3 || ri.qntd_hole == 6 || ri.qntd_hole == 9)
+                if (ri.HoleCount == 3 || ri.HoleCount == 6 || ri.HoleCount == 9)
                 {
                     uint[] allowed = [40000];
-                    if (!allowed.Contains(ri.time_30s))
+                    if (!allowed.Contains(ri.TimeMin))
                         ThrowHackException(Player, "gameTimeLimit inválido para 9H");
                 }
                 else
@@ -418,58 +418,58 @@ namespace Pangya_GameServer.Handles
 
                 // UserLimit válido? (4,20,30) — GMs podem usar 100 ou 200
                 int[] allowedPlayers = [6, 20, 30];
-                if (!allowedPlayers.Contains(ri.max_player) && !Player.UserInfo.UserCapabilities.game_master)
+                if (!allowedPlayers.Contains(ri.MaxUsers) && !Player.UserInfo.UserCapabilities.IsGameMaster)
                     ThrowHackException(Player, "UserLimit inválido Approach");
             }
 
-            // Canal normal não permite Modo aleatório (random) — apenas Modo == 3 é permitido para "random"
-            if (m_ci != null && m_ci.type.all && ri.modo != 3)
-                ThrowHackException(Player, "Random Modo proibido no canal normal");
+            // Canal Normal não permite Modo aleatório (random) — apenas Modo == 3 é permitido para "random"
+            if (m_ci != null && m_ci.type.all && ri.HoleMode != 3)
+                ThrowHackException(Player, "Random Modo proibido no canal Normal");
         }
 
-        // --------- Shuffle (tipo 6) ----------
-        private void ValidateShuffleSpecific(Player session, RoomInfo ri)
+        // --------- Shuffle (Type 6) ----------
+        private void ValidateShuffleSpecific(Player session, GameRoomInfoModel ri)
         {
             int[] allowedHoles = [18];
-            if (!allowedHoles.Contains(ri.qntd_hole))
+            if (!allowedHoles.Contains(ri.HoleCount))
                 ThrowHackException(Player, "HoleNum inválido no Shuffle");
 
             int[] allowedPlayers = [30];
-            if (!allowedPlayers.Contains(ri.max_player))
+            if (!allowedPlayers.Contains(ri.MaxUsers))
                 ThrowHackException(Player, "UserLimit inválido no Shuffle");
 
             uint[] allowedTime = [2400000 / 60000];
-            if (!allowedTime.Contains(ri.time_30s / 60000))
-                ThrowHackException(Player, "time_30s inválido no Shuffle");
+            if (!allowedTime.Contains(ri.TimeMin / 60000))
+                ThrowHackException(Player, "TimeMin inválido no Shuffle");
 
-            if (ri.course != ROOM_INFO_COURSE.RANDOM)
+            if (ri.CourseIndex != RoomCourseFlags.RANDOM)
                 ThrowHackException(Player, "Course/Map inválido no Shuffle");
 
-            if (ri.modo != 0 && ri.modo != 5)
+            if (ri.HoleMode != 0 && ri.HoleMode != 5)
                 ThrowHackException(Player, "Modo inválido no Shuffle");
         }
 
         // --------- ValidateRoomName ----------
-        private void ValidateRoomName(Player session, RoomInfo ri)
+        private void ValidateRoomName(Player session, GameRoomInfoModel ri)
         {
             bool _check = true;
-            switch (ri.GetTipo())
+            switch (ri.GetRoomType())
             {
-                case ROOM_INFO_TYPE.STROKE:
-                case ROOM_INFO_TYPE.MATCH:
-                case ROOM_INFO_TYPE.TOURNEY:
-                case ROOM_INFO_TYPE.TOURNEY_TEAM:
-                case ROOM_INFO_TYPE.GUILD_BATTLE:
-                case ROOM_INFO_TYPE.APPROCH:
-                case ROOM_INFO_TYPE.PANG_BATTLE:
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE:
-                case ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE:
-                case ROOM_INFO_TYPE.LOUNGE:
-                    if (string.IsNullOrEmpty(ri.name))
+                case RoomTypeFlags.STROKE:
+                case RoomTypeFlags.MATCH:
+                case RoomTypeFlags.TOURNEY:
+                case RoomTypeFlags.TOURNEY_TEAM:
+                case RoomTypeFlags.GUILD_BATTLE:
+                case RoomTypeFlags.APPROCH:
+                case RoomTypeFlags.PANG_BATTLE:
+                case RoomTypeFlags.GRAND_ZODIAC_PRACTICE:
+                case RoomTypeFlags.SPECIAL_SHUFFLE_COURSE:
+                case RoomTypeFlags.LOUNGE:
+                    if (string.IsNullOrEmpty(ri.Name))
                         _check = false;
                     break;
-                case ROOM_INFO_TYPE.PRACTICE:
-                    if (!string.IsNullOrEmpty(ri.name) && ri.name.CompareTo("Single Player Practice Mode") != 0)
+                case RoomTypeFlags.PRACTICE:
+                    if (!string.IsNullOrEmpty(ri.Name) && ri.Name.CompareTo("Single Player Practice Mode") != 0)
                         _check = false;
                     break;
                 default:
@@ -478,41 +478,41 @@ namespace Pangya_GameServer.Handles
             }
 
             if (!_check)
-                ThrowHackException(Player, "Nome da sala inválido: " + ri.GetTipo());
+                ThrowHackException(Player, "Nome da sala inválido: " + ri.GetRoomType());
         }
 
         // --------- ValidateRoomPass ----------
-        private void ValidateRoomPass(Player session, RoomInfo ri)
+        private void ValidateRoomPass(Player session, GameRoomInfoModel ri)
         {
-            if (ri.GetTipo() == ROOM_INFO_TYPE.PRACTICE || ri.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+            if (ri.GetRoomType() == RoomTypeFlags.PRACTICE || ri.GetRoomType() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
             {
-                if (!string.IsNullOrEmpty(ri.senha) && ri.senha.Length < 8 && !ri.senha.Contains("MDA"))
-                    ThrowHackException(Player, "tamanho da str da senha na sala inválida: " + ri.GetTipo());
+                if (!string.IsNullOrEmpty(ri.Password) && ri.Password.Length < 8 && !ri.Password.Contains("MDA"))
+                    ThrowHackException(Player, "tamanho da str da Password na sala inválida: " + ri.GetRoomType());
             }
             else
             {
-                if (!string.IsNullOrEmpty(ri.senha) && ri.senha.Length > 14)
-                    ThrowHackException(Player, "tamanho da str da senha na sala inválida: " + ri.GetTipo());
+                if (!string.IsNullOrEmpty(ri.Password) && ri.Password.Length > 14)
+                    ThrowHackException(Player, "tamanho da str da Password na sala inválida: " + ri.GetRoomType());
             }
         }
 
-        private void ValidateRoomCreate(Player session, RoomInfo ri)
+        private void ValidateRoomCreate(Player session, GameRoomInfoModel ri)
         {
             bool _check;
-            switch (ri.GetTipo())
+            switch (ri.GetRoomType())
             {
-                case ROOM_INFO_TYPE.STROKE:
-                case ROOM_INFO_TYPE.MATCH:
-                case ROOM_INFO_TYPE.TOURNEY:
-                case ROOM_INFO_TYPE.TOURNEY_TEAM:
-                case ROOM_INFO_TYPE.GUILD_BATTLE:
-                case ROOM_INFO_TYPE.APPROCH:
-                case ROOM_INFO_TYPE.PANG_BATTLE:
-                case ROOM_INFO_TYPE.GRAND_PRIX:
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE:
-                case ROOM_INFO_TYPE.PRACTICE:
-                case ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE:
-                case ROOM_INFO_TYPE.LOUNGE:
+                case RoomTypeFlags.STROKE:
+                case RoomTypeFlags.MATCH:
+                case RoomTypeFlags.TOURNEY:
+                case RoomTypeFlags.TOURNEY_TEAM:
+                case RoomTypeFlags.GUILD_BATTLE:
+                case RoomTypeFlags.APPROCH:
+                case RoomTypeFlags.PANG_BATTLE:
+                case RoomTypeFlags.GRAND_PRIX:
+                case RoomTypeFlags.GRAND_ZODIAC_PRACTICE:
+                case RoomTypeFlags.PRACTICE:
+                case RoomTypeFlags.SPECIAL_SHUFFLE_COURSE:
+                case RoomTypeFlags.LOUNGE:
                     _check = true;
                     break;
                 default:
@@ -521,42 +521,42 @@ namespace Pangya_GameServer.Handles
             }
 
             if (!_check)
-                ThrowHackException(Player, "Tipo de jogo inválido: " + ri.GetTipo());
+                ThrowHackException(Player, "Tipo de jogo inválido: " + ri.GetRoomType());
         }
 
-        private void ValidateMaxPlayers(Player session, RoomInfo ri)
+        private void ValidateMaxPlayers(Player session, GameRoomInfoModel ri)
         {
             int[] allowedPlayers;
 
-            switch (ri.GetTipo())
+            switch (ri.GetRoomType())
             {
-                case ROOM_INFO_TYPE.STROKE:
+                case RoomTypeFlags.STROKE:
                     allowedPlayers = [2, 3, 4];
                     break;
-                case ROOM_INFO_TYPE.MATCH:
+                case RoomTypeFlags.MATCH:
                     allowedPlayers = [2, 4];
                     break;
-                case ROOM_INFO_TYPE.TOURNEY:
-                case ROOM_INFO_TYPE.TOURNEY_TEAM:
-                case ROOM_INFO_TYPE.GUILD_BATTLE:
+                case RoomTypeFlags.TOURNEY:
+                case RoomTypeFlags.TOURNEY_TEAM:
+                case RoomTypeFlags.GUILD_BATTLE:
                     allowedPlayers = [10, 20, 30];
                     break;
-                case ROOM_INFO_TYPE.APPROCH:
+                case RoomTypeFlags.APPROCH:
                     allowedPlayers = [6, 20, 30];
                     break;
-                case ROOM_INFO_TYPE.PANG_BATTLE:
+                case RoomTypeFlags.PANG_BATTLE:
                     allowedPlayers = [2, 4];
                     break;
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE:
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_ADV:
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_INT:
-                case ROOM_INFO_TYPE.PRACTICE:
+                case RoomTypeFlags.GRAND_ZODIAC_PRACTICE:
+                case RoomTypeFlags.GRAND_ZODIAC_ADV:
+                case RoomTypeFlags.GRAND_ZODIAC_INT:
+                case RoomTypeFlags.PRACTICE:
                     allowedPlayers = [1];
                     break;
-                case ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE:
+                case RoomTypeFlags.SPECIAL_SHUFFLE_COURSE:
                     allowedPlayers = [30];
                     break;
-                case ROOM_INFO_TYPE.LOUNGE:
+                case RoomTypeFlags.LOUNGE:
                     allowedPlayers = [10, 20, 30];
                     break;
                 default:
@@ -564,91 +564,91 @@ namespace Pangya_GameServer.Handles
                     break;
             }
 
-            if (allowedPlayers.Length > 0 && Array.IndexOf(allowedPlayers, ri.max_player) == -1)
-                ThrowHackException(Player, "max_player inválido: " + ri.max_player);
+            if (allowedPlayers.Length > 0 && Array.IndexOf(allowedPlayers, ri.MaxUsers) == -1)
+                ThrowHackException(Player, "MaxUsers inválido: " + ri.MaxUsers);
         }
 
-        private void ValidateHoleCount(Player session, RoomInfo ri)
+        private void ValidateHoleCount(Player session, GameRoomInfoModel ri)
         {
             int[] allowedHoles = Array.Empty<int>();
-            switch (ri.GetTipo())
+            switch (ri.GetRoomType())
             {
-                case ROOM_INFO_TYPE.STROKE:
+                case RoomTypeFlags.STROKE:
                     allowedHoles = [3, 6, 9, 18];
                     break;
-                case ROOM_INFO_TYPE.MATCH:
+                case RoomTypeFlags.MATCH:
                     allowedHoles = [6, 9, 18];
                     break;
-                case ROOM_INFO_TYPE.TOURNEY:
-                case ROOM_INFO_TYPE.TOURNEY_TEAM:
-                case ROOM_INFO_TYPE.GUILD_BATTLE:
+                case RoomTypeFlags.TOURNEY:
+                case RoomTypeFlags.TOURNEY_TEAM:
+                case RoomTypeFlags.GUILD_BATTLE:
                     allowedHoles = [9, 18];
                     break;
-                case ROOM_INFO_TYPE.APPROCH:
+                case RoomTypeFlags.APPROCH:
                     allowedHoles = [3, 6, 9];
                     break;
-                case ROOM_INFO_TYPE.PANG_BATTLE:
+                case RoomTypeFlags.PANG_BATTLE:
                     allowedHoles = [6, 9, 18];
                     break;
-                case ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE:
+                case RoomTypeFlags.SPECIAL_SHUFFLE_COURSE:
                     allowedHoles = [18];
                     break;
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE:
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_ADV:
-                case ROOM_INFO_TYPE.GRAND_ZODIAC_INT:
+                case RoomTypeFlags.GRAND_ZODIAC_PRACTICE:
+                case RoomTypeFlags.GRAND_ZODIAC_ADV:
+                case RoomTypeFlags.GRAND_ZODIAC_INT:
                     allowedHoles = [1];
                     break;
-                case ROOM_INFO_TYPE.PRACTICE:
+                case RoomTypeFlags.PRACTICE:
                     allowedHoles = [1, 9, 18];
                     break;
-                case ROOM_INFO_TYPE.LOUNGE://limite e 18, eu acho
+                case RoomTypeFlags.LOUNGE://limite e 18, eu acho
                     allowedHoles = [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
                     break;
             }
 
-            if (allowedHoles.Length > 0 && Array.IndexOf(allowedHoles, ri.qntd_hole) == -1)
-                ThrowHackException(Player, "qntd_hole inválido: " + ri.qntd_hole);
+            if (allowedHoles.Length > 0 && Array.IndexOf(allowedHoles, ri.HoleCount) == -1)
+                ThrowHackException(Player, "HoleCount inválido: " + ri.HoleCount);
         }
 
-        private void ValidateForbiddenModes(Player session, RoomInfo ri)
+        private void ValidateForbiddenModes(Player session, GameRoomInfoModel ri)
         {
-            if (ri.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_INT || ri.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_ADV)
+            if (ri.GetRoomType() == RoomTypeFlags.GRAND_ZODIAC_INT || ri.GetRoomType() == RoomTypeFlags.GRAND_ZODIAC_ADV)
             {
-                ThrowHackException(Player, "tentou criar modo proibido");
+                ThrowHackException(Player, "tentou criar HoleMode proibido");
             }
         }
 
-        private void ValidateTime30s(Player session, RoomInfo ri, params uint[] allowedMinutes)
+        private void ValidateTime30s(Player session, GameRoomInfoModel ri, params uint[] allowedMinutes)
         {
-            if (ri.GetTipo() == ROOM_INFO_TYPE.APPROCH)//unico com time minute em segundos
+            if (ri.GetRoomType() == RoomTypeFlags.APPROCH)//unico com time minute em segundos
             {
-                if (ri.time_30s < (40 * 1000))
-                    ThrowHackException(Player, $"time_30s inválido para o approach: {ri.time_30s}");
+                if (ri.TimeMin < (40 * 1000))
+                    ThrowHackException(Player, $"TimeMin inválido para o Approach: {ri.TimeMin}");
 
-                if (!allowedMinutes.Contains(ri.time_30s / 1000))
-                    ThrowHackException(Player, $"time_30s inválido para o approach: {ri.time_30s / 1000}");
+                if (!allowedMinutes.Contains(ri.TimeMin / 1000))
+                    ThrowHackException(Player, $"TimeMin inválido para o Approach: {ri.TimeMin / 1000}");
             }
             else
             {
-                if (ri.time_30s < (15 * 60000))
-                    ThrowHackException(Player, $"time_30s inválido: {ri.time_30s / 60000}");
+                if (ri.TimeMin < (15 * 60000))
+                    ThrowHackException(Player, $"TimeMin inválido: {ri.TimeMin / 60000}");
 
-                if (!allowedMinutes.Contains(ri.time_30s / 60000))
-                    ThrowHackException(Player, $"time_30s inválido: {ri.time_30s / 60000}");
+                if (!allowedMinutes.Contains(ri.TimeMin / 60000))
+                    ThrowHackException(Player, $"TimeMin inválido: {ri.TimeMin / 60000}");
             }
         }
 
-        private void ValidateTimeVs(Player session, RoomInfo ri, params uint[] allowedSeconds)
+        private void ValidateTimeVs(Player session, GameRoomInfoModel ri, params uint[] allowedSeconds)
         {
-            if ((ri.GetTipo() == ROOM_INFO_TYPE.STROKE || ri.GetTipo() == ROOM_INFO_TYPE.MATCH)
-               && ri.time_vs < (40 * 1000))
+            if ((ri.GetRoomType() == RoomTypeFlags.STROKE || ri.GetRoomType() == RoomTypeFlags.MATCH)
+               && ri.TimeSec < (40 * 1000))
             {
-                ThrowHackException(Player, $"time_vs inválido: {ri.time_vs}");
+                ThrowHackException(Player, $"TimeSec inválido: {ri.TimeSec}");
             }
 
-            if (!allowedSeconds.Contains(ri.time_vs / 1000))
+            if (!allowedSeconds.Contains(ri.TimeSec / 1000))
             {
-                ThrowHackException(Player, $"time_vs inválido: {ri.time_vs}");
+                ThrowHackException(Player, $"TimeSec inválido: {ri.TimeSec}");
             }
         }
 
@@ -657,7 +657,7 @@ namespace Pangya_GameServer.Handles
         {
             var ri = Player.GetRoom();
 
-            string msg = $"[Room::ThrowHackException] [Error] PLAYER [UID={Player.UserInfo.uid}] " +
+            string msg = $"[Room::ThrowHackException] [Error] Normal [UID={Player.UserInfo.UID}] " +
                          $"Channel[ID={ri.GetChannelId()}] tentou criar sala [Nome={ri.getName()}, PWD={ri.getPass()}, TIPO={ri.GetTipo()}], {motivo}. Hacker ou Bug";
 
             throw new exception(msg, ExceptionError.STDA_MAKE_ERROR_TYPE(

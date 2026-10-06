@@ -60,7 +60,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta + Convert.ToString(m_uid));
 
-            checkResponse(r, "nao conseguiu pegar o pang do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu pegar o Pang do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }
@@ -68,6 +68,6 @@ namespace Pangya_GameServer.Repository
         private uint m_uid = new uint();
         private ulong m_pang = new ulong();
 
-        private const string m_szConsulta = "SELECT uid, pang FROM pangya.user_info WHERE UID = ";
+        private const string m_szConsulta = "SELECT UID, Pang FROM pangya.user_info WHERE UID = ";
     }
 }

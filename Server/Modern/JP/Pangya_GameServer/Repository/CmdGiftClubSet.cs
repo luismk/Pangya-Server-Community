@@ -52,13 +52,13 @@ namespace Pangya_GameServer.Repository
 
             if (m_id <= 0)
             {
-                throw new exception("[CmdGiftClubSet::prepareConsulta][Error] ClubSet id[value=" + Convert.ToString(m_id) + "] is invalid", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdGiftClubSet::prepareConsulta][Error] ClubSet Login[value=" + Convert.ToString(m_id) + "] is invalid", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
             var r = _update(m_szConsulta[0] + Convert.ToString(m_uid) + m_szConsulta[1] + Convert.ToString(m_id));
 
-            checkResponse(r, "PLAYER[UID=" + Convert.ToString(m_uid) + "] nao conseguiu presentear o ClubSet[ID=" + Convert.ToString(m_id) + "]");
+            checkResponse(r, "Normal[UID=" + Convert.ToString(m_uid) + "] nao conseguiu presentear o ClubSet[ID=" + Convert.ToString(m_id) + "]");
 
             return r;
         }

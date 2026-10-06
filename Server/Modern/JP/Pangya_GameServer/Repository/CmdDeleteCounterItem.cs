@@ -111,7 +111,7 @@ namespace Pangya_GameServer.Repository
             string str_ids = string.Join(",", v_id);
             var r = _delete(m_szConsulta[0] + Convert.ToString(m_uid) + m_szConsulta[1] + str_ids + m_szConsulta[2]);
 
-            checkResponse(r, "nao conseguiu deletar Counter Item[ID={" + str_ids + "}] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu deletar Counter Item[ID={" + str_ids + "}] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

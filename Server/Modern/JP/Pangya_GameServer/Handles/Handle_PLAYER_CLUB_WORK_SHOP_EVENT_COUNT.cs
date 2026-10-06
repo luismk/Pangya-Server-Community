@@ -25,7 +25,7 @@ namespace Pangya_GameServer.Handles
         public override async Task Handle()
         {
             var p = new Packet();
-            p.init_plain(0x24B); // packet id
+            p.init_plain(0x24B); // packet Login
             p.WriteInt32(0);//sub code!  
             for (int i = 0; i < 16; i++)
             {

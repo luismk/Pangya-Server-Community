@@ -51,7 +51,7 @@ namespace Pangya_GameServer.Models
         }
         public short m_hole;
         public bool m_hole_extra_flag; // Hole Extra, type true está no hole extra, false não
-        public short m_hole_extra; // Sequência do hole extra, para pegar no course, para fazer os calculos no Approach
+        public short m_hole_extra; // Sequência do hole extra, para pegar no CourseIndex, para fazer os calculos no Approach
         public uint m_count_finish_hole = new uint(); // Número(Soma) de holes que foram terminados
         public int m_player_win_pb = new int(); // Player que ganhou o Pang Battle
         public List<PangBattleHolePang> v_player_win = new List<PangBattleHolePang>(); // OID do player que ganhou o hole ou -1 se empatou

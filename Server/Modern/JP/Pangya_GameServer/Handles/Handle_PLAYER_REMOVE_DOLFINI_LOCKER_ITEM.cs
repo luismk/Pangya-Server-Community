@@ -32,7 +32,7 @@ namespace Pangya_GameServer.Handles
 
                 if (count == 0)
                 {
-                    throw new exception("[Handle_PLAYER_REMOVE_DOLFINI_LOCKER_ITEM][Error] Count é 0, PLAYER [UID=" + Player.UserInfo.uid + "]",
+                    throw new exception("[Handle_PLAYER_REMOVE_DOLFINI_LOCKER_ITEM][Error] Count é 0, Normal [UID=" + Player.UserInfo.UID + "]",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 503, 5100404));
                 }
 
@@ -49,13 +49,13 @@ namespace Pangya_GameServer.Handles
 
                     if (item_in_locker == null)
                     {
-                        throw new exception("[Handle_PLAYER_REMOVE_DOLFINI_LOCKER_ITEM][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou tirar um item que não possui no Locker. [ID=" + aTI[index].item.id + "]",
+                        throw new exception("[Handle_PLAYER_REMOVE_DOLFINI_LOCKER_ITEM][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou tirar um item que não possui no Locker. [ID=" + aTI[index].item.id + "]",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 550, 5100451));
                     }
 
                     // Remove do Banco de Dados
-                    NormalManagerDB.getInstance().add(4,
-                         new CmdDeleteDolfiniLockerItem(Player.UserInfo.uid, aTI[index].index));
+                    NormalManagerDB.Instance.add(4,
+                         new CmdDeleteDolfiniLockerItem(Player.UserInfo.UID, aTI[index].index));
 
                     // Remove da lista em memória do Locker
                     Player.Inventory.DolfineLocker.v_item.Remove(item_in_locker);
@@ -81,20 +81,20 @@ namespace Pangya_GameServer.Handles
                     // Adiciona de volta ao inventário principal do Player
                     Player.Inventory.WarehouseItems.Add(aWi[index].id, aWi[index]);
 
-                    _smp.message_pool.getInstance().push(new message("[Dolfini Locker::RemoveItem][Success] PLAYER [UID=" + Player.UserInfo.uid + "] removeu o Item[TYPEID=" + aWi[index]._typeid + "] do Locker.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Dolfini Locker::RemoveItem][Success] Normal [UID=" + Player.UserInfo.UID + "] removeu o Item[TYPEID=" + aWi[index]._typeid + "] do Locker.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 // 3. Sincronização: Pacote 0xEC (Atualização do Warehouse)
                 p.init_plain(0xEC);
                 p.WriteUInt32(count);
-                p.WriteByte(0); // Sub-tipo: Retirada de Locker
+                p.WriteByte(0); // Sub-Type: Retirada de Locker
                 p.WriteUInt64(Player.UserInfo.Statistics.pang);
                 p.WriteUInt32(0); // Unknown padding
 
                 for (int i = 0; i < count; ++i)
                 {
                     p.WriteBytes(aTI[i].item.ToArray()); // 168 bytes do DolfiniItem
-                    p.WriteByte(3); // Flag de estado
+                    p.WriteByte(3); // ServerFlag de estado
                     p.WriteBytes(aWi[i].ToArray()); // Estrutura do Warehouse
                 }
                 Player.Send(p);
@@ -111,7 +111,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_REMOVE_DOLFINI_LOCKER_ITEM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_REMOVE_DOLFINI_LOCKER_ITEM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x16F);
                 uint errorCode = (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL)

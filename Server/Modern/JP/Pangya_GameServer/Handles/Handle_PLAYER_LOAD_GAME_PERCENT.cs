@@ -16,7 +16,7 @@ namespace Pangya_GameServer.Handles
            
             try
             {
-                var r = Player.GetGameRoom() ?? throw new exception("[Error] PLAYER[UID: " + Player.UserInfo.uid + "] tentou mandar a porcentagem do jogo carregado na sala[NUMEROR=" + (Player.UserInfo.Member.sala_numero) + "], mas ele nao esta em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                var r = Player.GetGameRoom() ?? throw new exception("[Error] Normal[UID: " + Player.UserInfo.UID + "] tentou mandar a porcentagem do jogo carregado na sala[NUMEROR=" + (Player.UserInfo.Member.RoomID) + "], mas ele nao esta em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         1, 0x551001));
 
 
@@ -24,7 +24,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_LOAD_GAME_PERCENT][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_LOAD_GAME_PERCENT][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

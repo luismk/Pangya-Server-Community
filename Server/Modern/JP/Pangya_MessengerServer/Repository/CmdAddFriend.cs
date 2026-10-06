@@ -53,11 +53,11 @@ namespace Pangya_MessengerServer.Repository
 
             if (m_fi.uid == 0)
             {
-                throw new exception("[CmdAddFriend::prepareConsulta][Error] m_fi.uid is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdAddFriend::prepareConsulta][Error] m_fi.UID is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
-            // Zero Bit Online And Sex Of State Flag
+            // Zero Bit Online And Sex Of State ServerFlag
             m_fi.state.online = 0;
             m_fi.state.sex = 0;
 

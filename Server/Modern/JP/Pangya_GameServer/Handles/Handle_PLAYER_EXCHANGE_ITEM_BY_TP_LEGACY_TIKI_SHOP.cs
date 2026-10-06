@@ -30,12 +30,12 @@ namespace Pangya_GameServer.Handles
             {
 #if RELEASE
                 // Log de depuração para ambiente de lançamento
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_EXCHANGE_ITEM_BY_TP_LEGACY_TIKI_SHOP][Success] PLAYER [UID=" + Player.UserInfo.uid + "] solicitou troca na Tiki Shop.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_EXCHANGE_ITEM_BY_TP_LEGACY_TIKI_SHOP][Success] Normal [UID=" + Player.UserInfo.UID + "] solicitou troca na Tiki Shop.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 #endif
                 // 1. Verificação de Bloqueio
-                if (Player.UserInfo.block_flag.m_flag.legacy_tiki_shop)
+                if (Player.UserInfo.BlockFlag.Flag.LegacyTikiShop)
                 {
-                    throw new exception("[Handle_PLAYER_EXCHANGE_ITEM_BY_TP_LEGACY_TIKI_SHOP][Error] PLAYER [UID=" + Player.UserInfo.uid + "] está bloqueado no Legacy Tiki Shop.",
+                    throw new exception("[Handle_PLAYER_EXCHANGE_ITEM_BY_TP_LEGACY_TIKI_SHOP][Error] Normal [UID=" + Player.UserInfo.UID + "] está bloqueado no Legacy Tiki Shop.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 4000, 1));
                 }
 
@@ -51,7 +51,7 @@ namespace Pangya_GameServer.Handles
                     var tsetp = new stLegacyTikiShopExchangeTP().ToRead(Packet);
 
                     // Valida se o item base existe no IFF
-                    var @base = sIff.getInstance().findCommomItem(tsetp._typeid);
+                    var @base = sIff.Instance.findCommomItem(tsetp._typeid);
                     if (@base == null)
                     {
                         throw new exception("[Handle_PLAYER_EXCHANGE_ITEM_BY_TP_LEGACY_TIKI_SHOP][Error] Item [TYPEID=" + tsetp._typeid + "] não existe no IFF.",
@@ -59,7 +59,7 @@ namespace Pangya_GameServer.Handles
                     }
 
                     // Valida se o item está cadastrado na PointShop (Tiki Shop)
-                    var point_shop = sIff.getInstance().findPointShop(tsetp._typeid);
+                    var point_shop = sIff.Instance.findPointShop(tsetp._typeid);
                     if (point_shop == null)
                     {
                         throw new exception("[Handle_PLAYER_EXCHANGE_ITEM_BY_TP_LEGACY_TIKI_SHOP][Error] Item [TYPEID=" + tsetp._typeid + "] não está na PointShop.",
@@ -103,7 +103,7 @@ namespace Pangya_GameServer.Handles
                 // 4. Atualização de Saldo e Banco de Dados
                 Player.UserInfo.PointShopLegacy -= total_tiki_pts_cost;
 
-                NormalManagerDB.getInstance().add(0, new CmdUpdateLegacyTikiShopPoint(Player.UserInfo.uid, Player.UserInfo.PointShopLegacy));
+                NormalManagerDB.Instance.add(0, new CmdUpdateLegacyTikiShopPoint(Player.UserInfo.UID, Player.UserInfo.PointShopLegacy));
 
                 // 5. Inserção dos Itens no Inventário
                 var rai = ItemManager.addItem(v_item_to_add, Player, 0, 0);
@@ -153,7 +153,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_EXCHANGE_ITEM_BY_TP_LEGACY_TIKI_SHOP][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_EXCHANGE_ITEM_BY_TP_LEGACY_TIKI_SHOP][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x1EA);
                 uint errorCode = (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL)

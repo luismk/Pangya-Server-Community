@@ -136,7 +136,7 @@ namespace Pangya_GameServer.Models
     {
         public uint uid;
         public bool is_premium;
-        public bool is_playing; // se não estiver jogando, ele está na sala lounge
+        public bool is_playing; // se não estiver jogando, ele está na sala Lounge
 
         public stPlayerReward()
         { }

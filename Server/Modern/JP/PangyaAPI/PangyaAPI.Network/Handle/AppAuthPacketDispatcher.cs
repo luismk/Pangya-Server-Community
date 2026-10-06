@@ -17,7 +17,7 @@ namespace PangyaAPI.Network.Handle
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Dispatcher][Error] Falha ao registrar {id}: {e.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -34,14 +34,14 @@ namespace PangyaAPI.Network.Handle
                 }
                 catch (Exception ex)
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[Dispatcher][CRITICAL] Erro no Handler {id} (0x{Convert.ToInt16(id):X2}): {ex.Message}",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Dispatcher][Unknown] Pacote {id} (0x{Convert.ToInt16(id):X2}) não tratado.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

@@ -50,7 +50,7 @@ namespace Pangya_GameServer.Feature
         {
             var cmd_wt_event = new CmdWorldTourConfigEvent(); // Pode adicionar waiter se quiser
 
-            NormalManagerDB.getInstance().add(0, cmd_wt_event, null, null);
+            NormalManagerDB.Instance.add(0, cmd_wt_event, null, null);
 
             if (cmd_wt_event.getException().getCodeError() != 0)
                 throw cmd_wt_event.getException();
@@ -59,7 +59,7 @@ namespace Pangya_GameServer.Feature
 
             if (m_wte == null || m_wte.Id == 0)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     "[WorldTourSystem::initialize][Warning] Not Loaded.",
                     type_msg.CL_ONLY_CONSOLE_DEBUG));
                 return;
@@ -90,7 +90,7 @@ namespace Pangya_GameServer.Feature
                 return;
 
             var cmd = new CmdUpdateWorldTourEvent(uid, course, true, DateTime.Now);
-            NormalManagerDB.getInstance().add(1, cmd, SQLDBResponse, this);
+            NormalManagerDB.Instance.add(1, cmd, SQLDBResponse, this);
         }
 
         protected static void SQLDBResponse(int _msg_id,
@@ -102,15 +102,15 @@ namespace Pangya_GameServer.Feature
             {
 #if DEBUG
                 // Static class
-                _smp.message_pool.getInstance().push(new message("[WorldTourSystem::SQLDBResponse][Warning] _arg is nullptr na msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.message_pool.getInstance.push(new message("[WorldTourSystem::SQLDBResponse][Warning] _arg is nullptr na msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
 #endif // _DEBUG
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[WorldTourSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[WorldTourSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -124,7 +124,7 @@ namespace Pangya_GameServer.Feature
                         var cmd_ulr = (CmdUpdateWorldTourEvent)(_pangya_db);
 
                         // Log
-                        _smp.message_pool.getInstance().push(new message("[WorldTourSystem::SQLDBResponse][Debug] PLAYER[UID=" + Convert.ToString(cmd_ulr.getUID()) + ", FINISH_EVENT=" + (cmd_ulr.getIsEnd() ? "TRUE" : "FALSE") + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[WorldTourSystem::SQLDBResponse][Debug] Normal[UID=" + Convert.ToString(cmd_ulr.getUID()) + ", FINISH_EVENT=" + (cmd_ulr.getIsEnd() ? "TRUE" : "FALSE") + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         break;
                     }
@@ -134,7 +134,7 @@ namespace Pangya_GameServer.Feature
                         var cmd_ulrp = (CmdWorldTourConfigEvent)(_pangya_db);
 
                         // Log
-                        _smp.message_pool.getInstance().push(new message("[WorldTourSystem::SQLDBResponse][Debug] Atualizou a Config[" + cmd_ulrp.GetConfig().Id + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[WorldTourSystem::SQLDBResponse][Debug] Atualizou a Config[" + cmd_ulrp.GetConfig().Id + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         break;
                     }

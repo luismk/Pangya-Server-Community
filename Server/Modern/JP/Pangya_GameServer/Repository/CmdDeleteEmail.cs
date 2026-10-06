@@ -86,7 +86,7 @@ namespace Pangya_GameServer.Repository
                 string ids = string.Join(", ", m_email_id.Take((int)m_count));
 
 
-                m_szConsulta = new string[] { "UPDATE pangya.pangya_gift_table SET valid = 0 WHERE uid = " + Convert.ToString(m_uid) + " AND Msg_ID IN(" + ids + ")" };
+                m_szConsulta = new string[] { "UPDATE pangya.pangya_gift_table SET valid = 0 WHERE UID = " + Convert.ToString(m_uid) + " AND Msg_ID IN(" + ids + ")" };
                 var r = _update(m_szConsulta[0]);
 
                 checkResponse(r, "nao conseguiu deletar o email(s) do player: " + Convert.ToString(m_uid));
@@ -96,7 +96,7 @@ namespace Pangya_GameServer.Repository
             }
             else
             {
-                throw new exception("[CmdDeleteEmail][Error] nao pode deletar Email(s) sem id(s)");
+                throw new exception("[CmdDeleteEmail][Error] nao pode deletar Email(s) sem Login(s)");
             }
         }
 
@@ -105,6 +105,6 @@ namespace Pangya_GameServer.Repository
         private uint[] m_email_id;
         private uint m_count = 0;
 
-        private string[] m_szConsulta = { "UPDATE pangya.pangya_gift_table SET valid = 0 WHERE uid = ", " AND Msg_ID IN(", ")" };
+        private string[] m_szConsulta = { "UPDATE pangya.pangya_gift_table SET valid = 0 WHERE UID = ", " AND Msg_ID IN(", ")" };
     }
 }

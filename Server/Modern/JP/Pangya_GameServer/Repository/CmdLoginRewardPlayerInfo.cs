@@ -60,7 +60,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta(m_id, m_uid));
 
-            checkResponse(r, "nao conseguiu pegar o PLAYER[UID=" + Convert.ToString(m_uid) + "] do Login Reward[ID=" + Convert.ToString(m_id) + "]");
+            checkResponse(r, "nao conseguiu pegar o Normal[UID=" + Convert.ToString(m_uid) + "] do Login Reward[ID=" + Convert.ToString(m_id) + "]");
 
             return r;
         }
@@ -73,9 +73,9 @@ namespace Pangya_GameServer.Repository
         // Uma alternativa mais limpa ao array de strings:
         public string m_szConsulta(ulong rewardId, uint uid)
         {
-            return $"SELECT {makeEscapeKeyword("index")}, uid, count_days, count_seq, is_clear, update_date " +
+            return $"SELECT {makeEscapeKeyword("index")}, UID, count_days, count_seq, is_clear, update_date " +
                    $"FROM pangya.pangya_login_reward_player " +
-                   $"WHERE login_reward_id = {rewardId} AND uid = {uid}";
+                   $"WHERE login_reward_id = {rewardId} AND UID = {uid}";
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Pangya_GameServer.Repository
 
             var r = procedure(m_szConsulta, Convert.ToString(m_uid) + ", " + Convert.ToString(m_item_id));
 
-            checkResponse(r, "nao conseguiu pegar o(s) coupon(s) shop do player: " + Convert.ToString(m_uid));
+            checkResponse(r, "nao conseguiu pegar o(s) coupon(s) ShopRoom do player: " + Convert.ToString(m_uid));
 
             return r;
         }

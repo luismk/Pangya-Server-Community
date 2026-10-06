@@ -21,7 +21,7 @@ namespace Pangya_GameServer.Repository
                 probabilidade = IFNULL<uint>(_result.data[2]),
                 active = (byte)IFNULL<uint>(_result.data[3]),
                 flag = (byte)IFNULL<uint>(_result.data[4])
-            }; // treasure hunter info
+            }; // Treasure hunter info
 
             v_thi.Add(thi);
         }
@@ -43,6 +43,6 @@ namespace Pangya_GameServer.Repository
 
         List<TreasureHunterItem> v_thi;          // Treasure Hunter Info = THI
 
-        string m_szConsulta = "SELECT typeid, quantidade, probabilidade, tipo, flag FROM pangya.pangya_treasure_item";
+        string m_szConsulta = "SELECT typeid, quantidade, probabilidade, Type, ServerFlag FROM pangya.pangya_treasure_item";
     }
 }

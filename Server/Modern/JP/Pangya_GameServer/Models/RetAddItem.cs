@@ -11,7 +11,7 @@ namespace Pangya_GameServer.Models
         public const int SUCCESS_WITH_ERROR = -3;//adiicionou porem acontenceu um erro
         public const int SUCCES_PANG_AND_EXP_AND_CP_WITH_ERROR = -2;//adiicionou porem acontenceu um erro
         public const int SUCCESS_PANG_AND_EXP_AND_CP_POUCH_WITH_ERROR = -1;//adiicionou porem acontenceu um erro
-        public const int SUCCESS_PANG_AND_EXP_AND_CP_POUCH = 0;//adiicionou item pang/cp/exp pouch
+        public const int SUCCESS_PANG_AND_EXP_AND_CP_POUCH = 0;//adiicionou item Pang/cp/Experience pouch
         public const int SUCCESS = 1;//adiicionou com sucesso!
 
         public RetAddItem() => Clear();

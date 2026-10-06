@@ -96,7 +96,7 @@ namespace Pangya_GameServer.Repository
                     4, 0));
             }
 
-            if (m_typeid == 0u || sIff.getInstance().getItemGroupIdentify(m_typeid) != IFF_GROUP.MATCH)
+            if (m_typeid == 0u || sIff.Instance.getItemGroupIdentify(m_typeid) != IFF_GROUP.MATCH)
             {
                 throw new exception("[CmdFindTrofelEspecial::prepareConsulta][Error] TrofelEspecialInfo[TYPEID=" + Convert.ToString(m_typeid) + "] m_typeid is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
@@ -114,7 +114,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta[(int)m_type],
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_typeid));
 
-            checkResponse(r, "nao conseguiu encontrar o TrofelEspecial(" + (m_type == eTYPE.GRAND_PRIX ? "Grand Prix" : "") + ")[TYPEID=" + Convert.ToString(m_typeid) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu encontrar o TrofelEspecial(" + (m_type == eTYPE.GRAND_PRIX ? "Grand Prix" : "") + ")[TYPEID=" + Convert.ToString(m_typeid) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

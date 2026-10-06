@@ -80,7 +80,7 @@ namespace Pangya_GameServer.Feature
             try
             {
                 CmdCometRefillInfo cmd_cri = new CmdCometRefillInfo();
-              NormalManagerDB.getInstance().add(0, cmd_cri, null, null);
+              NormalManagerDB.Instance.add(0, cmd_cri, null, null);
 
                 if (cmd_cri.getException().getCodeError() != 0)
                     throw cmd_cri.getException();
@@ -89,7 +89,7 @@ namespace Pangya_GameServer.Feature
                 m_load = true;
 
                 if (m_comet_refill.Count == 0)
-                    _smp.message_pool.getInstance().push(new message("[CometRefillSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[CometRefillSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch
             {

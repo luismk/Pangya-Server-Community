@@ -15,14 +15,14 @@ namespace PangyaAPI.Network.Repository
         public static void UpdatePlayerMacAddress(uint uid, string address)
         {
             var cmd = new CmdUpdatePlayerMacAdress(uid, address);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
         }
 
         public static (bool getLastCheck, int getServerUID) IsLogonCheck(uint uid)
         {
             var cmd = new CmdLogonCheck((int)uid);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return (cmd.getLastCheck(), cmd.getServerUID());
         }
@@ -31,14 +31,14 @@ namespace PangyaAPI.Network.Repository
         public static void SaveNick(uint _uid, string wnick)
         {
             var cmd = new CmdSaveNick(_uid, wnick);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
         }
 
         public static bool VerifyNick(string wnick)
         {
             CmdVerifyNick cmd = new CmdVerifyNick(wnick);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getLastCheck();
         }
@@ -46,7 +46,7 @@ namespace PangyaAPI.Network.Repository
         public static int VerifyID(string id)
         {
             var cmd = new CmdVerifyID(id); // ID
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getUID();
         }
@@ -54,7 +54,7 @@ namespace PangyaAPI.Network.Repository
         public static bool VerifyPass(uint uid, string pass)
         {
             var cmd = new CmdVerifyPass(uid, pass); // PASSWORD
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getLastVerify();
         }
@@ -62,7 +62,7 @@ namespace PangyaAPI.Network.Repository
         public static string GetAuthKeyGame(uint uid, uint server_uid)
         {
             var cmd = new CmdAuthKeyGame(uid, server_uid);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getAuthKey();
         }
@@ -70,7 +70,7 @@ namespace PangyaAPI.Network.Repository
         public static string GetAuthKeyLogin(uint uid)
         {
             var cmd = new CmdAuthKeyLogin((int)uid);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getAuthKey();
         }
@@ -78,7 +78,7 @@ namespace PangyaAPI.Network.Repository
         public static byte UpdateAuthKeyLogin(uint uid, byte valid = 1)
         {
             var cmd = new CmdUpdateAuthKeyLogin(uid, valid);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getValid();
         }
@@ -86,7 +86,7 @@ namespace PangyaAPI.Network.Repository
         public static List<ServerInfo> GetMsn(int _id = 0)
         {
             var cmd = new CmdServerList(TYPE_SERVER.MSN);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getServerList();
         }
@@ -95,7 +95,7 @@ namespace PangyaAPI.Network.Repository
         public static List<ServerInfo> GetRank()
         {
             var cmd = new CmdServerList(TYPE_SERVER.RANK);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getServerList();
         }
@@ -103,7 +103,7 @@ namespace PangyaAPI.Network.Repository
         public static List<ServerInfo> GetGame()
         {
             var cmd = new CmdServerList(TYPE_SERVER.GAME);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getServerList();
         }
@@ -112,7 +112,7 @@ namespace PangyaAPI.Network.Repository
         public static ServerInfo RegisterServer(ServerInfo server)
         {
             var cmd = new CmdRegisterServer(server);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getServerList();
         }
@@ -120,7 +120,7 @@ namespace PangyaAPI.Network.Repository
         public static ChatMacroUser GetMacroUser(uint uid)
         {
             var cmd = new CmdChatMacroUser(uid);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getMacroUser();
         }
@@ -128,7 +128,7 @@ namespace PangyaAPI.Network.Repository
         public static CharacterInfo AddCharacter(uint uid, CharacterInfo ci, byte value = 0, byte value2 = 1)
         {
             var cmd = new CmdAddCharacter(uid, ci, value, value2);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getInfo();
         }
@@ -136,35 +136,35 @@ namespace PangyaAPI.Network.Repository
         public static void UpdateCharacterEquiped(uint uid, int id)
         {
             var cmd = new CmdUpdateCharacterEquiped(uid, id);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
         }
 
         public static void InsertBlockIP(string _ip, string mask = "255.255.255.255")
         {
             var cmd = new CmdInsertBlockIp(_ip, mask);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
         }
 
         public static void InsertBlockMAC(string _mac_adress)
         {
             var cmd = new CmdInsertBlockMac(_mac_adress);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
         }
 
         public static void RegisterLogon(uint _uid, int _option)
         {
             var cmd = new CmdRegisterLogon(_uid, _option);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
         }
 
         public static List<IPBan> ListIPBan()
         {
             var cmd = new CmdListIpBan();
-            snmdb.NormalManagerDB.getInstance().add(0, cmd);
+            snmdb.NormalManagerDB.Instance.add(0, cmd);
             ValidarErro(cmd);
             return cmd.getListIPBan();
         }
@@ -172,7 +172,7 @@ namespace PangyaAPI.Network.Repository
         public static List<string> ListMacBan(int _id = 0)
         {
             var cmd = new CmdListMacBan();
-            snmdb.NormalManagerDB.getInstance().add(_id, cmd);
+            snmdb.NormalManagerDB.Instance.add(_id, cmd);
             ValidarErro(cmd);
             return cmd.getList();
         }
@@ -180,7 +180,7 @@ namespace PangyaAPI.Network.Repository
         public static bool GameServerExist(uint server_uid)
         {
             var servers = GetGame();
-            return servers.Any(c => c.uid == server_uid);
+            return servers.Any(c => c.UID == server_uid);
         }
 
 

@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Pangya_GameServer.Models.DefineConstants;
-using static Pangya_GameServer.Models.PlayerGameInfo;
+using static Pangya_GameServer.ModelsGameInfo;
 
 namespace Pangya_GameServer.Roms.GameBase
 {
@@ -46,7 +46,7 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception("[GameBase::" + "requestPlace][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou pegar o lugar[Hole] do player no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::" + "requestPlace][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou pegar o lugar[Hole] do player no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
 
@@ -60,13 +60,13 @@ namespace Pangya_GameServer.Roms.GameBase
                     // Valor padrão
                     hole = 0;
 
-                    _smp.message_pool.getInstance().push(new message("[GameBase::requestPlace][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou pegar a sequencia do hole[NUMERO=" + Convert.ToString(pgi.hole) + "], mas ele nao encontrou no course do game na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::requestPlace][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou pegar a sequencia do hole[NUMERO=" + Convert.ToString(pgi.hole) + "], mas ele nao encontrou no CourseIndex do game na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
             }
             else if (pgi.init_first_hole) // Só cria mensagem de log se o player já inicializou o primeiro hole do jogo e tem um valor inválido no pgi->hole (não é uma sequência de hole válida)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::requesPlace][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou pegar o hole[NUMERO=" + Convert.ToString(pgi.hole) + "] em que o player esta na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "], mas ele esta carregando o course ou tem algum error.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::requesPlace][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou pegar o hole[NUMERO=" + Convert.ToString(pgi.hole) + "] em que o player esta na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "], mas ele esta carregando o CourseIndex ou tem algum error.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return hole;
@@ -94,7 +94,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 var pgi = GetPlayerInfo(session);
                 if (pgi == null)
                 {
-                    throw new exception("[GameBase::RequestActiveAutoCommand][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou ativar var Command no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                    throw new exception("[GameBase::RequestActiveAutoCommand][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou ativar var Command no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                         1, 4));
                 }
 
@@ -105,12 +105,12 @@ namespace Pangya_GameServer.Roms.GameBase
 
                     if (pWi == null)
                     {
-                        throw new exception("[GameBase::RequestActiveAutoCommand][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou ativar o var Command Item[TYPEID=" + Convert.ToString(AUTO_COMMAND_TYPEID) + "], mas ele nao tem o item. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 0x550001));
+                        throw new exception("[GameBase::RequestActiveAutoCommand][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou ativar o var Command Item[TYPEID=" + Convert.ToString(AUTO_COMMAND_TYPEID) + "], mas ele nao tem o item. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 0x550001));
                     }
 
                     if (pWi.STDA_C_ITEM_QNTD < 1)
                     {
-                        throw new exception("[GameBase::RequestActiveAutoCommand][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou ativar o var Command Item[TYPEID=" + Convert.ToString(AUTO_COMMAND_TYPEID) + "], mas ele nao tem quantidade suficiente do item[QNTD=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", QNTD_REQ=1]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                        throw new exception("[GameBase::RequestActiveAutoCommand][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou ativar o var Command Item[TYPEID=" + Convert.ToString(AUTO_COMMAND_TYPEID) + "], mas ele nao tem quantidade suficiente do item[QNTD=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", QNTD_REQ=1]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                             2, 0x550002));
                     }
 
@@ -118,13 +118,13 @@ namespace Pangya_GameServer.Roms.GameBase
 
                     if (it.Value == null)
                     {
-                        throw new exception("[GameBase::RequestActiveAutoCommand][Error] PLAYER[UID = " + Convert.ToString(session.UserInfo.uid) + "] tentou ativar var Command, mas ele nao tem ele no item passive usados do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY_BASE,
+                        throw new exception("[GameBase::RequestActiveAutoCommand][Error] Normal[UID = " + Convert.ToString(session.UserInfo.UID) + "] tentou ativar var Command, mas ele nao tem ele no item passive usados do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY_BASE,
                             13, 0));
                     }
 
                     if ((short)it.Value.count >= pWi.STDA_C_ITEM_QNTD)
                     {
-                        throw new exception("[GameBase::RequestActiveAutoCommand][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou ativar var Command, mas ele ja usou todos os var Command. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY_BASE,
+                        throw new exception("[GameBase::RequestActiveAutoCommand][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou ativar var Command, mas ele ja usou todos os var Command. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY_BASE,
                             14, 0));
                     }
 
@@ -136,7 +136,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::RequestActiveAutoCommand][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestActiveAutoCommand][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // !@ Não sei o que esse pacote faz, não encontrei no meu antigo pangya
                 // Resposta Error
@@ -171,18 +171,18 @@ namespace Pangya_GameServer.Roms.GameBase
                 uint itemtypeid = packet.ReadUInt32();
 
                 if (itemtypeid == 0)
-                    throw new exception("[GameBase::RequestActiveAssistGreen][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou ativar Assist[TYPEID=" + Convert.ToString(itemtypeid) + "] do Green, mas o item_typeid is invalid(zero). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                    throw new exception("[GameBase::RequestActiveAssistGreen][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou ativar Assist[TYPEID=" + Convert.ToString(itemtypeid) + "] do Green, mas o item_typeid is invalid(zero). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                             1, 0x5200101));
 
 
                 if (itemtypeid != ASSIST_ITEM_TYPEID)
-                    throw new exception("[GameBase::RequestActiveAssistGreen][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou ativar Assist[TYPEID=" + Convert.ToString(itemtypeid) + "] do Green, mas o item_typeid esta errado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                    throw new exception("[GameBase::RequestActiveAssistGreen][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou ativar Assist[TYPEID=" + Convert.ToString(itemtypeid) + "] do Green, mas o item_typeid esta errado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                                1, 0x5200101));
 
                 var pWi = session.Inventory.FindWarehouseItemByTypeid(itemtypeid);
 
                 if (pWi == null)
-                    throw new exception("[GameBase::RequestActiveAssistGreen][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou ativar Assist[TYPEID=" + Convert.ToString(itemtypeid) + "] do Green, mas o Assist Mode do player nao esta ligado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                    throw new exception("[GameBase::RequestActiveAssistGreen][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou ativar Assist[TYPEID=" + Convert.ToString(itemtypeid) + "] do Green, mas o Assist Mode do player nao esta ligado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                             2, 0x5200102));
 
                 if (session.UserInfo.AssistFlag)
@@ -191,17 +191,17 @@ namespace Pangya_GameServer.Roms.GameBase
                     p.init_plain(0x26B);//get assist 
                     p.WriteUInt32(0); // OK 
                     p.WriteUInt32(pWi._typeid);
-                    p.WriteUInt32(session.UserInfo.uid); 
+                    p.WriteUInt32(session.UserInfo.UID); 
                     session.Send(p);
                 }
                 else
-                    throw new exception("[GameBase::RequestActiveAssistGreen][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou ativar Assist[TYPEID=" + Convert.ToString(itemtypeid) + "] do Green, mas o Assist Mode do player nao esta ligado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                    throw new exception("[GameBase::RequestActiveAssistGreen][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou ativar Assist[TYPEID=" + Convert.ToString(itemtypeid) + "] do Green, mas o Assist Mode do player nao esta ligado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                        2, 0x5200102));
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::RequestActiveAssistGreen][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestActiveAssistGreen][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x26B); 
                 p.WriteUInt32(1); 
@@ -242,13 +242,13 @@ namespace Pangya_GameServer.Roms.GameBase
                               9, 0));
 
                 if (ssd.pang > 37000u)
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestReadSyncShotDate][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] pode esta usando hack, PANG[" + Convert.ToString(ssd.pang) + "] maior que 40k. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestReadSyncShotDate][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] pode esta usando hack, PANG[" + Convert.ToString(ssd.pang) + "] maior que 40k. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 if (ssd.bonus_pang > 10000u)
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestReadSyncShotDate][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] pode esta usando hack, BONUS PANG[" + Convert.ToString(ssd.bonus_pang) + "] maior que 10k. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestReadSyncShotDate][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] pode esta usando hack, BONUS PANG[" + Convert.ToString(ssd.bonus_pang) + "] maior que 10k. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::RequestReadSyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestReadSyncShotData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -273,7 +273,7 @@ namespace Pangya_GameServer.Roms.GameBase
             {
 
                 // Verifica se o player já reportou o jogo
-                var it = PlayerReportGame.FirstOrDefault(c => c.Key == session.UserInfo.uid);
+                var it = PlayerReportGame.FirstOrDefault(c => c.Key == session.UserInfo.UID);
 
                 if (it.Key != 0)
                 {
@@ -288,8 +288,8 @@ namespace Pangya_GameServer.Roms.GameBase
                 else
                 { // Primeira vez que o palyer report o jogo
 
-                    // add ao mapa de uid de player que reportaram o jogo
-                    PlayerReportGame[session.UserInfo.uid] = session.UserInfo.uid;
+                    // add ao mapa de UID de player que reportaram o jogo
+                    PlayerReportGame[session.UserInfo.UID] = session.UserInfo.UID;
 
                     // Faz Log de quem está na sala, quando pangya, o update enviar o chat log verifica o chat
                     // por que parece que o pangya não envia o chat, ele só cria um arquivo, acho que quem envia é o update
@@ -299,13 +299,13 @@ namespace Pangya_GameServer.Roms.GameBase
                     {
                         if (el != null)
                         {
-                            // Corrigido: era session.UserInfo.uid — deve ser el.UserInfo.uid para cada player
-                            log = log + "UID: " + Convert.ToString(el.UserInfo.uid) + "\tID: " + el.UserInfo.id + "\tNICKNAME: " + el.UserInfo.nickname + "\n";
+                            // Corrigido: era session.PlayerUserStatistics.UID — deve ser el.PlayerUserStatistics.UID para cada player
+                            log = log + "UID: " + Convert.ToString(el.UserInfo.UID) + "\tID: " + el.UserInfo.Login + "\tNICKNAME: " + el.UserInfo.NickName + "\n";
                         }
                     }
 
                     // Log
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestPlayerReportChatGame][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] reportou o chat do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "] Log{" + log + "}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestPlayerReportChatGame][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] reportou o chat do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "] Log{" + log + "}", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // Reposta para o cliente
                     p.init_plain(0x94);
@@ -319,7 +319,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::RequestPlayerReportChatGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestPlayerReportChatGame][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x94);
 
@@ -332,9 +332,9 @@ namespace Pangya_GameServer.Roms.GameBase
         public virtual DropItemRet RequestInitDrop(Player session)
         {
 
-            if (!sDropSystem.getInstance().isLoad())
+            if (!sDropSystem.Instance.isLoad())
             {
-                sDropSystem.getInstance().load();
+                sDropSystem.Instance.load();
             }
 
             DropItemRet dir = new DropItemRet();
@@ -342,7 +342,7 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception("[GameBase::RequestInitDrop][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou inicializar drop do hole no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::RequestInitDrop][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou inicializar drop do hole no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
 
@@ -352,17 +352,17 @@ namespace Pangya_GameServer.Roms.GameBase
 
             if (hole == null)
             {
-                throw new exception("[GameBase::RequestInitDrop][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou inicializar Drop System do hole[NUMERO=" + Convert.ToString(pgi.hole) + "] no jogo, mas nao encontrou o hole no course do game. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::RequestInitDrop][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou inicializar Drop System do hole[NUMERO=" + Convert.ToString(pgi.hole) + "] no jogo, mas nao encontrou o hole no CourseIndex do game. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     200, 0));
             }
 
             // Init Course Info Drop System
-            ci.artefact = RoomInfo.typeid_artefatic;
+            ci.artefact = RoomInfo.ItemIDArtifact;
             ci.char_motion = pgi.char_motion_item;
-            ci.course = (byte)(hole.getCourse() & 0x7F); // Course do Hole, Por que no SSC, cada hole é um course
+            ci.course = (byte)(hole.getCourse() & 0x7F); // Course do Hole, Por que no SSC, cada hole é um CourseIndex
             ci.hole = pgi.hole;
             ci.seq_hole = (byte)Course.findHoleSeq(pgi.hole);
-            ci.qntd_hole = RoomInfo.qntd_hole;
+            ci.qntd_hole = RoomInfo.HoleCount;
             ci.rate_drop = pgi.used_item.rate.drop;
 
             if (session.Inventory.UserEquippedItem.CharacterEquiped != null && session.UserInfo.Statistics.getQuitRate() < GOOD_PLAYER_ICON)
@@ -375,9 +375,9 @@ namespace Pangya_GameServer.Roms.GameBase
             }
 
             // Artefact Pang Drop
-            if (RoomInfo.qntd_hole == ci.seq_hole && RoomInfo.qntd_hole == 18)
+            if (RoomInfo.HoleCount == ci.seq_hole && RoomInfo.HoleCount == 18)
             { // Ultimo Hole, de 18h Game
-                var art_pang = sDropSystem.getInstance().drawArtefactPang(ci, (uint)Players.Count());
+                var art_pang = sDropSystem.Instance.drawArtefactPang(ci, (uint)Players.Count());
 
                 if (art_pang._typeid != 0)
                 { // Dropou
@@ -391,7 +391,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                         p.WriteByte(10); // JackPot
 
-                        p.WriteString(session.UserInfo.nickname);
+                        p.WriteString(session.UserInfo.NickName);
 
                         p.WriteUInt16(0); // size Msg
 
@@ -403,11 +403,11 @@ namespace Pangya_GameServer.Roms.GameBase
             }
 
             // Drop Event Course
-            var course = sDropSystem.getInstance().findCourse((byte)(ci.course & 0x7F));
+            var course = sDropSystem.Instance.findCourse((byte)(ci.course & 0x7F));
 
             if (course != null)
             { // tem Drop nesse Course
-                var drop_event = sDropSystem.getInstance().drawCourse(course, ci);
+                var drop_event = sDropSystem.Instance.drawCourse(course, ci);
 
                 if (drop_event.Any()) // Dropou
                 {
@@ -416,7 +416,7 @@ namespace Pangya_GameServer.Roms.GameBase
             }
 
             // Drop Mana Artefact
-            var mana_drop = sDropSystem.getInstance().drawManaArtefact(ci);
+            var mana_drop = sDropSystem.Instance.drawManaArtefact(ci);
 
             if (mana_drop._typeid != 0) // Dropou
             {
@@ -424,9 +424,9 @@ namespace Pangya_GameServer.Roms.GameBase
             }
 
             // Drop Grand Prix Ticket, não drop no Grand Prix
-            if (RoomInfo.qntd_hole == ci.seq_hole && RoomInfo.GetTipo() != ROOM_INFO_TYPE.GRAND_PRIX)
+            if (RoomInfo.HoleCount == ci.seq_hole && RoomInfo.GetRoomType() != RoomTypeFlags.GRAND_PRIX)
             {
-                var gp_ticket = sDropSystem.getInstance().drawGrandPrixTicket(ci, session);
+                var gp_ticket = sDropSystem.Instance.drawGrandPrixTicket(ci, session);
 
                 if (gp_ticket._typeid != 0) // Dropou
                 {
@@ -435,7 +435,7 @@ namespace Pangya_GameServer.Roms.GameBase
             }
 
             // SSC Ticket
-            var ssc = sDropSystem.getInstance().drawSSCTicket(ci);
+            var ssc = sDropSystem.Instance.drawSSCTicket(ci);
 
             if (ssc.Any())
             {
@@ -462,7 +462,7 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception("[GameBase::RequestSaveDrop][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou salvar drop item no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::RequestSaveDrop][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou salvar drop item no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
             pgi.drop_list.v_drop = pgi.drop_list.v_drop.Where(c => c._typeid != 0).ToList();
@@ -488,7 +488,7 @@ namespace Pangya_GameServer.Roms.GameBase
                     }
                     else
                     {
-                        // Já existe — atualiza in-place sem adicionar duplicata à lista
+                        // Já existe — atualiza in-LadderGrade sem adicionar duplicata à lista
                         existente.qntd += item.qntd;
                         existente.STDA_C_ITEM_QNTD = (short)existente.qntd;
                     }
@@ -498,8 +498,8 @@ namespace Pangya_GameServer.Roms.GameBase
 
                 if (rai.fails.Any() && rai.type != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH)
                 {
-                    _smp.message_pool.getInstance().push(
-                        new message("[Game:RequestSaveDrop][WARNIG] nao conseguiu adicionar os drop itens. Bug",
+                    _smp.LogManager.Instance.push(
+                        new AppMessage("[Game:RequestSaveDrop][WARNIG] nao conseguiu adicionar os drop itens. Bug",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
@@ -552,7 +552,7 @@ namespace Pangya_GameServer.Roms.GameBase
                     var pgi = GetPlayerInfo(session);
                     if (pgi == null)
                     {
-                        throw new exception("[GameBase::initCubeCoin][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou terninar o hole no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                        throw new exception("[GameBase::initCubeCoin][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou terninar o hole no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                             1, 4));
                     }
 
@@ -560,7 +560,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                     if (hole == null)
                     {
-                        throw new exception("[GameBase::RequestInitCubeCoin][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou terminar hole[NUMERO=" + Convert.ToString((ushort)pgi.hole) + "], mas no course nao tem esse hole. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                        throw new exception("[GameBase::RequestInitCubeCoin][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou terminar hole[NUMERO=" + Convert.ToString((ushort)pgi.hole) + "], mas no CourseIndex nao tem esse hole. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                             250, 0));
                     }
 
@@ -579,13 +579,13 @@ namespace Pangya_GameServer.Roms.GameBase
 
                         if (pCube == null)
                         {
-                            throw new exception("[GameBase::RequestInitCubeCoin][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou terminar hole[NUMERO=" + Convert.ToString((ushort)pgi.hole) + "], mas o cliente forneceu um cube/coin id[ID=" + Convert.ToString(id) + "] invalido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                            throw new exception("[GameBase::RequestInitCubeCoin][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou terminar hole[NUMERO=" + Convert.ToString((ushort)pgi.hole) + "], mas o cliente forneceu um cube/coin Login[ID=" + Convert.ToString(id) + "] invalido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                                 251, 0));
                         }
                         if (tipo == 0)
                         // Coin
                         {
-                            // Tipo 3 Coin da borda do green ganha menos pangs ganha de 1 a 50, Tipo 4 Coin no chão qualquer lugar ganha mais pang de 1 a 200
+                            // Tipo 3 Coin da borda do green ganha menos pangs ganha de 1 a 50, Tipo 4 Coin no chão qualquer lugar ganha mais Pang de 1 a 200
                             dir.v_drop.Add(new DropItem(
                                 COIN_TYPEID,
                                 (byte)hole.getCourse(),
@@ -615,7 +615,7 @@ namespace Pangya_GameServer.Roms.GameBase
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::RequestInitCubeCoin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestInitCubeCoin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return new DropItemRet();
@@ -626,20 +626,20 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception("[GameBase::RequestCalculePang][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou calcular o pang, mas o info não existe.",
+                throw new exception("[GameBase::RequestCalculePang][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou calcular o Pang, mas o info não existe.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 4));
             }
 
             // 1. Busca informações do Course (Campo)
-            var course = sIff.getInstance().findCourse((uint)((int)RoomInfo.course & 0x7F) | 0x28000000u);
+            var course = sIff.Instance.findCourse((uint)((int)RoomInfo.CourseIndex & 0x7F) | 0x28000000u);
 
             // 2. Define o Rate do Course (Padrão 1.0f se nulo)
             float course_rate = (course != null && course.RatePang >= 1.0f) ? course.RatePang : 1.0f;
             float pang_rate = 0.0f;
 
             // 3. Cálculo do Rate Total (Itens + Eventos do Servidor + Course)
-            // Adicionado bônus de 10 se for modo Shuffle
-            uint base_rate = (uint)(RateValue.pang + (RoomInfo.modo == (byte)ROOM_INFO_MODO.M_SHUFFLE ? 10 : 0));
+            // Adicionado bônus de 10 se for HoleMode Shuffle
+            uint base_rate = (uint)(RateValue.pang + (RoomInfo.HoleMode == (byte)RoomHoleType.M_SHUFFLE ? 10 : 0));
 
             pang_rate = TRANSF_SERVER_RATE_VALUE(pgi.used_item.rate.pang) * TRANSF_SERVER_RATE_VALUE(base_rate);
 
@@ -673,7 +673,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 { // Terminou VS
 
                     // Verifica se o Angel Event está ativo de tira 1 quit do player que concluí o jogo
-                    if (RoomInfo.angel_event)
+                    if (RoomInfo.IsAngelQuiterEvent)
                     {
                         pgi.ui.quitado = -1;
                     }
@@ -751,7 +751,7 @@ namespace Pangya_GameServer.Roms.GameBase
                     pgi.ui.clear();
 
                     // Verifica se o Angel Event está ativo de tira 1 quit do player que concluí o jogo
-                    if (RoomInfo.angel_event)
+                    if (RoomInfo.IsAngelQuiterEvent)
                     { 
                         pgi.ui.quitado = -1;
                     }
@@ -825,7 +825,7 @@ namespace Pangya_GameServer.Roms.GameBase
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::RequestSaveInfo][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestSaveInfo][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -835,7 +835,7 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception("[GameBase::RequestUpdateItemUsedGame][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou atualizar itens usado no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::RequestUpdateItemUsedGame][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou atualizar itens usado no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
 
@@ -860,7 +860,7 @@ namespace Pangya_GameServer.Roms.GameBase
                     }
 
                 }
-                else if (sIff.getInstance().getItemGroupIdentify(el.Value._typeid) ==IFF_GROUP.BALL || sIff.getInstance().getItemGroupIdentify(el.Value._typeid) ==IFF_GROUP.AUX_PART) //AuxPart(Anel)
+                else if (sIff.Instance.getItemGroupIdentify(el.Value._typeid) ==IFF_GROUP.BALL || sIff.Instance.getItemGroupIdentify(el.Value._typeid) ==IFF_GROUP.AUX_PART) //AuxPart(Anel)
                 {
                     el.Value.count++;
                 }
@@ -875,7 +875,7 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception("[GameBase::RequestFinishItemUsedGame][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou finalizar itens usado no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::RequestFinishItemUsedGame][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou finalizar itens usado no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
 
@@ -883,7 +883,7 @@ namespace Pangya_GameServer.Roms.GameBase
             if (pgi.finish_item_used == 1)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameBase::RequestFinishItemUsedGame][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] ja finalizou os itens. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestFinishItemUsedGame][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] ja finalizou os itens. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -902,7 +902,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
 
             // Verifica se é premium 2 e se ele tem o var caliper para poder somar no Achievement
-            if (session.UserInfo.UserCapabilities.premium_user && sPremiumSystem.getInstance().isPremium(session.Inventory.PremiumTicket._typeid))
+            if (session.UserInfo.UserCapabilities.UserPremium && sPremiumSystem.Instance.isPremium(session.Inventory.PremiumTicket._typeid))
             {
 
                 var it_ac = ui.v_passive.FirstOrDefault(c => c.Key == AUTO_CALIPER_TYPEID);
@@ -914,7 +914,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                     if (qntd == -1)
                     {
-                        qntd = RoomInfo.qntd_hole;
+                        qntd = RoomInfo.HoleCount;
                     }
 
                     // Adiciona Auto Caliper para ser contado no Achievement
@@ -933,7 +933,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 {
 
                     // Item Aqui tem o Achievemente de passive item
-                    if (sIff.getInstance().getItemGroupIdentify(el.Value._typeid) ==IFF_GROUP.ITEM && !sIff.getInstance().IsItemEquipable(el.Value._typeid))
+                    if (sIff.Instance.getItemGroupIdentify(el.Value._typeid) ==IFF_GROUP.ITEM && !sIff.Instance.IsItemEquipable(el.Value._typeid))
                     {
 
                         pgi.sys_achieve.incrementCounter(0x6C400075u, (int)el.Value.count);
@@ -946,8 +946,8 @@ namespace Pangya_GameServer.Roms.GameBase
                     }
 
                     // Só atualiza o var Caliper se não for Premium 2
-                    if (!session.UserInfo.UserCapabilities.premium_user
-                        || !sPremiumSystem.getInstance().isPremium(session.Inventory.PremiumTicket._typeid)
+                    if (!session.UserInfo.UserCapabilities.UserPremium
+                        || !sPremiumSystem.Instance.isPremium(session.Inventory.PremiumTicket._typeid)
                         || el.Value._typeid != AUTO_CALIPER_TYPEID)
                     {
 
@@ -974,7 +974,7 @@ namespace Pangya_GameServer.Roms.GameBase
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message("[GameBase::RequestFinishItemUsedGame][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou atualizar item[TYPEID=" + Convert.ToString(el.Value._typeid) + "] que ele nao possui. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestFinishItemUsedGame][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou atualizar item[TYPEID=" + Convert.ToString(el.Value._typeid) + "] que ele nao possui. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                 }
@@ -988,7 +988,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 {
 
                     // Aqui tem achievement de Item Active
-                    if (sIff.getInstance().getItemGroupIdentify(el.Value._typeid) ==IFF_GROUP.ITEM && sIff.getInstance().IsItemEquipable(el.Value._typeid))
+                    if (sIff.Instance.getItemGroupIdentify(el.Value._typeid) ==IFF_GROUP.ITEM && sIff.Instance.IsItemEquipable(el.Value._typeid))
                     {
 
                         pgi.sys_achieve.incrementCounter(0x6C40004Fu, (int)el.Value.count);
@@ -1002,7 +1002,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                     // Só tira os itens Active se a sala não estiver com o artefact Frozen Flame,
                     // se ele estiver com artefact Frozen Flame ele mantém os Itens Active, não consome e nem desequipa do inventório do player
-                    if (RoomInfo.typeid_artefatic != ART_FROZEN_FLAME)
+                    if (RoomInfo.ItemIDArtifact != ART_FROZEN_FLAME)
                     {
 
                         // Limpa o Item Slot do player, dos itens que foram usados(Ativados) no jogo
@@ -1034,25 +1034,25 @@ namespace Pangya_GameServer.Roms.GameBase
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message("[GameBase::RequestFinishItemUsedGame][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou atualizar item[TYPEID=" + Convert.ToString(el.Value._typeid) + "] que ele nao possui. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestFinishItemUsedGame][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou atualizar item[TYPEID=" + Convert.ToString(el.Value._typeid) + "] que ele nao possui. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                 }
             }
 
             // Update Item Equiped Slot ON DB
-            NormalManagerDB.getInstance().add(25,
-                new CmdUpdateItemSlot(session.UserInfo.uid, session.Inventory.UserEquipment.item_slot),
+            NormalManagerDB.Instance.add(25,
+                new CmdUpdateItemSlot(session.UserInfo.UID, session.Inventory.UserEquipment.item_slot),
                 OnDatabaseResponse, this);
 
             // Se for o Master da sala e ele estiver com artefato tira o mana dele
             // Antes tirava assim que começava o jogo, mas aí o cliente atualizava a sala tirando o artefact aí no final não tinha como ver se o frozen flame estava equipado
-            // e as outras pessoas que estão na lobby não sabe qual artefect que está na sala, por que o master mesmo mando o pacote pra tirar da sala quando o server tira o mana dele no init game
-            if (RoomInfo.typeid_artefatic != 0 && RoomInfo.master == session.UserInfo.uid)
+            // e as outras pessoas que estão na lobby não sabe qual artefect que está na sala, por que o Master mesmo mando o pacote pra tirar da sala quando o server tira o mana dele no init game
+            if (RoomInfo.ItemIDArtifact != 0 && RoomInfo.OwnerUID == session.UserInfo.UID)
             {
 
-                // Tira Artefact Mana do master da sala
-                var pWi = session.Inventory.FindWarehouseItemByTypeid(RoomInfo.typeid_artefatic + 1);
+                // Tira Artefact Mana do Master da sala
+                var pWi = session.Inventory.FindWarehouseItemByTypeid(RoomInfo.ItemIDArtifact + 1);
                 if (pWi != null)
                 {
 
@@ -1070,7 +1070,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestFinishItemUsedGame][Warning] Master[UID=" + Convert.ToString(session.UserInfo.uid) + "] do jogo nao tem Mana do Artefect[TYPEID=" + Convert.ToString(RoomInfo.typeid_artefatic) + ", MANA=" + Convert.ToString(RoomInfo.typeid_artefatic + 1) + "] e criou e comecou um jogo com artefact sem mana. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestFinishItemUsedGame][Warning] Master[UID=" + Convert.ToString(session.UserInfo.UID) + "] do jogo nao tem Mana do Artefect[TYPEID=" + Convert.ToString(RoomInfo.ItemIDArtifact) + ", MANA=" + Convert.ToString(RoomInfo.ItemIDArtifact + 1) + "] e criou e comecou um jogo com artefact sem mana. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
 
@@ -1080,7 +1080,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                 if (ItemManager.removeItem(v_item, session) <= 0)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestFinishItemUsedGame][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao conseguiu deletar os item do player. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestFinishItemUsedGame][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao conseguiu deletar os item do player. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
 
@@ -1108,8 +1108,8 @@ namespace Pangya_GameServer.Roms.GameBase
                     item.clubset_workshop.rank = (uint)pClub.clubset_workshop.rank;
                     item.clubset_workshop.recovery = pClub.clubset_workshop.recovery_pts;
 
-                    NormalManagerDB.getInstance().add(12,
-                        new CmdUpdateClubSetWorkshop(session.UserInfo.uid,
+                    NormalManagerDB.Instance.add(12,
+                        new CmdUpdateClubSetWorkshop(session.UserInfo.UID,
                             pClub,
                             CmdUpdateClubSetWorkshop.FLAG.F_TRANSFER_MASTERY_PTS),
                         OnDatabaseResponse, this);
@@ -1118,11 +1118,11 @@ namespace Pangya_GameServer.Roms.GameBase
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestFinishItemUsedGame][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou salvar mastery do ClubSet[TYPEID=" + Convert.ToString(ui.club._typeid) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestFinishItemUsedGame][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou salvar mastery do ClubSet[TYPEID=" + Convert.ToString(ui.club._typeid) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
 
-            // Flag de que o palyer já finalizou os itens usados no jogo, para não finalizar duas vezes
+            // ServerFlag de que o palyer já finalizou os itens usados no jogo, para não finalizar duas vezes
             pgi.finish_item_used = 1;
 
             // Atualiza ON Jogo
@@ -1157,7 +1157,7 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception($"[GameBase::RequestFinishHole][Error] PLAYER[UID={session.UserInfo.uid}] tentou finalizar dados do hole, mas info não guardada.",
+                throw new exception($"[GameBase::RequestFinishHole][Error] Normal[UID={session.UserInfo.UID}] tentou finalizar dados do hole, mas info não guardada.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 4));
             }
 
@@ -1168,7 +1168,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
             if (hole == null)
             {
-                throw new exception($"[GameBase::finishHole][Error] PLAYER[UID={session.UserInfo.uid}] hole[NUMERO={(ushort)pgi.hole}] inválido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 20, 0));
+                throw new exception($"[GameBase::finishHole][Error] Normal[UID={session.UserInfo.UID}] hole[NUMERO={(ushort)pgi.hole}] inválido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 20, 0));
             }
 
             // Variáveis locais para garantir a precisão do cálculo ANTES de manipular o objeto global
@@ -1204,7 +1204,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 var range = Course.findRange(pgi.hole);
                 foreach (var kv in range)
                 {
-                    if (kv.Key > RoomInfo.qntd_hole) break;
+                    if (kv.Key > RoomInfo.HoleCount) break;
 
                     pgi.data.total_tacada_num += kv.Value.getPar().total_shot;
                     pgi.data.score += kv.Value.getPar().range_score[1]; // Geralmente +3 ou +4 por buraco
@@ -1255,13 +1255,13 @@ namespace Pangya_GameServer.Roms.GameBase
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception("[GameBase::RequestSaveRecordCourse][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou salvar record do course do player no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::RequestSaveRecordCourse][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou salvar record do CourseIndex do player no jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
 
             if (session.Inventory.UserEquippedItem.CharacterEquiped == null)
             { // Player não está com character equipado, kika dele do jogo
-                _smp.message_pool.getInstance().push(new message("[GameBase::RequestSaveRecordCourse][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestSaveRecordCourse][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -1272,17 +1272,17 @@ namespace Pangya_GameServer.Roms.GameBase
 
                 if (game == 52)
                 {
-                    pMs = session.UserInfo.GrandPrixMapStatisticsAll[(int)((int)RoomInfo.course & 0x7F)];
+                    pMs = session.UserInfo.GrandPrixMapStatisticsAll[(int)((int)RoomInfo.CourseIndex & 0x7F)];
                 }
-                else if (RoomInfo.special_flag_mod.natural)
+                else if (RoomInfo.SpecialModeRoom.IsNaturalMode)
                 { // Natural
-                    pMs = session.UserInfo.NaturalMapStatisticsAll[(int)((int)RoomInfo.course & 0x7F)];
+                    pMs = session.UserInfo.NaturalMapStatisticsAll[(int)((int)RoomInfo.CourseIndex & 0x7F)];
 
                     game = 51; // Natural
                 }
                 else
                 { // Normal
-                    pMs = session.UserInfo.NormalMapStatisticsAll[(int)((int)RoomInfo.course & 0x7F)];
+                    pMs = session.UserInfo.NormalMapStatisticsAll[(int)((int)RoomInfo.CourseIndex & 0x7F)];
                 }
 
             }
@@ -1291,17 +1291,17 @@ namespace Pangya_GameServer.Roms.GameBase
 
                 if (game == 52)
                 {
-                    pMs = session.UserInfo.GrandPrixMapStatistics[(int)((int)RoomInfo.course & 0x7F)];
+                    pMs = session.UserInfo.GrandPrixMapStatistics[(int)((int)RoomInfo.CourseIndex & 0x7F)];
                 }
-                else if (RoomInfo.special_flag_mod.natural)
+                else if (RoomInfo.SpecialModeRoom.IsNaturalMode)
                 { // Natural
-                    pMs = session.UserInfo.NaturalMapStatistics[(int)((int)RoomInfo.course & 0x7F)];
+                    pMs = session.UserInfo.NaturalMapStatistics[(int)((int)RoomInfo.CourseIndex & 0x7F)];
 
                     game = 51; // Natural
                 }
                 else
                 { // Normal
-                    pMs = session.UserInfo.NormalMapStatistics[(int)((int)RoomInfo.course & 0x7F)];
+                    pMs = session.UserInfo.NormalMapStatistics[(int)((int)RoomInfo.CourseIndex & 0x7F)];
                 }
             }
 
@@ -1352,21 +1352,21 @@ namespace Pangya_GameServer.Roms.GameBase
             };
 
             // UPDATE ON DB
-            NormalManagerDB.getInstance().add(5,
-                new CmdUpdateMapStatistics(session.UserInfo.uid,
+            NormalManagerDB.Instance.add(5,
+                new CmdUpdateMapStatistics(session.UserInfo.UID,
                     ms, pgi.assist_flag),
                 OnDatabaseResponse, this);
 
             // UPDATE ON GAME, se ele fez record, e add 1000 para ele
             if (make_record)
             {
-                // Add 1000 pang por ele ter quebrado o  record dele
+                // Add 1000 Pang por ele ter quebrado o  record dele
                 session.UserInfo.addPang(1000);
 
                 // Resposta para make record
                 Packet p = new Packet((ushort)0xB9);
 
-                p.WriteByte(((int)RoomInfo.course) & 0x7F);
+                p.WriteByte(((int)RoomInfo.CourseIndex) & 0x7F);
 
                 session.Send(p);
             }
@@ -1383,13 +1383,13 @@ namespace Pangya_GameServer.Roms.GameBase
 
                 if (session.Inventory.UserEquippedItem.CharacterEquiped == null)
                 { // Player não está com character equipado, kika dele do jogo
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestInitItemUsedGame][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestInitItemUsedGame][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return;
                 }
 
                 if (session.Inventory.UserEquippedItem.Ball_WI == null)
                 { // Player não está com Comet(Ball) equipado, kika dele do jogo
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestInitItemUsedGame][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao esta com Ball equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestInitItemUsedGame][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao esta com Ball equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return;
                 }
 
@@ -1409,7 +1409,7 @@ namespace Pangya_GameServer.Roms.GameBase
                     }
                 });
                 // Ball Equiped 
-                if (session.Inventory.UserEquippedItem.Ball_WI._typeid != DEFAULT_COMET_TYPEID && (!session.UserInfo.UserCapabilities.premium_user || session.Inventory.UserEquippedItem.Ball_WI._typeid != sPremiumSystem.getInstance().getPremiumBallByTicket(session.Inventory.PremiumTicket._typeid)))
+                if (session.Inventory.UserEquippedItem.Ball_WI._typeid != DEFAULT_COMET_TYPEID && (!session.UserInfo.UserCapabilities.UserPremium || session.Inventory.UserEquippedItem.Ball_WI._typeid != sPremiumSystem.Instance.getPremiumBallByTicket(session.Inventory.PremiumTicket._typeid)))
                 {
                     ui.v_passive.AddOrUpdate(session.Inventory.UserEquippedItem.Ball_WI._typeid, new UsedItem.Passive(session.Inventory.UserEquippedItem.Ball_WI._typeid, 0));
                 }
@@ -1446,7 +1446,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 ui.club.count = 0;
                 ui.club.rate = 1.0f;
 
-                var club = sIff.getInstance().findClubSet(ui.club._typeid);
+                var club = sIff.Instance.findClubSet(ui.club._typeid);
 
                 if (club != null)
                 {
@@ -1454,14 +1454,14 @@ namespace Pangya_GameServer.Roms.GameBase
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestIniItemUsedGame][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] esta equipado com um ClubSet[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.ClubEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.ClubEquiped.id) + "] que nao tem no IFF_STRUCT do Server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestIniItemUsedGame][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] esta equipado com um ClubSet[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.ClubEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.ClubEquiped.id) + "] que nao tem no IFF_STRUCT do Server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 /// ********** Itens Usado **********
 
                 /// ********** Itens Exp/Pang Rate **********
                 // Item Buff
-                var time_limit_item = sIff.getInstance().getTimeLimitItem();
+                var time_limit_item = sIff.Instance.getTimeLimitItem();
 
                 session.Inventory.ItemBuffs.ForEach(el =>
                 {
@@ -1497,7 +1497,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 {
                     if (el.parts_id == session.Inventory.UserEquippedItem.CharacterEquiped.id
                         && el.parts_typeid == session.Inventory.UserEquippedItem.CharacterEquiped._typeid
-                        && sIff.getInstance().getItemSubGroupIdentify22(el._typeid) == 5)
+                        && sIff.Instance.getItemSubGroupIdentify22(el._typeid) == 5)
                     {
                         if (el.efeito == 2)
                         {
@@ -1508,7 +1508,7 @@ namespace Pangya_GameServer.Roms.GameBase
                             ui.rate.pang += el.efeito_qntd;
                         }
                     }
-                    else if (el.parts_id == 0 && el.parts_typeid == 0 && sIff.getInstance().getItemSubGroupIdentify22(el._typeid) == 2)
+                    else if (el.parts_id == 0 && el.parts_typeid == 0 && sIff.Instance.getItemSubGroupIdentify22(el._typeid) == 2)
                     {
                         if (el.efeito == 3)
                         {
@@ -1584,7 +1584,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 if (session.Inventory.UserEquippedItem.CharacterEquiped.parts_typeid.Any(element =>
                     Array.IndexOf(hat_birthday, element) != -1))
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestInitItemUsedGame][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] esta equipado com Hat Birthday no Character[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestInitItemUsedGame][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] esta equipado com Hat Birthday no Character[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     ui.rate.exp += 20; // 20% Hat Birthday
                 }
@@ -1593,7 +1593,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 if (session.Inventory.UserEquippedItem.CharacterEquiped.parts_typeid.Any(element =>
                     Array.IndexOf(hat_lua_sol, element) != -1))
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestInitItemUsedGame][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] esta equipado com Hat Lua e Sol no Character[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestInitItemUsedGame][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] esta equipado com Hat Lua e Sol no Character[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     ui.rate.exp += 20;  // 20% Hat Lua e Sol
                     ui.rate.pang += 20; // 20% Hat Lua e Sol
@@ -1602,18 +1602,18 @@ namespace Pangya_GameServer.Roms.GameBase
                 // Kurafaito Ring Club Mastery
                 if (Array.IndexOf(session.Inventory.UserEquippedItem.CharacterEquiped.auxparts, KURAFAITO_RING_CLUBMASTERY) != -1)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameBase::RequestInitItemUsedGame][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] esta equipado com Anel (Kurafaito) que da Club Mastery +1.1% no Character[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestInitItemUsedGame][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] esta equipado com Anel (Kurafaito) que da Club Mastery +1.1% no Character[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.CharacterEquiped.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     ui.rate.club += 10; // Kurafaito Ring da + 10% no Club Mastery
                 }
 
                 // Character AuxParts Equipado
-                // Aux parts tem seus próprios valores de rate no iff
+                // Aux parts tem seus próprios valores de Rate no iff
                 foreach (var el in session.Inventory.UserEquippedItem.CharacterEquiped.auxparts)
                 {
-                    if (el != 0 && sIff.getInstance().getItemGroupIdentify(el) ==IFF_GROUP.AUX_PART)
+                    if (el != 0 && sIff.Instance.getItemGroupIdentify(el) ==IFF_GROUP.AUX_PART)
                     {
-                        var auxpart = sIff.getInstance().findAuxPart(el);
+                        var auxpart = sIff.Instance.findAuxPart(el);
                         if (auxpart != null)
                         {
                             if (auxpart.Pang_Rate > 100)
@@ -1648,11 +1648,11 @@ namespace Pangya_GameServer.Roms.GameBase
                     }
                 }
 
-                // Mascot Equipado Rate Exp And Pang, Drop item e Treasure Hunter rate
+                // Mascot Equipado Rate Exp And Pang, Drop item e Treasure Hunter Rate
                 if (session.Inventory.UserEquippedItem.MascotEquiped != null && session.Inventory.UserEquippedItem.MascotEquiped._typeid > 0)
                 {
 
-                    var mascot = sIff.getInstance().findMascot(session.Inventory.UserEquippedItem.MascotEquiped._typeid);
+                    var mascot = sIff.Instance.findMascot(session.Inventory.UserEquippedItem.MascotEquiped._typeid);
 
                     if (mascot != null)
                     {
@@ -1677,7 +1677,7 @@ namespace Pangya_GameServer.Roms.GameBase
                         }
 
                         // Drop item, aqui ele add os 120% e no Drop System ele trata isso direito
-                        // Todos itens que dá drop rate da treasure hunter point
+                        // Todos itens que dá drop Rate da Treasure hunter point
                         if (mascot.efeito.drop_rate > 100)
                         {
 
@@ -1690,13 +1690,13 @@ namespace Pangya_GameServer.Roms.GameBase
                                 ui.rate.drop += (uint)mascot.efeito.drop_rate;
                             }
 
-                            // Passaro gordo que usa isso aqui, mas pode adicionar mais mascot que dé drop rate e treasure hunter point
+                            // Passaro gordo que usa isso aqui, mas pode adicionar mais mascot que dé drop Rate e Treasure hunter point
                             pgi.thi.all_score += 15; // Add +15 ao all score
                         }
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message("[GameBase::RequestInitItemUsedGame][Warning] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] esta equipado com um mascot[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.MascotEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.MascotEquiped.id) + "] que nao tem no IFF_STRUCT do Server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestInitItemUsedGame][Warning] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] esta equipado com um mascot[TYPEID=" + Convert.ToString(session.Inventory.UserEquippedItem.MascotEquiped._typeid) + ", ID=" + Convert.ToString(session.Inventory.UserEquippedItem.MascotEquiped.id) + "] que nao tem no IFF_STRUCT do Server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
 
@@ -1704,9 +1704,9 @@ namespace Pangya_GameServer.Roms.GameBase
 
                 //if (pgi.premium_flag)
                 //{
-                //    var rate_premium = sPremiumSystem.getInstance().getExpPangRateByTicket(session._Inventory.pt._typeid);
-                //    ui.rate.exp += rate_premium;
-                //    ui.rate.pang += rate_premium;
+                //    var rate_premium = sPremiumSystem.Instance.getExpPangRateByTicket(session._Inventory.pt._typeid);
+                //    ui.Rate.Experience += rate_premium;
+                //    ui.Rate.Pang += rate_premium;
                 //}
 
                 /// ********** Itens Exp/Pang Rate **********
@@ -1720,7 +1720,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
             if (pgi == null)
             {
-                throw new exception("[GameBase::RequestSendTreasureHunterItem][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou enviar os itens ganho no Treasure Hunter do jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::RequestSendTreasureHunterItem][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou enviar os itens ganho no Treasure Hunter do jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
 
@@ -1743,7 +1743,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                     if (item._typeid == 0)
                     {
-                        _smp.message_pool.getInstance().push(new message("[GameBase::RequestSendTreasureHunterItem][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou inicializar item[TYPEID=" + Convert.ToString(bi._typeid) + "], mas nao consgeuiu. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestSendTreasureHunterItem][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou inicializar item[TYPEID=" + Convert.ToString(bi._typeid) + "], mas nao consgeuiu. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         continue;
                     }
@@ -1760,7 +1760,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                     if (rai.fails.Count > 0 && rai.type != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH)
                     {
-                        _smp.message_pool.getInstance().push(new message("[GameBase::RequestSendTreasureHunterItem][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao conseguiu adicionar os itens que ele ganhou no Treasure Hunter. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GameBase::RequestSendTreasureHunterItem][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao conseguiu adicionar os itens que ele ganhou no Treasure Hunter. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
             }
@@ -1772,7 +1772,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
             foreach (var el in v_item)
             {
-                p.WriteUInt32(session.UserInfo.uid);
+                p.WriteUInt32(session.UserInfo.UID);
 
                 p.WriteUInt32(el._typeid);
                 p.WriteInt32(el.id);
@@ -1795,7 +1795,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
                 if (session.Inventory.UserEquippedItem.CharacterEquiped == null)
                 { // Player não está com character equipado, kika dele do jogo
-                    _smp.message_pool.getInstance().push(new message("[GameBase::checkCharMotionItem][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameBase::checkCharMotionItem][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] nao esta com Character equipado. kika ele do jogo. pode ser Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
 
                     return 0;
@@ -1836,75 +1836,75 @@ namespace Pangya_GameServer.Roms.GameBase
             else
             {
                 // Normal essa season
-                if (session.UserInfo.NormalMapStatistics[(int)((int)RoomInfo.course & 0x7F)].course != ((int)RoomInfo.course & 0x7F))
+                if (session.UserInfo.NormalMapStatistics[(int)((int)RoomInfo.CourseIndex & 0x7F)].course != ((int)RoomInfo.CourseIndex & 0x7F))
                 {
                     p.WriteSByte(-1); // Não tem
                 }
                 else
                 {
-                    p.WriteByte((char)RoomInfo.course & 0x7F);
-                    p.WriteBytes(session.UserInfo.NormalMapStatistics[(int)((int)RoomInfo.course & 0x7F)].ToArray());
+                    p.WriteByte((char)RoomInfo.CourseIndex & 0x7F);
+                    p.WriteBytes(session.UserInfo.NormalMapStatistics[(int)((int)RoomInfo.CourseIndex & 0x7F)].ToArray());
                 }
 
                 p.WriteSByte(-1); // Não tem
 
                 // Natural essa season
-                if (session.UserInfo.NaturalMapStatistics[(int)((int)RoomInfo.course & 0x7F)].course != ((int)RoomInfo.course & 0x7F))
+                if (session.UserInfo.NaturalMapStatistics[(int)((int)RoomInfo.CourseIndex & 0x7F)].course != ((int)RoomInfo.CourseIndex & 0x7F))
                 {
                     p.WriteSByte(-1); // N�o tem
                 }
                 else
                 {
-                    p.WriteByte((char)RoomInfo.course & 0x7F);
-                    p.WriteBytes(session.UserInfo.NaturalMapStatistics[(int)((int)RoomInfo.course & 0x7F)].ToArray());
+                    p.WriteByte((char)RoomInfo.CourseIndex & 0x7F);
+                    p.WriteBytes(session.UserInfo.NaturalMapStatistics[(int)((int)RoomInfo.CourseIndex & 0x7F)].ToArray());
                 }
                 p.WriteSByte(-1); // Não tem
 
                 // Normal Assist essa season
-                if (session.UserInfo.NormalMapStatisticsAll[(int)((int)RoomInfo.course & 0x7F)].course != ((int)RoomInfo.course & 0x7F))
+                if (session.UserInfo.NormalMapStatisticsAll[(int)((int)RoomInfo.CourseIndex & 0x7F)].course != ((int)RoomInfo.CourseIndex & 0x7F))
                 {
                     p.WriteSByte(-1); // Não tem
                 }
                 else
                 {
-                    p.WriteByte((char)RoomInfo.course & 0x7F);
-                    p.WriteBytes(session.UserInfo.NormalMapStatisticsAll[(int)((int)RoomInfo.course & 0x7F)].ToArray());
+                    p.WriteByte((char)RoomInfo.CourseIndex & 0x7F);
+                    p.WriteBytes(session.UserInfo.NormalMapStatisticsAll[(int)((int)RoomInfo.CourseIndex & 0x7F)].ToArray());
                 }
                 p.WriteSByte(-1); // Não tem
 
                 // Natural Assist essa season
-                if (session.UserInfo.NaturalMapStatisticsAll[(int)((int)RoomInfo.course & 0x7F)].course != ((int)RoomInfo.course & 0x7F))
+                if (session.UserInfo.NaturalMapStatisticsAll[(int)((int)RoomInfo.CourseIndex & 0x7F)].course != ((int)RoomInfo.CourseIndex & 0x7F))
                 {
                     p.WriteSByte(-1); // Não tem
                 }
                 else
                 {
-                    p.WriteByte((char)RoomInfo.course & 0x7F);
-                    p.WriteBytes(session.UserInfo.NaturalMapStatisticsAll[(int)((int)RoomInfo.course & 0x7F)].ToArray());
+                    p.WriteByte((char)RoomInfo.CourseIndex & 0x7F);
+                    p.WriteBytes(session.UserInfo.NaturalMapStatisticsAll[(int)((int)RoomInfo.CourseIndex & 0x7F)].ToArray());
                 }
                 p.WriteSByte(-1); // Não tem
 
                 // Grand Prix essa season
-                if (session.UserInfo.GrandPrixMapStatistics[(int)((int)RoomInfo.course & 0x7F)].course != ((int)RoomInfo.course & 0x7F))
+                if (session.UserInfo.GrandPrixMapStatistics[(int)((int)RoomInfo.CourseIndex & 0x7F)].course != ((int)RoomInfo.CourseIndex & 0x7F))
                 {
                     p.WriteSByte(-1); // Não tem
                 }
                 else
                 {
-                    p.WriteByte((char)RoomInfo.course & 0x7F);
-                    p.WriteBytes(session.UserInfo.GrandPrixMapStatistics[(int)((int)RoomInfo.course & 0x7F)].ToArray());
+                    p.WriteByte((char)RoomInfo.CourseIndex & 0x7F);
+                    p.WriteBytes(session.UserInfo.GrandPrixMapStatistics[(int)((int)RoomInfo.CourseIndex & 0x7F)].ToArray());
                 }
                 p.WriteSByte(-1); // Não tem
 
                 // Grand Prix Assist essa season
-                if (session.UserInfo.GrandPrixMapStatisticsAll[(int)((int)RoomInfo.course & 0x7F)].course != ((int)RoomInfo.course & 0x7F))
+                if (session.UserInfo.GrandPrixMapStatisticsAll[(int)((int)RoomInfo.CourseIndex & 0x7F)].course != ((int)RoomInfo.CourseIndex & 0x7F))
                 {
                     p.WriteSByte(-1); // Não tem
                 }
                 else
                 {
-                    p.WriteByte((char)RoomInfo.course & 0x7F);
-                    p.WriteBytes(session.UserInfo.GrandPrixMapStatisticsAll[(int)((int)RoomInfo.course & 0x7F)].ToArray());
+                    p.WriteByte((char)RoomInfo.CourseIndex & 0x7F);
+                    p.WriteBytes(session.UserInfo.GrandPrixMapStatisticsAll[(int)((int)RoomInfo.CourseIndex & 0x7F)].ToArray());
                 }
                 p.WriteSByte(-1); // Não tem
             }
@@ -1912,14 +1912,14 @@ namespace Pangya_GameServer.Roms.GameBase
             session.Send(p);
         }
 
-        // Envia a message no char para todos player do Game que o player terminou o jogo
+        // Envia a AppMessage no char para todos player do Game que o player terminou o jogo
         public void SendFinishMessage(Player session)
         {
 
             var pgi = GetPlayerInfo(session);
             if (pgi == null)
             {
-                throw new exception("[GameBase::sendFinishMessage][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] " + "tentou enviar message no chat que o player terminou o jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
+                throw new exception("[GameBase::sendFinishMessage][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] " + "tentou enviar AppMessage no chat que o player terminou o jogo" + ", mas o game nao tem o info dele guardado. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME,
                     1, 4));
             }
 
@@ -1927,7 +1927,7 @@ namespace Pangya_GameServer.Roms.GameBase
 
             p.WriteByte(16); // Msg que terminou o game
 
-            p.WriteString(session.UserInfo.nickname);
+            p.WriteString(session.UserInfo.NickName);
             p.WriteUInt16(0); // Size Msg
 
             p.WriteInt32(pgi.data.score);
@@ -1961,14 +1961,14 @@ namespace Pangya_GameServer.Roms.GameBase
 
             if (info == null)
             {
-                string errorMsg = $"[GameBase::CheckEndGame][Error] PLAYER[UID={session.UserInfo.uid}] " +
+                string errorMsg = $"[GameBase::CheckEndGame][Error] Normal[UID={session.UserInfo.UID}] " +
                                   "tentou verificar se é o final do jogo, mas o game não tem o info dele guardado. Bug";
 
                 throw new exception(errorMsg, ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 4));
             }
 
             // Check if the current hole sequence matches the total quantity of holes
-            return Course.findHoleSeq(info.hole) == RoomInfo.qntd_hole;
+            return Course.findHoleSeq(info.hole) == RoomInfo.HoleCount;
         }
 
         public bool PlayersCompleteGameAndClear()
@@ -1985,7 +1985,7 @@ namespace Pangya_GameServer.Roms.GameBase
                     if (info == null)
                     {
                         throw new exception(
-                            $"[GameBase::PlayersCompleteGameAndClear][Error] PLAYER[UID={player.UserInfo.uid}] " +
+                            $"[GameBase::PlayersCompleteGameAndClear][Error] Normal[UID={player.UserInfo.UID}] " +
                             "tentou verificar se o player terminou o jogo, mas o game nao tem o info dele guardado. Bug",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 4)
                         );
@@ -1999,7 +1999,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 catch (exception e)
                 {
                     var logMsg = $"[GamePlayersCompleteGameAndClear][ErrorSystem] {e.getFullMessageError()}";
-                    _smp.message_pool.getInstance().push(new message(logMsg, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage(logMsg, type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
 
@@ -2010,7 +2010,7 @@ namespace Pangya_GameServer.Roms.GameBase
         {
             if (info == null)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::setGameFlag][Error] PlayerGameInfo is null.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::setGameFlag][Error] PlayerGameInfo is null.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
             info.flag = flag;
@@ -2020,7 +2020,7 @@ namespace Pangya_GameServer.Roms.GameBase
         {
             if (info == null)
             {
-                _smp.message_pool.getInstance().push(new message("[GameBase::setFinishGameFlag][Error] PlayerGameInfo is null.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameBase::setFinishGameFlag][Error] PlayerGameInfo is null.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
             info.finish_game = finishGame;
@@ -2040,12 +2040,12 @@ namespace Pangya_GameServer.Roms.GameBase
                     if (info == null)
                     {
                         throw new exception(
-                            $"[GameBase::AllCompleteGameAndClear][Error] PLAYER[UID={player.UserInfo.uid}] info missing. Bug",
+                            $"[GameBase::AllCompleteGameAndClear][Error] Normal[UID={player.UserInfo.UID}] info missing. Bug",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME, 1, 4)
                         );
                     }
 
-                    // A player is "complete" if they are no longer in the PLAYING state
+                    // A player is "complete" if they are no longer in the PLAYING StateRoom
                     if (info.flag != PlayerGameInfo.eFLAG_GAME.PLAYING)
                     {
                         finishedCount++;
@@ -2053,7 +2053,7 @@ namespace Pangya_GameServer.Roms.GameBase
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[GameBase::AllCompleteGameAndClear][ErrorSystem] {e.getFullMessageError()}",
                         type_msg.CL_FILE_LOG_AND_CONSOLE)
                     );

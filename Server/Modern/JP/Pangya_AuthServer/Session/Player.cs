@@ -27,17 +27,17 @@ namespace Pangya_AuthServer.Session
 
         public override string GetNickname()
         {
-            return UserInfo.nickname;
+            return UserInfo.NickName;
         }
 
         public override uint GetUID()
         {
-            return UserInfo.uid;
+            return UserInfo.UID;
         }
 
         public override string GetID()
         {
-            return UserInfo.id;
+            return UserInfo.Login;
         }
 
         public override uint GetCapability() { return (uint)UserInfo.tipo; }

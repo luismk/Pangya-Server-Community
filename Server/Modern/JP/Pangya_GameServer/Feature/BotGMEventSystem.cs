@@ -53,7 +53,7 @@ namespace Pangya_GameServer.Feature
         {
             CmdBotGMEventInfo cmd_bgei = new CmdBotGMEventInfo(0); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                 cmd_bgei, null, null);
 
             if (cmd_bgei.getException().getCodeError() != 0)
@@ -64,7 +64,7 @@ namespace Pangya_GameServer.Feature
 
             cmd_bgei = new CmdBotGMEventInfo(1); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                  cmd_bgei, null, null);
 
             if (cmd_bgei.getException().getCodeError() != 0)
@@ -75,7 +75,7 @@ namespace Pangya_GameServer.Feature
             m_rewards = cmd_bgei.getRewardInfo();
             // Log  
             if (m_rt.Count == 0 || m_rewards.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[BotGMEvent::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[BotGMEvent::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             m_load = true;
 
@@ -85,7 +85,7 @@ namespace Pangya_GameServer.Feature
         {
             if (!isLoad())
             {
-                _smp.message_pool.getInstance().push(new message("[BotGMEvent::checkTimeToMakeRoom][Error] Bot GM Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[BotGMEvent::checkTimeToMakeRoom][Error] Bot GM Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return false;
             }
 
@@ -100,7 +100,7 @@ namespace Pangya_GameServer.Feature
             if (!isLoad())
             {
 
-                _smp.message_pool.getInstance().push(new message("[BotGMEvent::setSendedMessage][Error] Bot GM Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[BotGMEvent::setSendedMessage][Error] Bot GM Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -130,7 +130,7 @@ namespace Pangya_GameServer.Feature
             if (!isLoad())
             {
 
-                _smp.message_pool.getInstance().push(new message("[BotGMEvent::getInterval][Error] Bot GM Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[BotGMEvent::getInterval][Error] Bot GM Event not have initialized, please call init function first.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return null;
             }
@@ -172,7 +172,7 @@ namespace Pangya_GameServer.Feature
                 {
 
                     // Log
-                    _smp.message_pool.getInstance().push(new message("[BotGMEvent::calculeReward][Error][Warning] nao conseguiu sortear um reward na lottery.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[BotGMEvent::calculeReward][Error][Warning] nao conseguiu sortear um reward na lottery.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // Continua
                     continue;

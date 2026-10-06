@@ -18,8 +18,8 @@ namespace Pangya_LoginServer.Handles
         /// </summary>
         public override async Task Handle()
         {
-            if (!sIff.getInstance().isLoad())
-                sIff.getInstance().Init();
+            if (!sIff.Instance.isLoad())
+                sIff.Instance.Init();
             try
             {
                 // 1. Leitura dos dados do pacote
@@ -29,7 +29,7 @@ namespace Pangya_LoginServer.Handles
 
                 // 2. Validações de IFF (Integridade dos dados)
                 // Verifica se o Character existe no IFF do Pangya Fun
-                if (sIff.getInstance().findCharacter(_typeid) == null)
+                if (sIff.Instance.findCharacter(_typeid) == null)
                     throw new exception("[typeid character: " + (_typeid) + " is worng.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.LOGIN_SERVER, 21, 0));
 
                 if (default_hair > 9)
@@ -44,7 +44,7 @@ namespace Pangya_LoginServer.Handles
                 // Inicializa as partes padrão (Combo/Parts)
                 ci.initComboDef();
 
-                uint uid = Player.UserInfo.uid;
+                uint uid = Player.UserInfo.UID;
 
                 // 4. Persistência no Banco de Dados (Async)
                 CommandDB.AddFirstSet(uid);
@@ -68,8 +68,8 @@ namespace Pangya_LoginServer.Handles
                 Player.Send(Handle_PACKET_RESPONSE.pacote011()); // Envia 011 para destravar o cliente
                 Player.Send(Handle_PACKET_RESPONSE.pacote00E(Player, "", 12, 500051));
 
-                _smp.message_pool.getInstance().push(new message(
-                    $"[Handle_PLAYER_SELECT_CHARACTER][Error] UID {Player.UserInfo.uid}: {e.Message}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[Handle_PLAYER_SELECT_CHARACTER][Error] UID {Player.UserInfo.UID}: {e.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE)
                 );
             }

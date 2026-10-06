@@ -78,7 +78,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_ci.id) + ", " + Convert.ToString(m_ci._typeid) + ", " + Convert.ToString(m_ci.parts_typeid) + ", " + Convert.ToString((ushort)m_ci.level) + ", " + Convert.ToString(m_ci.exp) + ", " + Convert.ToString((ushort)m_ci.rent_flag) + ", " + Convert.ToString((ushort)m_ci.purchase) + ", " + Convert.ToString(m_ci.check_end) + ", " + end_dt + ", " + parts_end_dt);
 
-            checkResponse(r, "PLAYER[UID=" + Convert.ToString(m_uid) + "] nao conseguiu Atualizar o Caddie Info[TYPEID=" + Convert.ToString(m_ci._typeid) + ", ID=" + Convert.ToString(m_ci.id) + ", PARTS_TYPEID=" + Convert.ToString(m_ci.parts_typeid) + ", LEVEL=" + Convert.ToString((ushort)m_ci.level) + ", EXP=" + Convert.ToString(m_ci.exp) + ", RENT_FLAG=" + Convert.ToString((ushort)m_ci.rent_flag) + ", PURCHASE=" + Convert.ToString((ushort)m_ci.purchase) + ", CHECK_END=" + Convert.ToString(m_ci.check_end) + ", END_DT=" + end_dt + ", PARTS_END_DT=" + parts_end_dt + "]");
+            checkResponse(r, "Normal[UID=" + Convert.ToString(m_uid) + "] nao conseguiu Atualizar o Caddie Info[TYPEID=" + Convert.ToString(m_ci._typeid) + ", ID=" + Convert.ToString(m_ci.id) + ", PARTS_TYPEID=" + Convert.ToString(m_ci.parts_typeid) + ", LEVEL=" + Convert.ToString((ushort)m_ci.level) + ", EXP=" + Convert.ToString(m_ci.exp) + ", RENT_FLAG=" + Convert.ToString((ushort)m_ci.rent_flag) + ", PURCHASE=" + Convert.ToString((ushort)m_ci.purchase) + ", CHECK_END=" + Convert.ToString(m_ci.check_end) + ", END_DT=" + end_dt + ", PARTS_END_DT=" + parts_end_dt + "]");
 
             return r;
         }

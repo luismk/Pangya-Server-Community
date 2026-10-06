@@ -56,7 +56,7 @@ namespace Pangya_GameServer.Manager
 
             if (_p1 == null || _p2 == null)
             { 
-                _smp.message_pool.getInstance().push(new message("[DuplaManager::addDupla][Error] _p" + (_p1 == null && _p2 == null ? "1 and _p2" : (_p1 == null ? "1" : "2")) + " is invalid", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DuplaManager::addDupla][Error] _p" + (_p1 == null && _p2 == null ? "1 and _p2" : (_p1 == null ? "1" : "2")) + " is invalid", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -73,7 +73,7 @@ namespace Pangya_GameServer.Manager
             if (_dupla == null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[DuplaManager::deleteDupla][Error] _dupla is invalid(null). Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DuplaManager::deleteDupla][Error] _dupla is invalid(null). Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -117,7 +117,7 @@ namespace Pangya_GameServer.Manager
 
             var it = v_duplas.FirstOrDefault(_el =>
             {
-                return (_el.p[0] != null && _el.p[0].UserInfo.uid == _uid) || (_el.p[1] != null && _el.p[1].UserInfo.uid == _uid);
+                return (_el.p[0] != null && _el.p[0].UserInfo.UID == _uid) || (_el.p[1] != null && _el.p[1].UserInfo.UID == _uid);
             });
 
             return it;
@@ -166,7 +166,7 @@ namespace Pangya_GameServer.Manager
             if (_g == null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[DuplaManager::GetNumPlayersQuitGuild][Error] _g is invalid(null). Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DuplaManager::GetNumPlayersQuitGuild][Error] _g is invalid(null). Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return 0;
             }
@@ -237,7 +237,7 @@ namespace Pangya_GameServer.Manager
             if (_g == null)
             {
 
-                _smp.message_pool.getInstance().push(new message("[DuplaManager::updatePangWinDuplas][Error] _g is invalid(null). Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DuplaManager::updatePangWinDuplas][Error] _g is invalid(null). Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -287,7 +287,7 @@ namespace Pangya_GameServer.Manager
                 }
             }
 
-            // Uma das duas guilds, seus membros sairam todos do jogo
+            // Uma das duas GuildBattle, seus membros sairam todos do jogo
             if (count[0] == 0u || count[1] == 0u)
             {
                 ret = true;
@@ -317,16 +317,16 @@ namespace Pangya_GameServer.Manager
                         gmp = new GuildMemberPoints();
 
                         gmp.guild_uid = el.p[0].UserInfo.Guild.uid;
-                        gmp.member_uid = el.p[0].UserInfo.uid;
+                        gmp.member_uid = el.p[0].UserInfo.UID;
                         gmp.pang = el.pang_win[0];
                         gmp.point = el.sumScoreP1();
 
                         // Update ON SERVER
-                        el.p[0].UserInfo.Member.guild_pang = (long)(el.p[0].UserInfo.Guild.pang += gmp.pang);
-                        el.p[0].UserInfo.Member.guild_point = (uint)(el.p[0].UserInfo.Guild.point += (uint)gmp.point);
+                        el.p[0].UserInfo.Member.GuildWinPangs = (long)(el.p[0].UserInfo.Guild.pang += gmp.pang);
+                        el.p[0].UserInfo.Member.GuildWinPoints = (uint)(el.p[0].UserInfo.Guild.point += (uint)gmp.point);
 
                         // Update ON DB
-                        //NormalManagerDB.getInstance().add(1,
+                        //NormalManagerDB.Instance.add(1,
                         //    new CmdUpdateGuildMemberPoints(gmp),
                         //    DuplaManager.SQLDBResponse,
                         //    this);
@@ -339,16 +339,16 @@ namespace Pangya_GameServer.Manager
                         gmp = new GuildMemberPoints();
 
                         gmp.guild_uid = el.p[1].UserInfo.Guild.uid;
-                        gmp.member_uid = el.p[1].UserInfo.uid;
+                        gmp.member_uid = el.p[1].UserInfo.UID;
                         gmp.pang = el.pang_win[1];
                         gmp.point = el.sumScoreP2();
 
                         // Update ON SERVER
-                        el.p[1].UserInfo.Member.guild_pang = (long)(el.p[1].UserInfo.Guild.pang += gmp.pang);
-                        el.p[1].UserInfo.Member.guild_point = el.p[1].UserInfo.Guild.point += (uint)gmp.point;
+                        el.p[1].UserInfo.Member.GuildWinPangs = (long)(el.p[1].UserInfo.Guild.pang += gmp.pang);
+                        el.p[1].UserInfo.Member.GuildWinPoints = el.p[1].UserInfo.Guild.point += (uint)gmp.point;
 
                         //// Update ON DB
-                        //NormalManagerDB.getInstance().add(1,
+                        //NormalManagerDB.Instance.add(1,
                         //    new CmdUpdateGuildMemberPoints(gmp),
                         //    DuplaManager.SQLDBResponse,
                         //    this);
@@ -359,7 +359,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[DuplaManager::saveGuildMembersData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DuplaManager::saveGuildMembersData][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -387,7 +387,7 @@ namespace Pangya_GameServer.Manager
                 || _seq_hole == 0u)
             {
 
-                _smp.message_pool.getInstance().push(new message("[DuplaManager::finishHoleDupla][Error] _seq_hole is invalid[VALUE=" + Convert.ToString(_seq_hole) + "]. Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DuplaManager::finishHoleDupla][Error] _seq_hole is invalid[VALUE=" + Convert.ToString(_seq_hole) + "]. Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return false;
             }
@@ -397,7 +397,7 @@ namespace Pangya_GameServer.Manager
             if (dup != null)
             {
 
-                var dup_p_index = (dup.p[0] != null && dup.p[0].UserInfo.uid == _pgi.uid) ? 0 : 1;
+                var dup_p_index = (dup.p[0] != null && dup.p[0].UserInfo.UID == _pgi.uid) ? 0 : 1;
                 var other_p_index = (dup_p_index == 0u) ? 1 : 0;
 
                 dup.dados[dup_p_index][_seq_hole - 1].tacada = _pgi.data.tacada_num;
@@ -446,10 +446,10 @@ namespace Pangya_GameServer.Manager
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[DuplaManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DuplaManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 

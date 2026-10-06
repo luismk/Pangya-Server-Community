@@ -22,16 +22,16 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // Attendance Reward System
-                if (!sAttendanceRewardSystem.getInstance().isLoad())
+                if (!sAttendanceRewardSystem.Instance.isLoad())
                 {
-                    sAttendanceRewardSystem.getInstance().load();
+                    sAttendanceRewardSystem.Instance.load();
                 }
 
-                sAttendanceRewardSystem.getInstance().requestCheckAttendance(Player, Packet);
+                sAttendanceRewardSystem.Instance.requestCheckAttendance(Player, Packet);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestCheckAttendanceReward][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestCheckAttendanceReward][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         await Task.CompletedTask;

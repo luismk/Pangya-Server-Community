@@ -59,8 +59,8 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                // Log padronizado com o nome da classe para rastreamento de erro no carregamento
-                _smp.message_pool.getInstance().push(new message(
+                // Log padronizado com o Name da classe para rastreamento de erro no carregamento
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [isLoad][ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -108,11 +108,11 @@ namespace Pangya_RankingServer.Manager
                             }
                             else
                             {
-                                _smp.message_pool.getInstance().push(new message(
+                                _smp.LogManager.Instance.push(new AppMessage(
                                     $"[{nameof(RankRegistryManager)}] [WARNING] Sem Character Info para UID: {rr.getUID()}. Preenchendo com zeros.",
                                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                                _packet.WriteZero(7); // 1 Level, 2 Unknown, 2 size id, 2 size nickname
+                                _packet.WriteZero(7); // 1 Level, 2 Unknown, 2 size Login, 2 size NickName
                             }
                         }
                     }
@@ -130,7 +130,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -154,7 +154,7 @@ namespace Pangya_RankingServer.Manager
                 {
                     // Localiza o registro do próprio player dentro deste ranking
                     // Nota: Se você tiver um dicionário reverso de UID para Posição, isso ficaria ainda mais rápido
-                    var playerRecord = rankMap.Values.FirstOrDefault(r => r.getUID() == _session.UserInfo.uid);
+                    var playerRecord = rankMap.Values.FirstOrDefault(r => r.getUID() == _session.UserInfo.UID);
 
                     if (playerRecord != null)
                     {
@@ -171,11 +171,11 @@ namespace Pangya_RankingServer.Manager
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message(
+                            _smp.LogManager.Instance.push(new AppMessage(
                                 $"[{nameof(RankRegistryManager)}] [WARNING] Sem Character Info para UID: {playerRecord.getUID()}. Preenchendo com zeros.",
                                 type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                            _packet.WriteZero(7); // 1 Level, 2 Unknown, 2 size id, 2 size nickname
+                            _packet.WriteZero(7); // 1 Level, 2 Unknown, 2 size Login, 2 size NickName
                         }
                     }
                     else
@@ -192,7 +192,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -215,7 +215,7 @@ namespace Pangya_RankingServer.Manager
                 // 2. Busca as informações de personagem (Character Entry)
                 if (!m_character_entry.TryGetValue(_uid, out var it_chr_entry) || it_chr_entry == null)
                 {
-                    throw new exception($"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.uid}] pediu info do Player[UID={_uid}], mas nao existe registro de character no Rank.",
+                    throw new exception($"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.UID}] pediu info do Player[UID={_uid}], mas nao existe registro de character no Rank.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_REGISTRY_MANAGER, 3, 0));
                 }
 
@@ -224,8 +224,8 @@ namespace Pangya_RankingServer.Manager
 
                 if (all_overall == null || all_overall.Count == 0)
                 {
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[{nameof(RankRegistryManager)}] [WARNING] Player[UID={_session.UserInfo.uid}] pediu info do Player[UID={_uid}], mas nao ha registros Overall.",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[{nameof(RankRegistryManager)}] [WARNING] Player[UID={_session.UserInfo.UID}] pediu info do Player[UID={_uid}], mas nao ha registros Overall.",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
@@ -255,7 +255,7 @@ namespace Pangya_RankingServer.Manager
             catch (exception e)
             {
                 // Log de erro formatado
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -317,11 +317,11 @@ namespace Pangya_RankingServer.Manager
                             else
                             {
                                 // Se não encontrar informações do char, loga o aviso e preenche com zeros para não quebrar o cliente
-                                _smp.message_pool.getInstance().push(new message(
+                                _smp.LogManager.Instance.push(new AppMessage(
                                     $"[{nameof(RankRegistryManager)}] [WARNING] Sem Character Info para UID: {it_entry.getUID()}. Preenchendo com zeros.",
                                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                                p.WriteZero(7); // 1 Level, 2 Unknown, 2 size id, 2 size nickname
+                                p.WriteZero(7); // 1 Level, 2 Unknown, 2 size Login, 2 size NickName
                             }
                         }
 
@@ -342,7 +342,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -351,7 +351,7 @@ namespace Pangya_RankingServer.Manager
             }
         }
 
-        // Procura um player pelo nickname e enviar a página onde ele está se ele estiver no rank
+        // Procura um player pelo NickName e enviar a página onde ele está se ele estiver no rank
         public void searchPlayerByNicknameAndSendPage(Player _session, string _nickname, SearchData _sd)
         {
             try
@@ -366,7 +366,7 @@ namespace Pangya_RankingServer.Manager
                 // 2. Validação do input
                 if (string.IsNullOrWhiteSpace(_nickname))
                 {
-                    throw new exception($"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.uid}] tentou buscar, mas o nickname esta vazio.",
+                    throw new exception($"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.UID}] tentou buscar, mas o NickName esta vazio.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_REGISTRY_MANAGER, 6, 0));
                 }
 
@@ -376,7 +376,7 @@ namespace Pangya_RankingServer.Manager
                 // Se o Item2 (PageIndex) for -1, o player não foi encontrado no rank especificado
                 if (found_player.Item2 == -1)
                 {
-                    throw new exception($"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.uid}] nao encontrou o player[NICKNAME={_nickname}] no rank. SearchData: {_sd.toString()}",
+                    throw new exception($"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.UID}] nao encontrou o player[NICKNAME={_nickname}] no rank. SearchData: {_sd.toString()}",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_REGISTRY_MANAGER, 8, 0));
                 }
 
@@ -384,14 +384,14 @@ namespace Pangya_RankingServer.Manager
                 sendPageFoundPlayer(_session, found_player, _sd);
 
                 // Log informativo para o console
-                _smp.message_pool.getInstance().push(new message(
-                    $"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.uid}] localizou Nickname '{_nickname}' na pagina {found_player.Item2}.",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.UID}] localizou Nickname '{_nickname}' na pagina {found_player.Item2}.",
                     type_msg.CL_ONLY_CONSOLE));
             }
             catch (exception e)
             {
                 // Log de erro formatado
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -419,7 +419,7 @@ namespace Pangya_RankingServer.Manager
                 // Item2 (PageIndex) ser -1 indica que não foi encontrado
                 if (found_player.Item2 == -1)
                 {
-                    throw new exception($"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.uid}] procurando por posicao, mas nao encontrou [POSITION={_position}]. SearchData: {_sd.toString()}",
+                    throw new exception($"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.UID}] procurando por posicao, mas nao encontrou [POSITION={_position}]. SearchData: {_sd.toString()}",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_REGISTRY_MANAGER, 8, 0));
                 }
 
@@ -427,14 +427,14 @@ namespace Pangya_RankingServer.Manager
                 sendPageFoundPlayer(_session, found_player, _sd);
 
                 // Log de sucesso opcional para o console
-                _smp.message_pool.getInstance().push(new message(
-                    $"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.uid}] encontrou posicao {_position} na pagina {found_player.Item2}.",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[{nameof(RankRegistryManager)}] Player[UID={_session.UserInfo.UID}] encontrou posicao {_position} na pagina {found_player.Item2}.",
                     type_msg.CL_ONLY_CONSOLE));
             }
             catch (exception e)
             {
                 // Log de erro centralizado
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -443,7 +443,7 @@ namespace Pangya_RankingServer.Manager
             }
         }
 
-        // Procura um player por nickname no Rank Menu->Item
+        // Procura um player por NickName no Rank Menu->Item
         public FoundPlayer searchPlayerByNickname(string _nickname, SearchData _sd)
         {
             // Padrão de retorno: Pos 0, Page -1 (indica não encontrado ou erro)
@@ -502,7 +502,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -510,7 +510,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [CriticalError] {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -561,7 +561,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -569,7 +569,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [CriticalError] {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -618,7 +618,7 @@ namespace Pangya_RankingServer.Manager
 
                 close_log();
 
-                _smp.message_pool.getInstance().push(new message("[RankRegistryManager::makeLog][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankRegistryManager::makeLog][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -629,7 +629,7 @@ namespace Pangya_RankingServer.Manager
             {
                 CmdRankRegistryInfo cmd_rri = new CmdRankRegistryInfo();
 
-                snmdb.NormalManagerDB.getInstance().add(0,
+                snmdb.NormalManagerDB.Instance.add(0,
                      cmd_rri, null, null);
 
                 if (cmd_rri.getException().getCodeError() != 0)
@@ -647,7 +647,7 @@ namespace Pangya_RankingServer.Manager
 
                 CmdRankRegistryCharacterInfo cmd_rrci = new CmdRankRegistryCharacterInfo();
 
-                snmdb.NormalManagerDB.getInstance().add(0,
+                snmdb.NormalManagerDB.Instance.add(0,
                      cmd_rrci, null, null);
 
                 if (cmd_rrci.getException().getCodeError() != 0)
@@ -669,7 +669,7 @@ namespace Pangya_RankingServer.Manager
 
                 m_state = false;
 
-                _smp.message_pool.getInstance().push(new message("[RankRegistryManager::initialize][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankRegistryManager::initialize][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -686,7 +686,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[RankRegistryManager::clear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[RankRegistryManager::clear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -730,7 +730,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     "[RankRegistryManager::GetAllOverallInfoFromPlayer][ErrorSystem] " + e.getFullMessageError(),
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -778,8 +778,8 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(
-                    new message("[RankRegistryManager::getPage][ErrorSystem] " + e.getFullMessageError(),
+                _smp.LogManager.Instance.push(
+                    new AppMessage("[RankRegistryManager::getPage][ErrorSystem] " + e.getFullMessageError(),
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
@@ -815,8 +815,8 @@ namespace Pangya_RankingServer.Manager
                 catch (exception e)
                 {
                     // Caso falhe a leitura do .ini, reporta e tenta usar o diretório padrão "Log"
-                    _smp.message_pool.getInstance().push(new message($"[{nameof(RankRegistryManager)}] [init_log][ErrorSystem] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
-                    _smp.message_pool.getInstance().push(new message($"[{nameof(RankRegistryManager)}] [init_log] Usando diretorio padrao 'Log'.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[{nameof(RankRegistryManager)}] [init_log][ErrorSystem] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[{nameof(RankRegistryManager)}] [init_log] Usando diretorio padrao 'Log'.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     dir = "Log";
                     if (!Directory.Exists(dir))
@@ -828,10 +828,10 @@ namespace Pangya_RankingServer.Manager
                 // Garante que qualquer log anterior seja fechado antes de iniciar um novo
                 close_log();
 
-                // Gera o nome do arquivo com Timestamp: ddMMyyyyHHmmss
+                // Gera o Name do arquivo com Timestamp: ddMMyyyyHHmmss
                 string datetime = DateTime.Now.ToString("ddMMyyyyHHmmss");
 
-                // Se houver um prefixo (prex), adiciona ao nome do arquivo
+                // Se houver um prefixo (prex), adiciona ao Name do arquivo
                 string fileName = string.IsNullOrEmpty(prex)
                     ? $"log Registros {datetime}.log"
                     : $"log Registros {datetime} {prex}.log";
@@ -846,7 +846,7 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[{nameof(RankRegistryManager)}] [init_log][Critical Error] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{nameof(RankRegistryManager)}] [init_log][Critical Error] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
         protected void close_log()
@@ -862,15 +862,15 @@ namespace Pangya_RankingServer.Manager
             }
             catch (exception e)
             {
-                // Log padronizado com o nome da classe
-                _smp.message_pool.getInstance().push(new message(
+                // Log padronizado com o Name da classe
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [close_log][Error] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (Exception ex)
             {
                 // Catch para exceções genéricas do sistema (IOException, etc)
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [close_log][Critical Error] {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -899,13 +899,13 @@ namespace Pangya_RankingServer.Manager
             {
                 // Se o objeto foi descartado, tentamos anular a referência para que o próximo log tente reabrir
                 log = null;
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [putLog][Error] Stream ja foi fechado. Tentando resetar referencia.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[{nameof(RankRegistryManager)}] [putLog][Error] {e.Message} Erro ao escrever no arquivo de log.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

@@ -12,10 +12,10 @@ namespace Pangya_RankingServer.Handles
         public override async Task Handle()
         {
             int opcode = Packet.Type;
-            uint uid = Player.UserInfo?.uid ?? 0;
+            uint uid = Player.UserInfo?.UID ?? 0;
 
             // Log detalhado para análise posterior no console/arquivo
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                 $"[Handle_DUMMY][Log] Pacote 0x{opcode:X2} recebido de Player[UID={uid}]. " +
                 $"Tamanho: {Packet.GetBytesReader().HexDump()} bytes. Lógica de resposta ainda não implementada.",
                 type_msg.CL_FILE_LOG_AND_CONSOLE));

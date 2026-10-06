@@ -42,10 +42,10 @@ namespace Pangya_GameServer.Handles
 
                 // Vou colocar aqui para atualizar os Grand Zodiac Pontos por que quando eu fazer o evento o Grand Zodiac ele vai consumir os pontos na página web, 
                 // aí vou atualizar aqui com o do banco de dados
-                CmdGrandZodiacPontos cmd_gzp = new CmdGrandZodiacPontos(Player.UserInfo.uid,
+                CmdGrandZodiacPontos cmd_gzp = new CmdGrandZodiacPontos(Player.UserInfo.UID,
                     CmdGrandZodiacPontos.eCMD_GRAND_ZODIAC_TYPE.CGZT_GET);
 
-                NormalManagerDB.getInstance().add(0,
+                NormalManagerDB.Instance.add(0,
                      cmd_gzp, null, null);
 
                 if (cmd_gzp.getException().getCodeError() != 0)
@@ -58,7 +58,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestCookie][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestCookie][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

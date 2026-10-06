@@ -25,9 +25,9 @@ namespace Pangya_GameServer.Handles
 
             try
             {
-                if (Player.UserInfo.block_flag.m_flag.char_mastery)
+                if (Player.UserInfo.BlockFlag.Flag.CharacterMastery)
                 {
-                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou expandir o character mastery, mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou expandir o character mastery, mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         9, 0x790001));
                 }
 
@@ -38,33 +38,33 @@ namespace Pangya_GameServer.Handles
 
                 if (pCi == null || pCi._typeid != char_typeid)
                 {
-                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas ele nao possui o character. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas ele nao possui o character. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         650, 0x5200651));
                 }
 
-                var mastery = sIff.getInstance().findCharacterMastery(char_typeid);
+                var mastery = sIff.Instance.findCharacterMastery(char_typeid);
 
                 if (mastery.Count == 0)
                 {
-                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas nao tem o character mastery no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas nao tem o character mastery no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         651, 0x5200652));
                 }
 
                 if (pCi.mastery + 1 > mastery.Count)
                 {
-                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas ele ja expandiu todos que é permitido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas ele ja expandiu todos que é permitido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         652, 0x5200653));
                 }
 
                 if (mastery[(int)pCi.mastery].seq != (pCi.mastery + 1))
                 {
-                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas a sequencia do mastery no IFF_STRUCT é diferente. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas a sequencia do mastery no IFF_STRUCT é diferente. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         653, 0x5200654));
                 }
 
-                if ((char)mastery[(int)pCi.mastery].level > Player.UserInfo.Member.level)
+                if ((char)mastery[(int)pCi.mastery].level > Player.UserInfo.Member.GameLevel)
                 {
-                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas nao tem level suficiente[have_lvl=" + (mastery[(int)pCi.mastery].level) + ", req_lvl=" + ((short)Player.UserInfo.Member.level) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou expandir Character[TYPEID=" + (char_typeid) + ", ID=" + (char_id) + "] mastery, mas nao tem Level suficiente[have_lvl=" + (mastery[(int)pCi.mastery].level) + ", req_lvl=" + ((short)Player.UserInfo.Member.GameLevel) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         654, 0x5200655));
                 }
 
@@ -77,7 +77,7 @@ namespace Pangya_GameServer.Handles
                 {
                     if (condition.condition[i] > 0)
                     {
-                        switch (sIff.getInstance().getItemGroupIdentify(condition.condition[i]))
+                        switch (sIff.Instance.getItemGroupIdentify(condition.condition[i]))
                         {
                             case IFF_GROUP.ITEM:
                                 {
@@ -85,13 +85,13 @@ namespace Pangya_GameServer.Handles
 
                                     if (pWi == null)
                                     {
-                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] nao tem o item da condicao.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] nao tem o item da condicao.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                             656, 0x5200657));
                                     }
 
                                     if (pWi.STDA_C_ITEM_QNTD < (short)condition.qntd[i])
                                     {
-                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] o item nao tem quantidade suficiente para a condicao", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] o item nao tem quantidade suficiente para a condicao", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                             657, 0x5200658));
                                     }
 
@@ -113,19 +113,19 @@ namespace Pangya_GameServer.Handles
 
                                     if (pQsi == null)
                                     {
-                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] nao tem o QuestStuff da condicao", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] nao tem o QuestStuff da condicao", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                             658, 0x5200659));
                                     }
 
                                     if (!pQsi.isValid())
                                     {
-                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] o counter item da condicao esta inativo", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] o counter item da condicao esta inativo", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                             659, 0x5200660));
                                     }
 
                                     if (pQsi.counter_item_id == 0 || pQsi.clear_date_unix == 0)
                                     {
-                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] o QuestStuff[TYPEID=" + (pQsi._typeid) + "] nao foi concluido", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                        throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] o QuestStuff[TYPEID=" + (pQsi._typeid) + "] nao foi concluido", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                             660, 0x5200661));
                                     }
 
@@ -140,7 +140,7 @@ namespace Pangya_GameServer.Handles
 
                 if (ItemManager.removeItem(v_item, Player) <= 0)
                 {
-                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] PLAYER [UID=" + Player.UserInfo.uid + "] nao conseguiu excluir os item(ns) do Player", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterMasteryExpand][Error] Normal [UID=" + Player.UserInfo.UID + "] nao conseguiu excluir os item(ns) do Player", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         661, 0x5200662));
                 }
 
@@ -155,7 +155,7 @@ namespace Pangya_GameServer.Handles
 
                 v_item.Add(new stItem(item));
 
-                NormalManagerDB.getInstance().add(9, new CmdUpdateCharacterMastery(Player.UserInfo.uid, pCi), null, null);
+                NormalManagerDB.Instance.add(9, new CmdUpdateCharacterMastery(Player.UserInfo.UID, pCi), null, null);
 
                 p.init_plain(0x216);
 
@@ -196,7 +196,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestCharacterMasteryExpand][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestCharacterMasteryExpand][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x26E);
 

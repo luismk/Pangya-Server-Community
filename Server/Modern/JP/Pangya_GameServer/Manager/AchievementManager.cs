@@ -86,7 +86,7 @@ namespace Pangya_GameServer.Manager
         {
             if (!m_state)
             {
-                throw new exception("[AchievementManager::getCounterItemInfo][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::getCounterItemInfo][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                     1000, 0));
             }
 
@@ -107,7 +107,7 @@ namespace Pangya_GameServer.Manager
         {
             if (!m_state)
             {
-                throw new exception("[AchievementManager::getAchievementInfo][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::getAchievementInfo][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                     1000, 0));
             }
 
@@ -117,7 +117,7 @@ namespace Pangya_GameServer.Manager
         public uint getPontos()
         {
             if (!m_state)
-                throw new exception("[AchievementManager::getPontos][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::getPontos][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                         1000, 0));
 
             return m_pontos;
@@ -131,7 +131,7 @@ namespace Pangya_GameServer.Manager
             {
                 if (!m_state)
                 {
-                    throw new exception("[AchievementManager::resetAchievement][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                    throw new exception("[AchievementManager::resetAchievement][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                         1000, 0));
                 }
             }
@@ -151,7 +151,7 @@ namespace Pangya_GameServer.Manager
             {
                 if (!m_state)
                 {
-                    throw new exception("[AchievementManager::resetAchievement][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                    throw new exception("[AchievementManager::resetAchievement][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                         1000, 0));
                 }
             }
@@ -173,7 +173,7 @@ namespace Pangya_GameServer.Manager
 
                     el.Value.value = 0;
 
-                    NormalManagerDB.getInstance().add(4, new CmdUpdateCounterItem(m_uid, el.Value),
+                    NormalManagerDB.Instance.add(4, new CmdUpdateCounterItem(m_uid, el.Value),
                           SQLDBResponse,
                           this);
                 }
@@ -188,7 +188,7 @@ namespace Pangya_GameServer.Manager
 
                     el.clear_date_unix = 0;
 
-                    NormalManagerDB.getInstance().add(5,
+                    NormalManagerDB.Instance.add(5,
                           new CmdUpdateQuestUser(m_uid, el),
                           SQLDBResponse,
                           this);
@@ -198,20 +198,20 @@ namespace Pangya_GameServer.Manager
             // Atualiza o Achievement
             _it.Current.Value.status = (int)ACHIEVEMENT_STATUS.ACTIVED;
 
-            NormalManagerDB.getInstance().add(6,
+            NormalManagerDB.Instance.add(6,
                   new CmdUpdateAchievementUser(m_uid, _it.Current.Value),
                   SQLDBResponse,
                   this);
 
             // Log
-            _smp.message_pool.getInstance().push(new message("[AchievementManager::resetAchievement][Log] PLAYER[UID=" + Convert.ToString(m_uid) + "] Resetou Achievement[TYPEID=" + Convert.ToString(_it.Current.Value._typeid) + ", ID=" + Convert.ToString(_it.Current.Value.id) + "] para os valores iniciais com sucesso", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[AchievementManager::resetAchievement][Log] Normal[UID=" + Convert.ToString(m_uid) + "] Resetou Achievement[TYPEID=" + Convert.ToString(_it.Current.Value._typeid) + ", ID=" + Convert.ToString(_it.Current.Value.id) + "] para os valores iniciais com sucesso", type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
 
         // Remove Achievement
         public void removeAchievement(int _id)
         {
             if (!m_state)
-                throw new exception("[AchievementManager::removeAchievement][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::removeAchievement][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                        1000, 0));
 
             if (_id <= 0)
@@ -229,7 +229,7 @@ namespace Pangya_GameServer.Manager
         {
             if (!m_state)
             {
-                throw new exception("[AchievementManager::removeAchievement][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::removeAchievement][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                     1000, 0));
             }
 
@@ -245,7 +245,7 @@ namespace Pangya_GameServer.Manager
             // Delete Counter Item
             if ((_it.Current.Value != null) && _it.Current.Value.map_counter_item.Any())
             {
-                NormalManagerDB.getInstance().add(1,
+                NormalManagerDB.Instance.add(1,
                       new CmdDeleteCounterItem(m_uid, _it.Current.Value.map_counter_item),
                       SQLDBResponse,
                       this); ;
@@ -254,7 +254,7 @@ namespace Pangya_GameServer.Manager
             // Delete Quest
             if ((_it.Current.Value != null) && _it.Current.Value.v_qsi.Any())
             {
-                NormalManagerDB.getInstance().add(2,
+                NormalManagerDB.Instance.add(2,
                       new CmdDeleteQuest(m_uid, _it.Current.Value.v_qsi),
                       SQLDBResponse,
                       this);
@@ -263,7 +263,7 @@ namespace Pangya_GameServer.Manager
             {
 
                 // Delete Achievement
-                NormalManagerDB.getInstance().add(3,
+                NormalManagerDB.Instance.add(3,
                       new CmdDeleteAchievement(m_uid, (int)_it.Current.Value.id),
                       SQLDBResponse,
                       this);
@@ -290,13 +290,13 @@ namespace Pangya_GameServer.Manager
             // Processa pontos ou rewards
             QuestStuff qsi = null;
 
-            if (sIff.getInstance().getItemGroupIdentify(_ai._typeid) == IFF_GROUP.ACHIEVEMENT
+            if (sIff.Instance.getItemGroupIdentify(_ai._typeid) == IFF_GROUP.ACHIEVEMENT
                 && (_ai.status == (byte)ACHIEVEMENT_STATUS.ACTIVED
                     || _ai.status == (byte)ACHIEVEMENT_STATUS.CONCLUEDED))
             {
                 foreach (var el in _ai.v_qsi)
                 {
-                    if (el.clear_date_unix != 0 && (qsi = sIff.getInstance().findQuestStuff(el._typeid)) != null)
+                    if (el.clear_date_unix != 0 && (qsi = sIff.Instance.findQuestStuff(el._typeid)) != null)
                     {
                         for (var i = 0; i < qsi.reward_item._typeid.Length; ++i)
                         {
@@ -317,7 +317,7 @@ namespace Pangya_GameServer.Manager
         {
             if (!m_state)
             {
-                throw new exception("[AchievementManager::sendAchievementGuiToPlayer][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::sendAchievementGuiToPlayer][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                     1000, 0));
             }
             
@@ -331,7 +331,7 @@ namespace Pangya_GameServer.Manager
         {
             if (!m_state)
             {
-                throw new exception("[AchievementManager::sendAchievementToPlayer][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::sendAchievementToPlayer][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                     1000, 0));
             }
           
@@ -343,7 +343,7 @@ namespace Pangya_GameServer.Manager
         {
             if (!m_state)
             {
-                throw new exception("[AchievementManager::sendCounterItemToPlayer][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::sendCounterItemToPlayer][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                     1000, 0));
             }
              
@@ -374,16 +374,16 @@ namespace Pangya_GameServer.Manager
         /// <summary>
         /// Criar o packet de cada pacote, com limite de envio, recomendado, é 20
         /// </summary>
-        /// <typeparam name="T">t seria uma conversor, com lista de elementos por exemplo</typeparam>
-        /// <param name="counters">list por exemplo</param>
-        /// <param name="itensPerPacket">total que sera enviado por lista, no maximo é 20</param>
-        /// <param name="tipo">0=pacote021E, 1=pacote021D, 2 = pacote022D, outro esta desconhecido@@</param>
+        /// <typeparam Name="T">t seria uma conversor, com lista de elementos por exemplo</typeparam>
+        /// <param Name="counters">list por exemplo</param>
+        /// <param Name="itensPerPacket">total que sera enviado por lista, no maximo é 20</param>
+        /// <param Name="RealRoomType">0=pacote021E, 1=pacote021D, 2 = pacote022D, outro esta desconhecido@@</param>
         /// 
 
         private List<Packet> Build<T>(List<T> counters, int itensPerPacket, byte tipo)
         {
             var responses = new List<Packet>();
-            if (counters.Count * 196 < (1000 - 100))//envio normal
+            if (counters.Count * 196 < (1000 - 100))//envio Normal
             {
                 responses.Add(Build(counters, tipo));
             }
@@ -402,7 +402,7 @@ namespace Pangya_GameServer.Manager
         {
             if (!m_state)
             {
-                throw new exception("[AchievementManager::incrementPoint][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::incrementPoint][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                     1000, 0));
             }
 
@@ -415,7 +415,7 @@ namespace Pangya_GameServer.Manager
             {
                 if (!m_state)
                 {
-                    throw new exception("[AchievementManager::findCounterItemById][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                    throw new exception("[AchievementManager::findCounterItemById][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                         1000, 0));
                 }
             }
@@ -445,7 +445,7 @@ namespace Pangya_GameServer.Manager
             {
                 if (!m_state)
                 {
-                    throw new exception("[AchievementManager::findCounterItemByTypeid][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                    throw new exception("[AchievementManager::findCounterItemByTypeid][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                         1000, 0));
                 }
             }
@@ -475,7 +475,7 @@ namespace Pangya_GameServer.Manager
             {
                 if (!m_state)
                 {
-                    throw new exception("[AchievementManager::findQuestStuffById][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                    throw new exception("[AchievementManager::findQuestStuffById][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                         1000, 0));
                 }
             }
@@ -505,7 +505,7 @@ namespace Pangya_GameServer.Manager
             {
                 if (!m_state)
                 {
-                    throw new exception("[AchievementManager::findQuestStuffByTypeid][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                    throw new exception("[AchievementManager::findQuestStuffByTypeid][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                         1000, 0));
                 }
             }
@@ -534,7 +534,7 @@ namespace Pangya_GameServer.Manager
         {
             if (!m_state)
             {
-                throw new exception("[AchievementManager::removeAchievement][Error] Manager Achievement state is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
+                throw new exception("[AchievementManager::removeAchievement][Error] Manager Achievement StateRoom is invalid, please call method initAchievement first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_ACHIEVEMENT,
                     1000, 0));
             }
 
@@ -585,13 +585,13 @@ namespace Pangya_GameServer.Manager
 
             if (_achievement.Quest_TypeID[0] > 0)
             {
-                //CmdCreateQuest cmd_cq(pi->uid, *qi, 3/*1 pendente, 2 excluida, 3 ativa, 4 concluida*/);
+                //CmdCreateQuest cmd_cq(pi->UID, *qi, 3/*1 pendente, 2 excluida, 3 ativa, 4 concluida*/);
                 var name = (_achievement.Name);
 
                 cmd_ca.setAchievement(_achievement.ID,
                     name, (uint)_status);
 
-                NormalManagerDB.getInstance().add(0,
+                NormalManagerDB.Instance.add(0,
                       cmd_ca, null, null);
 
                 var i = 0;
@@ -603,7 +603,7 @@ namespace Pangya_GameServer.Manager
 
                     do
                     {
-                        if (_achievement.Quest_TypeID[i] != 0 && (qs = sIff.getInstance().findQuestStuff(_achievement.Quest_TypeID[i])) != null)
+                        if (_achievement.Quest_TypeID[i] != 0 && (qs = sIff.Instance.findQuestStuff(_achievement.Quest_TypeID[i])) != null)
                         {
 
                             qsi.clear();
@@ -613,7 +613,7 @@ namespace Pangya_GameServer.Manager
 
                             cmd_cq.setQuest(qs, _achievement.TypeID_Quest_Index == 0 || _achievement.TypeID_Quest_Index == _achievement.Quest_TypeID[i]);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_cq, null, null);
 
                             qsi.id = (int)cmd_cq.getID();
@@ -644,7 +644,7 @@ namespace Pangya_GameServer.Manager
                         }
                     } while (++i < (_achievement.Quest_TypeID.Length));
 
-                    // Atualiza os counter item id nas quest stuff se o achievement esta com o quest base
+                    // Atualiza os counter item Login nas quest stuff se o achievement esta com o quest base
                     var it = ai.getQuestBase();
 
                     if (it != null)
@@ -706,13 +706,13 @@ namespace Pangya_GameServer.Manager
 
             if (_qi.quest.qntd > 0 || _qi.quest._typeid[0] > 0)
             {
-                //CmdCreateQuest cmd_cq(pi->uid, *qi, 3/*1 pendente, 2 excluida, 3 ativa, 4 concluida*/);
+                //CmdCreateQuest cmd_cq(pi->UID, *qi, 3/*1 pendente, 2 excluida, 3 ativa, 4 concluida*/);
                 var name = (_qi.Name);
 
                 cmd_ca.setAchievement(_qi.ID,
                     name, (uint)_status);
 
-                NormalManagerDB.getInstance().add(0,
+                NormalManagerDB.Instance.add(0,
                       cmd_ca, null, null);
 
                 if (cmd_ca.getException().getCodeError() == 0 && (ai.id = cmd_ca.getID()) != -1)
@@ -724,7 +724,7 @@ namespace Pangya_GameServer.Manager
 
                     do
                     {
-                        if (_qi.quest._typeid[i] != 0 && (qs = sIff.getInstance().findQuestStuff(_qi.quest._typeid[i])) != null)
+                        if (_qi.quest._typeid[i] != 0 && (qs = sIff.Instance.findQuestStuff(_qi.quest._typeid[i])) != null)
                         {
 
                             qsi.clear();
@@ -734,7 +734,7 @@ namespace Pangya_GameServer.Manager
 
                             cmd_cq.setQuest(qs, (_status != ACHIEVEMENT_STATUS.PENDENTING) ? true : false);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_cq, null, null);
 
                             qsi.id = (int)cmd_cq.getID();
@@ -767,7 +767,7 @@ namespace Pangya_GameServer.Manager
                         }
                     } while (++i < _qi.quest.qntd);
 
-                    // Atualiza os counter item id nas quest stuff se o achievement esta com o quest base
+                    // Atualiza os counter item Login nas quest stuff se o achievement esta com o quest base
                     var it = ai.getQuestBase();
 
 
@@ -838,7 +838,7 @@ namespace Pangya_GameServer.Manager
         private bool HasAchievementInDB()
         {
             var cmd = new CmdCheckAchievement(m_uid);
-            NormalManagerDB.getInstance().add(0, cmd, null, null);
+            NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -848,7 +848,7 @@ namespace Pangya_GameServer.Manager
 
         private async void CreateAllAchievements()
         {
-            var iff = sIff.getInstance();
+            var iff = sIff.Instance;
             var list = new List<AchievementInfoEx>(128);
 
             // Daily Quest 10 dias
@@ -872,7 +872,7 @@ namespace Pangya_GameServer.Manager
         private async void LoadAchievementsFromDB()
         {
             var cmd = new CmdAchievementInfo(m_uid);
-            NormalManagerDB.getInstance().add(0, cmd, null, null);
+            NormalManagerDB.Instance.add(0, cmd, null, null);
 
             if (cmd.getException().getCodeError() != 0)
                 throw cmd.getException();
@@ -896,14 +896,14 @@ namespace Pangya_GameServer.Manager
 
             if (_arg == null)
             {
-                _smp.message_pool.getInstance().push(new message("[AchievementManager::SQLDBResponse][Error] _arg is null", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[AchievementManager::SQLDBResponse][Error] _arg is null", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
-            // Por Hora só sai, depois faço outro tipo de tratamento se precisar
+            // Por Hora só sai, depois faço outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[AchievementManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[AchievementManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 

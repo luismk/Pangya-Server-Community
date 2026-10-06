@@ -27,8 +27,8 @@ namespace Pangya_GameServer.Handles
                 if (code > Channels.Channel.LEAVE_ROOM_STATE.DO_NOTHING)
                 {
                     // Log de depuração
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[Handle_PLAYER_EXIT_ROOM][Sucess] PLAYER[UID: {Player.UserInfo.uid}, RID: {Player.UserInfo.Member.sala_numero}] EXIT TO ROOM. Option: {option}, Pang: {gamePang}",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[Handle_PLAYER_EXIT_ROOM][Sucess] Normal[UID: {Player.UserInfo.UID}, RID: {Player.UserInfo.Member.RoomID}] EXIT TO ROOM. Option: {option}, Pang: {gamePang}",
                         type_msg.CL_FILE_LOG_AND_CONSOLE)); 
 					//atualiza.
 					_channel.UpdatePlayerInfo(Player);
@@ -37,7 +37,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_EXIT_ROOM][ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

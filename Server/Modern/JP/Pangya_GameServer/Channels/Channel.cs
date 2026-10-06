@@ -18,7 +18,7 @@ namespace Pangya_GameServer.Channels
         public Lobby Lobby { get; set; }
 
         private object m_cs = new object();
-        private Property Type { get; set; }
+        private ServerProperty Type { get; set; }
         private int State { get; set; } = 0; 
         public List<Player> Sessions { get; set; }
         private Dictionary<Player, PlayerLobbyInfo> Players_Info { get; set; }
@@ -28,7 +28,7 @@ namespace Pangya_GameServer.Channels
         #endregion
    
         #region CONSTRUTOR 
-        public Channel(ChannelInfo _ci, Property _type)
+        public Channel(ChannelInfo _ci, ServerProperty _type)
         {
             m_ci = _ci;
             m_rm = new RoomManager(); 

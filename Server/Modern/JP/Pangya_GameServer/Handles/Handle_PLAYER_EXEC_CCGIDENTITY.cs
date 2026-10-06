@@ -17,27 +17,27 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // 1. Leitura do Pacote
-                uCapability requestedCap = new uCapability(Packet.ReadInt32());
+                PlayerCapability requestedCap = new PlayerCapability(Packet.ReadInt32());
                 string nickProvided = Packet.ReadString();
 
                 // 2. Validações de Segurança
-                if (string.IsNullOrEmpty(nickProvided) || nickProvided != Player.UserInfo.nickname)
+                if (string.IsNullOrEmpty(nickProvided) || nickProvided != Player.UserInfo.NickName)
                 {
                     throw new exception("Nick inválido ou não coincide com a sessão.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 12, 0x5700100));
                 }
 
                 // 3. Verificação de permissão de GM (prevenção de exploit)
-                if (!Player.UserInfo.UserCapabilities.gm_normal && !Player.UserInfo.UserCapabilities.game_master)
+                if (!Player.UserInfo.UserCapabilities.IsGameMasterNormal && !Player.UserInfo.UserCapabilities.IsGameMaster)
                 {
                     throw new exception("Acesso negado: Player não possui privilégios administrativos.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 13, 0x5700100));
                 }
 
                 // 4. Validação no Banco de Dados (Sincronizada)
-                var dbVerify = new CmdVerifyCapability(Player.UserInfo.uid);
+                var dbVerify = new CmdVerifyCapability(Player.UserInfo.UID);
 
-                NormalManagerDB.getInstance().add(0, dbVerify);
+                NormalManagerDB.Instance.add(0, dbVerify);
 
                 if (!dbVerify.IsValid())
                 {
@@ -51,11 +51,11 @@ namespace Pangya_GameServer.Handles
                 SyncIdentityWithServer(Player);
 
                 // Log de Auditoria
-                _smp.message_pool.getInstance().push(new message($"[Lobby::Identity][Sucess]CHANGE[NICK: {Player.UserInfo.nickname}, TYPE: {(Player.UserInfo.UserCapabilities.title_gm ? "TITLE GM" : "NORMAL")}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Lobby::Identity][Sucess]CHANGE[NICK: {Player.UserInfo.NickName}, TYPE: {(Player.UserInfo.UserCapabilities.IsGameMasterTitle ? "TITLE GM" : "NORMAL")}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Lobby::Identity][Error] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -65,24 +65,24 @@ namespace Pangya_GameServer.Handles
 
         private void ApplyCapabilityFlags(Player s)
         {
-            if (s.UserInfo.UserCapabilities.gm_normal)
+            if (s.UserInfo.UserCapabilities.IsGameMasterNormal)
             {
-                s.UserInfo.UserCapabilities.game_master = true;
-                s.UserInfo.UserCapabilities.title_gm = true;
-                s.UserInfo.UserCapabilities.gm_normal = false;
+                s.UserInfo.UserCapabilities.IsGameMaster = true;
+                s.UserInfo.UserCapabilities.IsGameMasterTitle = true;
+                s.UserInfo.UserCapabilities.IsGameMasterNormal = false;
             }
             else
             {
-                s.UserInfo.UserCapabilities.game_master = false;
-                s.UserInfo.UserCapabilities.title_gm = false;
-                s.UserInfo.UserCapabilities.gm_normal = true;
+                s.UserInfo.UserCapabilities.IsGameMaster = false;
+                s.UserInfo.UserCapabilities.IsGameMasterTitle = false;
+                s.UserInfo.UserCapabilities.IsGameMasterNormal = true;
             }
         }
 
         private void SyncIdentityWithServer(Player s)
         {
             //atualiza a capacidade nova.
-            s.UserInfo.Member.capability = s.UserInfo.UserCapabilities;
+            s.UserInfo.Member.Capability = s.UserInfo.UserCapabilities;
 
             var channel = s.GetChannel();
             var room = s.GetRoom();
@@ -90,7 +90,7 @@ namespace Pangya_GameServer.Handles
             // Atualiza Info no Lobby/Sala
             channel?.Lobby.UpdatePlayerInfo(s);
             room?.UpdatePlayerInfo(s);
-            s.Send(Handle_PACKET_RESPONSE.pacote09A(s.UserInfo.UserCapabilities.ulCapability));
+            s.Send(Handle_PACKET_RESPONSE.pacote09A(s.UserInfo.UserCapabilities.Value));
 
             // Broadcast (Tipo 3: State Update)
             channel?.Lobby.SendUpdatePlayerInfo(s, 3);

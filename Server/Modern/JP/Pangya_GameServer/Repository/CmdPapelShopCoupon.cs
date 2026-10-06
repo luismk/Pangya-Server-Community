@@ -38,13 +38,13 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta);
 
-            checkResponse(r, "nao conseguiu pegar os papel shop coupon(s).");
+            checkResponse(r, "nao conseguiu pegar os papel ShopRoom coupon(s).");
 
             return r;
         }
 
         private Dictionary<uint, ctx_papel_shop_coupon> m_ctx_psc = new Dictionary<uint, ctx_papel_shop_coupon>();
 
-        private const string m_szConsulta = "SELECT typeid, active FROM pangya.pangya_papel_shop_coupon";
+        private const string m_szConsulta = "SELECT typeid, State FROM pangya.pangya_papel_shop_coupon";
     }
 }

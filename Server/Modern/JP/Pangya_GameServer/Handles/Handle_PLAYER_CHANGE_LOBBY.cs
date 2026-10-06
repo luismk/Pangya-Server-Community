@@ -23,14 +23,14 @@ namespace Pangya_GameServer.Handles
         {
             try
             {
-                var c = GameServer.getInstance().EnterChannel(Player, Packet.ReadSByte()); 
+                var c = GameServer.Instance.EnterChannel(Player, Packet.ReadSByte()); 
 
                 if (c != null)
                     c.Lobby.EnterLobby(Player, Player.UserInfo.Lobby);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_ENTER_NEW_CHANNEL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_ENTER_NEW_CHANNEL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         await Task.CompletedTask;

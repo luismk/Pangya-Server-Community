@@ -20,20 +20,20 @@ namespace Pangya_GameServer.Repository
             try
             {
                 // Aqui faz as coisas
-                UserInfo.uid = uint.Parse(_result.data[0].ToString());
+                UserInfo.UID = uint.Parse(_result.data[0].ToString());
                 if (is_valid_c_string(_result.data[1].ToString()))
-                    UserInfo.id = _result.data[1].ToString();
+                    UserInfo.Login = _result.data[1].ToString();
                 if (is_valid_c_string(_result.data[2].ToString()))
-                    UserInfo.nickname = _result.data[2].ToString();
+                    UserInfo.NickName = _result.data[2].ToString();
                 //if (is_valid_c_string(_result.data[3].ToString()))
-                //    UserInfo.pass = _result.data[3].ToString();
-                UserInfo.level = ushort.Parse(_result.data[5].ToString());
-                UserInfo.block_flag.setIDState(ulong.Parse(_result.data[6].ToString()));
-                UserInfo.block_flag.m_id_state.block_time = (int.Parse(_result.data[7].ToString()));
+                //    PlayerUserStatistics.pass = _result.data[3].ToString();
+                UserInfo.Level = ushort.Parse(_result.data[5].ToString());
+                UserInfo.BlockFlag.SetState(ulong.Parse(_result.data[6].ToString()));
+                UserInfo.BlockFlag.State.TimeBlock = (int.Parse(_result.data[7].ToString()));
                 // Fim
 
-                if (UserInfo.uid != m_uid)
-                    throw new Exception("[CmdPlayerInfo::lineResult][Error] UID do player info nao e igual ao requisitado. UID Req: " + (m_uid) + " != " + (UserInfo.uid));
+                if (UserInfo.UID != m_uid)
+                    throw new Exception("[CmdPlayerInfo::lineResult][Error] UID do player info nao e igual ao requisitado. UID Req: " + (m_uid) + " != " + (UserInfo.UID));
             }
             catch (Exception ex)
             {

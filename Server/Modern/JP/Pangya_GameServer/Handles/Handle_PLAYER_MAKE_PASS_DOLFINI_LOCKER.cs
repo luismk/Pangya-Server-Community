@@ -30,26 +30,26 @@ namespace Pangya_GameServer.Handles
 
                 if (string.IsNullOrEmpty(pass))
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou contra o server[MESSAGE=" + pass + "], vazio. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][Error] Normal[UID=" + Player.UserInfo.UID + "] tentou contra o server[MESSAGE=" + pass + "], vazio. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 1));
                 }
 
                 if (!Tools.Sanitize(pass))
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou contra o server[MESSAGE=" + pass + "], tentativa de inject. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][Error] Normal[UID=" + Player.UserInfo.UID + "] tentou contra o server[MESSAGE=" + pass + "], tentativa de inject. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 1));
                 }
 
-                // 2. Validação de Regras de Negócio (Tamanho da senha)
+                // 2. Validação de Regras de Negócio (Tamanho da Password)
                 if (pass.Length == 0)
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentrou trocar a senha do dolfini locker com senha vazia. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][Error] Normal [UID=" + Player.UserInfo.UID + "] tentrou trocar a Password do dolfini locker com Password vazia. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 200, 5100101));
                 }
 
                 if (pass.Length > 4)
                 {
-                    throw new exception("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar a senha do dolfini locker com uma senha maior do que o permitido. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar a Password do dolfini locker com uma Password maior do que o permitido. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 201, 5100102));
                 }
 
@@ -62,12 +62,12 @@ namespace Pangya_GameServer.Handles
                 Player.Send(p);
 
                 // 5. Persistência Assíncrona no DB
-                NormalManagerDB.getInstance().add(1,new CmdUpdateDolfiniLockerPass(Player.UserInfo.uid, pass));
+                NormalManagerDB.Instance.add(1,new CmdUpdateDolfiniLockerPass(Player.UserInfo.UID, pass));
             }
             catch (exception e)
             {
                 // Log de Erro
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_MAKE_PASS_DOLFINI_LOCKER][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x176);
 

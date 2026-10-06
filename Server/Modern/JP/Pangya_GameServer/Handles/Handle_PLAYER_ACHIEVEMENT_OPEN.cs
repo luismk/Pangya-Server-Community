@@ -35,11 +35,11 @@ namespace Pangya_GameServer.Handles
         private AchievementManager? GetManager(uint uid, Player session)
         {
             // 1. Caso seja o próprio jogador
-            if (Player.UserInfo.uid == uid)
+            if (Player.UserInfo.UID == uid)
                 return Player.UserInfo.Achievements;
 
             // 2. Caso seja outro jogador online
-            var targetPlayer = GameServer.getInstance().FindPlayer(uid);
+            var targetPlayer = GameServer.Instance.FindPlayer(uid);
             if (targetPlayer != null)
                 return targetPlayer.UserInfo.Achievements;
 

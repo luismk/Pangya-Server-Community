@@ -80,7 +80,7 @@ namespace Pangya_GameServer.Manager
 
             if (_to_uid == 0u)
             {
-                throw new exception("[MailBoxManager::_sendMessage][Error] uid[value=" + Convert.ToString(_to_uid) + "] to send message is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MAIL_BOX_MANAGER,
+                throw new exception("[MailBoxManager::_sendMessage][Error] UID[value=" + Convert.ToString(_to_uid) + "] to send AppMessage is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MAIL_BOX_MANAGER,
                     1, 0));
             }
 
@@ -98,14 +98,14 @@ namespace Pangya_GameServer.Manager
                 // Substitui todas as ocorrências de aspas simples por duas aspas simples
                 _msg = _msg.Replace("'", "''");
 
-                // Loga a alteração no message pool
-                _smp.message_pool.getInstance().push(new message("[MailBoxManager::_sendMessage][Log] replace string para[str=" + _msg + "] por que tinha valores que o MSSQL nao aceita", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                // Loga a alteração no AppMessage pool
+                _smp.LogManager.Instance.push(new AppMessage("[MailBoxManager::_sendMessage][Log] replace string para[str=" + _msg + "] por que tinha valores que o MSSQL nao aceita", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
              
             // cmd coloca msg no gift table
             CmdAddMsgMail cmd_amm = new CmdAddMsgMail(_from_uid, _to_uid, _msg);
 
-            NormalManagerDB.getInstance().add(0, cmd_amm, null, null);
+            NormalManagerDB.Instance.add(0, cmd_amm, null, null);
 
             if (cmd_amm.getException().getCodeError() != 0)
             {
@@ -170,7 +170,7 @@ namespace Pangya_GameServer.Manager
             CmdPutItemMailBox cmd_pimb = new CmdPutItemMailBox(_from_uid, // Waiter
                 _to_uid, _mail_id, _item);
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_pimb, null, null);
 
             if (cmd_pimb.getException().getCodeError() != 0)
@@ -248,7 +248,7 @@ namespace Pangya_GameServer.Manager
             CmdPutItemMailBox cmd_pimb = new CmdPutItemMailBox(_from_uid, // Waiter
                 _to_uid, _mail_id, _item);
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_pimb, null, null);
 
             if (cmd_pimb.getException().getCodeError() != 0)
@@ -258,9 +258,9 @@ namespace Pangya_GameServer.Manager
 
             // Pronto j� colocou o item no mail do player
 #if DEBUG
-            _smp.message_pool.getInstance().push(new message("[MailBoxManager::PutItemInMail][Log] PLAYER[UID=" + Convert.ToString(_from_uid) + "] colocou item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + ", QNTD=" + Convert.ToString(_item.qntd) + "] no mail[ID=" + Convert.ToString(_mail_id) + "] do PLAYER[UID=" + Convert.ToString(_to_uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.message_pool.getInstance.push(new message("[MailBoxManager::PutItemInMail][Log] PLAYER[UID=" + Convert.ToString(_from_uid) + "] colocou item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + ", QNTD=" + Convert.ToString(_item.qntd) + "] no mail[ID=" + Convert.ToString(_mail_id) + "] do PLAYER[UID=" + Convert.ToString(_to_uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 #else
-				_smp.message_pool.getInstance().push(new message("[MailBoxManager::PutItemInMail][Log] PLAYER[UID=" + Convert.ToString(_from_uid) + "] colocou item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + ", QNTD=" + Convert.ToString(_item.qntd) + "] no mail[ID=" + Convert.ToString(_mail_id) + "] do PLAYER[UID=" + Convert.ToString(_to_uid) + "]", type_msg.CL_ONLY_FILE_LOG));
+				_smp.LogManager.Instance.push(new AppMessage("[MailBoxManager::PutItemInMail][Log] Normal[UID=" + Convert.ToString(_from_uid) + "] colocou item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + ", QNTD=" + Convert.ToString(_item.qntd) + "] no mail[ID=" + Convert.ToString(_mail_id) + "] do Normal[UID=" + Convert.ToString(_to_uid) + "]", type_msg.CL_ONLY_FILE_LOG));
 #endif
         }
 
@@ -269,7 +269,7 @@ namespace Pangya_GameServer.Manager
 
             if (_to_uid == 0u)
             {
-                throw new exception("[MailBoxManager::putCommandNewMail][Error] uid[value=" + Convert.ToString(_to_uid) + "] to put Command. uid is invalid(zero).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MAIL_BOX_MANAGER,
+                throw new exception("[MailBoxManager::putCommandNewMail][Error] UID[value=" + Convert.ToString(_to_uid) + "] to put Command. UID is invalid(zero).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MAIL_BOX_MANAGER,
                     1, 0));
             }
 
@@ -292,7 +292,7 @@ namespace Pangya_GameServer.Manager
 
             ci.target = 1; // Todos os game server
 
-            NormalManagerDB.getInstance().add(1,
+            NormalManagerDB.Instance.add(1,
                   new CmdInsertCommand(ci),
                   SQLDBResponse,
                   null);
@@ -309,10 +309,10 @@ namespace Pangya_GameServer.Manager
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[MailBoxManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MailBoxManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 

@@ -30,25 +30,25 @@ namespace Pangya_LoginServer.Session
 
         public bool IsGM()
         {
-           return UserInfo.m_cap == 4 || UserInfo.m_cap == 128;
+           return UserInfo.Capability == 4 || UserInfo.Capability == 128;
         }
 
         public override string GetNickname()
         {
-            return UserInfo.nickname;
+            return UserInfo.NickName;
         }
 
         public override uint GetUID()
         {
-            return UserInfo.uid;
+            return UserInfo.UID;
         }
 
         public override string GetID()
         {
-            return UserInfo.id;
+            return UserInfo.Login;
         }
 
-        public override uint GetCapability() { return (uint)UserInfo.m_cap; }
+        public override uint GetCapability() { return (uint)UserInfo.Capability; }
 
         public override byte GetStateLogged()
         {

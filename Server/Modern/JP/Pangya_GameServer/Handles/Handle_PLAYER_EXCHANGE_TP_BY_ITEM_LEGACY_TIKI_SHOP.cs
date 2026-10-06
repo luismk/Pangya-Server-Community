@@ -32,9 +32,9 @@ namespace Pangya_GameServer.Handles
 
             try
             {
-                if (Player.UserInfo.block_flag.m_flag.legacy_tiki_shop)
+                if (Player.UserInfo.BlockFlag.Flag.LegacyTikiShop)
                 {
-                    throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] esta bloqueado no Legacy Tiki Shop.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 4000, 1));
+                    throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] esta bloqueado no Legacy Tiki Shop.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 4000, 1));
                 }
 
                 Func<IFFTikiShopData, (uint, uint)> getNumberItensPerTikiShopPts = (_tiki) =>
@@ -61,16 +61,16 @@ namespace Pangya_GameServer.Handles
                 {
                     tsei = new stLegacyTikiShopExchangeItem().ToRead(Packet);
 
-                    var @base = sIff.getInstance().findCommomItem(tsei._typeid);
+                    var @base = sIff.Instance.findCommomItem(tsei._typeid);
 
                     if (@base == null)
                     {
-                        throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + "] no Tiki's Shop, mas o item nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 901, 0x5200902));
+                        throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + "] no Tiki's Shop, mas o item nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 901, 0x5200902));
                     }
 
                     if (!@base.tiki.IsActived())
                     {
-                        throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + "] no Tiki's Shop, mas o item nao é valido para ser trocado. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 904, 0x5200905));
+                        throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + "] no Tiki's Shop, mas o item nao é valido para ser trocado. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 904, 0x5200905));
                     }
 
                     var dados_tiki = getNumberItensPerTikiShopPts(@base.tiki);
@@ -79,12 +79,12 @@ namespace Pangya_GameServer.Handles
 
                     if (_item == null || _item.Count == 0)
                     {
-                        throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + ", QNTD=" + (tsei.qntd) + "] no Tiki's Shop, mas nao conseguiu inicializar o item. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 900, 0x52000901));
+                        throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + ", QNTD=" + (tsei.qntd) + "] no Tiki's Shop, mas nao conseguiu inicializar o item. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 900, 0x52000901));
                     }
 
                     if (r != null && r.CheckPersonalShopItem(Player, tsei.id))
                     {
-                        throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + ", QNTD=" + (tsei.qntd) + "] no Tiki's Shop, mas o item esta sendo vendido no Personal shop dele. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1010, 0x5201010));
+                        throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] tentou trocar item[TYPEID=" + (tsei._typeid) + ", ID=" + (tsei.id) + ", QNTD=" + (tsei.qntd) + "] no Tiki's Shop, mas o item esta sendo vendido no Personal ShopRoom dele. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1010, 0x5201010));
                     }
 
                     tiki_pts += (uint)(dados_tiki.Item2 * tsei.qntd);
@@ -93,17 +93,17 @@ namespace Pangya_GameServer.Handles
 
                 if (tiki_pts == 0u)
                 {
-                    throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] tentou trocar item(ns)(" + s_item + "), mas ocorreu um erro na inicializacao do Tiki Points from IFF_STRUCT is invalid(" + (tiki_pts) + ").", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 905, 0x5200905));
+                    throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] tentou trocar item(ns)(" + s_item + "), mas ocorreu um erro na inicializacao do Tiki Points from IFF_STRUCT is invalid(" + (tiki_pts) + ").", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 905, 0x5200905));
                 }
 
                 if (ItemManager.removeItem(v_item, Player) <= 0)
                 {
-                    throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] tentou trocar item(ns)(" + s_item + "), mas nao conseguiu deletar ele(s).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 902, 0x5200903));
+                    throw new exception("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] tentou trocar item(ns)(" + s_item + "), mas nao conseguiu deletar ele(s).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 902, 0x5200903));
                 }
 
                 Player.UserInfo.PointShopLegacy += tiki_pts;
 
-                NormalManagerDB.getInstance().add(28, new CmdUpdateLegacyTikiShopPoint(Player.UserInfo.uid, Player.UserInfo.PointShopLegacy));
+                NormalManagerDB.Instance.add(28, new CmdUpdateLegacyTikiShopPoint(Player.UserInfo.UID, Player.UserInfo.PointShopLegacy));
 
                 sys_achieve.incrementCounter(0x6C400086u, 1);
 
@@ -132,7 +132,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][ErrorSystem] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_EXCHANGE_TP_BY_ITEM_LEGACY_TIKI_SHOP][ErrorSystem] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x1E9);
                 p.WriteUInt32((ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL) ? ExceptionError.STDA_SYSTEM_ERROR_DECODE(e.getCodeError()) : 1u);

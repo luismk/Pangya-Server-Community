@@ -22,15 +22,15 @@ namespace Pangya_LoginServer.Handles
             try
             {
                 wnick = Packet.ReadString();
-                uint uid = Player.UserInfo.uid;
+                uint uid = Player.UserInfo.UID;
 
                 // 1. Persistência no Banco (Async)
                 // Salva o nick escolhido e marca como primeiro login realizado
                 CommandDB.SaveNick(uid, wnick);
                 CommandDB.AddFirstLogin(uid, 1);
 
-                // Atualiza o nickname na sessão atual para evitar dessincronização
-                Player.UserInfo.nickname = wnick;
+                // Atualiza o NickName na sessão atual para evitar dessincronização
+                Player.UserInfo.NickName = wnick;
 
                 // 2. Fluxo de Direcionamento (Regra de Negócio Pangya)
                 // Verifica se o jogador já possui o primeiro Set de Personagem (Hana/Nuri)
@@ -53,8 +53,8 @@ namespace Pangya_LoginServer.Handles
                 // Em caso de erro grave, envia o pacote 0x0E com status de erro (geralmente 1 ou conforme seu Enum)
                 Player.Send(Handle_PACKET_RESPONSE.pacote00E(Player, wnick, (int)NICK_CHECK.UNKNOWN_ERROR, 0));
 
-                _smp.message_pool.getInstance().push(new message(
-                    $"[Handle_PLAYER_SET_NICKNAME] Erro ao definir nick '{wnick}' para UID {Player.UserInfo.uid}: {e.Message}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[Handle_PLAYER_SET_NICKNAME] Erro ao definir nick '{wnick}' para UID {Player.UserInfo.UID}: {e.Message}",
                     type_msg.CL_ONLY_CONSOLE)
                 );
             }

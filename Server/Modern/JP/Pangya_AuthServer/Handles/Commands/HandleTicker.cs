@@ -15,7 +15,7 @@ namespace Pangya_AuthServer.Handles.Commands
         public async Task Execute(CommandInfo el)
         {
             CmdTickerInfo cmd_ti = new CmdTickerInfo(el.idx);
-            snmdb.NormalManagerDB.getInstance().add(0, cmd_ti);
+            snmdb.NormalManagerDB.Instance.add(0, cmd_ti);
 
             if (cmd_ti.getException().getCodeError() != 0) return;
 
@@ -28,7 +28,7 @@ namespace Pangya_AuthServer.Handles.Commands
                 p.WriteString(ti.msg);
 
                 // Lógica específica de excluir o UID de origem
-                var sessions = AuthServer.getInstance().FindPlayerByTypeExcludeUID(el.target, el.arg[1]);
+                var sessions = AuthServer.Instance.FindPlayerByTypeExcludeUID(el.target, el.arg[1]);
                 CommandSender.Broadcast(sessions, p);
             }
         }

@@ -15,7 +15,7 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // 2. Criação do Comando de Banco de Dados 
-                string webKey = CommandDB.WEBKeyGeneration(Player.UserInfo.uid);
+                string webKey = CommandDB.WEBKeyGeneration(Player.UserInfo.UID);
 
                 // 4. Resposta ao Cliente (0x1AD)
                 using (var p = new Packet())
@@ -27,13 +27,13 @@ namespace Pangya_GameServer.Handles
                 }
 
                 // Log de auditoria
-                _smp.message_pool.getInstance().push(new message(
-                    $"[WebAuth] Chave gerada para UID={Player.UserInfo.uid}: {webKey}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[WebAuth] Chave gerada para UID={Player.UserInfo.UID}: {webKey}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_WEB_AUTH_KEY][ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 

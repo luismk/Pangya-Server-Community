@@ -66,7 +66,7 @@ namespace Pangya_MessengerServer.Models
 
             cUnknown_flag = 255;
             level = 0;
-            flag = new uFlag(); // Flag se o player � amigo ou � membro guild
+            flag = new uFlag(); // ServerFlag se o player � amigo ou � membro Guild
             state = new uState(); // Sex, online, friend, request, block e etc
             flag.clear();
             state.clear();
@@ -152,7 +152,7 @@ namespace Pangya_MessengerServer.Models
             }
         }
         public byte cUnknown_flag;
-        public uFlag flag = new uFlag(); // Flag se o player � amigo ou � membro guild
+        public uFlag flag = new uFlag(); // ServerFlag se o player � amigo ou � membro Guild
         public uState state = new uState(); // Sex, online, friend, request, block e etc
         public byte level;
     }

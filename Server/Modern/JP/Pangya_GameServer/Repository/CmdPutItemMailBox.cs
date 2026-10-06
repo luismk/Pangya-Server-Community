@@ -86,7 +86,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_mail_id <= 0 || m_uid_to == 0)
             {
-                throw new exception("[CmdPutItemMailBox::prepareConsulta][Error] mail_id[value=" + Convert.ToString(m_mail_id) + "] is invalid or uid to send is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdPutItemMailBox::prepareConsulta][Error] mail_id[value=" + Convert.ToString(m_mail_id) + "] is invalid or UID to send is invalid", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
             }
 
@@ -100,7 +100,7 @@ namespace Pangya_GameServer.Repository
                 Convert.ToString(m_uid_from) + ", " + Convert.ToString(m_uid_to) + ", " + Convert.ToString(m_mail_id) + ", " + Convert.ToString(m_item.id) + ", " + Convert.ToString(m_item._typeid) + ", " + Convert.ToString((ushort)m_item.flag_time) + ", " + Convert.ToString((m_item.qntd > 0xFFu) ? m_item.qntd : m_item.STDA_C_ITEM_QNTD) + ", " + Convert.ToString(m_item.c[3]));
 
 
-            checkResponse(r, "PLAYER[UID=" + Convert.ToString(m_uid_from) + "] nao conseguiu adicionar item[TYPEID=" + Convert.ToString(m_item._typeid) + ", ID=" + Convert.ToString(m_item.id) + "] no mail[ID=" + Convert.ToString(m_mail_id) + "] do PLAYER[UID=" + Convert.ToString(m_uid_to) + "]");
+            checkResponse(r, "Normal[UID=" + Convert.ToString(m_uid_from) + "] nao conseguiu adicionar item[TYPEID=" + Convert.ToString(m_item._typeid) + ", ID=" + Convert.ToString(m_item.id) + "] no mail[ID=" + Convert.ToString(m_mail_id) + "] do Normal[UID=" + Convert.ToString(m_uid_to) + "]");
 
             return r;
         }

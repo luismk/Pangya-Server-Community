@@ -35,7 +35,7 @@ namespace Pangya_GameServer.Handles
                 // 2. Validação da página
                 if ((int)pagina <= 0)
                 {
-                    throw new exception("[Handle_PLAYER_DELETE_MAIL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] pediu para deletar email(s)[COUNT=" + num_email + "] da pagina(" + (int)pagina + "), mas a pagina é invalida.",
+                    throw new exception("[Handle_PLAYER_DELETE_MAIL][Error] Normal [UID=" + Player.UserInfo.UID + "] pediu para deletar email(s)[COUNT=" + num_email + "] da pagina(" + (int)pagina + "), mas a pagina é invalida.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 6, 0x791002));
                 }
 
@@ -60,7 +60,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
                 // Log de erro
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_DELETE_MAIL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_DELETE_MAIL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x215);
 

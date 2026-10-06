@@ -50,7 +50,7 @@ namespace Pangya_GameServer.Handles
 
                 // Busca dados no Banco
                 CmdTicketReportDadosInfo cmd_trdi = new CmdTicketReportDadosInfo(_ticket_scroll_id);
-                NormalManagerDB.getInstance().add(0, cmd_trdi, null, null);
+                NormalManagerDB.Instance.add(0, cmd_trdi, null, null);
 
                 if (cmd_trdi.getException().getCodeError() != 0)
                     throw cmd_trdi.getException();
@@ -59,7 +59,7 @@ namespace Pangya_GameServer.Handles
                 if (trsi == null) throw new Exception("Dados do ticket retornaram nulos.");
 
                 // 1. Calcular EXP ANTES de remover o item
-                var PlayerStat = trsi.v_players.FirstOrDefault(_el => _el.uid == Player.UserInfo.uid);
+                var PlayerStat = trsi.v_players.FirstOrDefault(_el => _el.uid == Player.UserInfo.UID);
                 int expToGain = (PlayerStat != null && PlayerStat.exp > 0) ? (int)PlayerStat.exp : 0;
 
                 // 2. Remover o Item
@@ -84,7 +84,7 @@ namespace Pangya_GameServer.Handles
                     // Se expirou, remove do mapa de updates
                     Player.Inventory.UpdateItems.Remove(ui_it.First().Key);
 
-                    // Se expirou, damos a exp e paramos por aqui com erro de expiração
+                    // Se expirou, damos a Experience e paramos por aqui com erro de expiração
                     if (expToGain > 0) Player.addExp(expToGain, _upt_on_game);
 
                     throw new exception("Item expirado, mas EXP concedida.",
@@ -92,7 +92,7 @@ namespace Pangya_GameServer.Handles
                 }
 
                 // 4. Fluxo Normal (Sucesso)
-                _smp.message_pool.getInstance().push(new message("[item_manager::openTicketReportScroll][Log] Player " + Player.UserInfo.uid + " abriu ticket com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[item_manager::openTicketReportScroll][Log] Player " + Player.UserInfo.UID + " abriu ticket com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Envia pacote de resposta do Ticket
                 p = new Packet(0x11A);
@@ -111,7 +111,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestOpenTicketReportScroll][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestOpenTicketReportScroll][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Resposta Error;
                 p.init_plain(0x11A);

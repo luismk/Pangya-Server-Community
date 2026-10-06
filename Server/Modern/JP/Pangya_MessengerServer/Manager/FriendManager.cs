@@ -40,17 +40,17 @@ namespace Pangya_MessengerServer.Manager
             // Atualiza
             UserInfo = _pi;
 
-            if (UserInfo.uid == 0)
+            if (UserInfo.UID == 0)
             {
                 throw new exception("[FriendManager::init][Error] m_uid is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.FRIEND_MANAGER,
                     1, 0));
             }
 
-            CmdFriendInfo cmd_fi = new CmdFriendInfo(UserInfo.uid, // Waiter
+            CmdFriendInfo cmd_fi = new CmdFriendInfo(UserInfo.UID, // Waiter
                 CmdFriendInfo.TYPE.ALL,
                 0u);
 
-            snmdb.NormalManagerDB.getInstance().add(0,
+            snmdb.NormalManagerDB.Instance.add(0,
                   cmd_fi, null, null);
 
             if (cmd_fi.getException().getCodeError() != 0)
@@ -123,8 +123,8 @@ namespace Pangya_MessengerServer.Manager
             addFriend(_fi);
 
             // UPDATE ON DB
-            snmdb.NormalManagerDB.getInstance().add(1,
-                 new CmdAddFriend(UserInfo.uid, _fi),
+            snmdb.NormalManagerDB.Instance.add(1,
+                 new CmdAddFriend(UserInfo.UID, _fi),
                  FriendManager.SQLDBResponse,
                  this);
         }
@@ -141,8 +141,8 @@ namespace Pangya_MessengerServer.Manager
             deleteFriend(_uid);
 
             // UPDATE ON DB
-            snmdb.NormalManagerDB.getInstance().add(2,
-                 new CmdDeleteFriend(UserInfo.uid, _uid),
+            snmdb.NormalManagerDB.Instance.add(2,
+                 new CmdDeleteFriend(UserInfo.UID, _uid),
                  FriendManager.SQLDBResponse,
                  this);
         }
@@ -153,13 +153,13 @@ namespace Pangya_MessengerServer.Manager
 
             if (_fi.uid == 0)
             {
-                throw new exception("[FriendManager::requestUpdateFriendInfo][Error] _fi.uid is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.FRIEND_MANAGER,
+                throw new exception("[FriendManager::requestUpdateFriendInfo][Error] _fi.UID is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.FRIEND_MANAGER,
                     1, 0));
             }
 
             // UPDATE ON DB
-            snmdb.NormalManagerDB.getInstance().add(3,
-                 new CmdUpdateFriend(UserInfo.uid, _fi),
+            snmdb.NormalManagerDB.Instance.add(3,
+                 new CmdUpdateFriend(UserInfo.UID, _fi),
                  FriendManager.SQLDBResponse,
                  this);
         }
@@ -172,13 +172,13 @@ namespace Pangya_MessengerServer.Manager
 
             if (_fi.uid == 0)
             {
-                throw new exception("[FriendManager::addFriend][Error] player[UID=" + Convert.ToString(UserInfo.uid) + "] tentou adicionar um amigo[UID=" + Convert.ToString(_fi.uid) + "], mas o uid is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.FRIEND_MANAGER,
+                throw new exception("[FriendManager::addFriend][Error] player[UID=" + Convert.ToString(UserInfo.UID) + "] tentou adicionar um amigo[UID=" + Convert.ToString(_fi.uid) + "], mas o UID is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.FRIEND_MANAGER,
                     1, 0));
             }
 
-            if (_fi.flag.guild_member == 1 && UserInfo.guild_uid == 0)
+            if (_fi.flag.guild_member == 1 && UserInfo.GuildIndex == 0)
             {
-                throw new exception("[FriendManager::addFriend][Error] player[UID=" + Convert.ToString(UserInfo.uid) + "] tentou adicionar um Guild Member[UID=" + Convert.ToString(_fi.uid) + "], mas ele nao esta em nenhum Guild. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.FRIEND_MANAGER,
+                throw new exception("[FriendManager::addFriend][Error] player[UID=" + Convert.ToString(UserInfo.UID) + "] tentou adicionar um Guild Member[UID=" + Convert.ToString(_fi.uid) + "], mas ele nao esta em nenhum Guild. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.FRIEND_MANAGER,
                     2, 0));
             }
 
@@ -192,9 +192,9 @@ namespace Pangya_MessengerServer.Manager
             {
                 it.Value.flag.ucFlag |= _fi.flag.ucFlag;
             }
-            else // j� tem o amigo na guild e em amigos
+            else // j� tem o amigo na Guild e em amigos
             {
-                _smp.message_pool.getInstance().push(new message("[FriendManager::addFriend][Error][Warning] player[UID=" + Convert.ToString(UserInfo.uid) + "] ja tem esse Amigo[UID=" + Convert.ToString(_fi.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[FriendManager::addFriend][Error][Warning] player[UID=" + Convert.ToString(UserInfo.UID) + "] ja tem esse Amigo[UID=" + Convert.ToString(_fi.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -212,7 +212,7 @@ namespace Pangya_MessengerServer.Manager
 
             if (_uid == 0)
             {
-                throw new exception("[FriendManager::deleteFriend][Error] player[UID=" + Convert.ToString(UserInfo.uid) + "] tentou adicionar um amigo[UID=" + Convert.ToString(_uid) + "], mas o uid is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.FRIEND_MANAGER,
+                throw new exception("[FriendManager::deleteFriend][Error] player[UID=" + Convert.ToString(UserInfo.UID) + "] tentou adicionar um amigo[UID=" + Convert.ToString(_uid) + "], mas o UID is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.FRIEND_MANAGER,
                     1, 0));
             }
 
@@ -222,7 +222,7 @@ namespace Pangya_MessengerServer.Manager
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[FriendManager::deleteFriend][Error][Warning] player[UID=" + Convert.ToString(UserInfo.uid) + "] tentou deletat amigo[UID=" + Convert.ToString(_uid) + "] do map, mas ele nao existe no map.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[FriendManager::deleteFriend][Error][Warning] player[UID=" + Convert.ToString(UserInfo.UID) + "] tentou deletat amigo[UID=" + Convert.ToString(_uid) + "] do map, mas ele nao existe no map.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -326,14 +326,14 @@ namespace Pangya_MessengerServer.Manager
 
             if (_arg == null)
             {
-                _smp.message_pool.getInstance().push(new message("[FriendManager::SQLDBResponse][WARNING] _arg is nullptr, na msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[FriendManager::SQLDBResponse][WARNING] _arg is nullptr, na msg_id = " + Convert.ToString(_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[FriendManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[FriendManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -345,21 +345,21 @@ namespace Pangya_MessengerServer.Manager
                     {
                         var cmd_af = (CmdAddFriend)(_pangya_db);
 
-                        _smp.message_pool.getInstance().push(new message("[FriendManager::SQLDBResponse][Log] player[UID=" + Convert.ToString(cmd_af.getUID()) + "] adicionou Amigo[UID=" + Convert.ToString(cmd_af.getInfo().uid) + ", APELIDO=" + (cmd_af.getInfo().apelido) + ", NICK=" + (cmd_af.getInfo().nickname) + ", STATE=" + Convert.ToString((ushort)cmd_af.getInfo().state.ucState) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[FriendManager::SQLDBResponse][Log] player[UID=" + Convert.ToString(cmd_af.getUID()) + "] adicionou Amigo[UID=" + Convert.ToString(cmd_af.getInfo().uid) + ", APELIDO=" + (cmd_af.getInfo().apelido) + ", NICK=" + (cmd_af.getInfo().nickname) + ", STATE=" + Convert.ToString((ushort)cmd_af.getInfo().state.ucState) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         break;
                     }
                 case 2: // Delete Friend
                     {
                         var cmd_df = (CmdDeleteFriend)(_pangya_db);
 
-                        _smp.message_pool.getInstance().push(new message("[FriendManager::SQLDBResponse][Log] player[UID=" + Convert.ToString(cmd_df.getUID()) + "] deletou Amigo[UID=" + Convert.ToString(cmd_df.getFriendUID()) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[FriendManager::SQLDBResponse][Log] player[UID=" + Convert.ToString(cmd_df.getUID()) + "] deletou Amigo[UID=" + Convert.ToString(cmd_df.getFriendUID()) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         break;
                     }
                 case 3: // Update Friend Info
                     {
                         var cmd_ufi = (CmdUpdateFriend)(_pangya_db);
 
-                        _smp.message_pool.getInstance().push(new message("[FriendManager::SQLDBResponse][Log] player[UID=" + Convert.ToString(cmd_ufi.getUID()) + "] atualizou Info do Amigo[UID=" + Convert.ToString(cmd_ufi.getInfo().uid) + ", APELIDO=" + (cmd_ufi.getInfo().apelido) + ", UNK1=" + Convert.ToString(cmd_ufi.getInfo().lUnknown) + ", UNK2=" + Convert.ToString(cmd_ufi.getInfo().lUnknown2) + ", UNK3=" + Convert.ToString(cmd_ufi.getInfo().lUnknown3) + ", UNK4=" + Convert.ToString(cmd_ufi.getInfo().lUnknown4) + ", UNK5=" + Convert.ToString(cmd_ufi.getInfo().lUnknown5) + ", UNK6=" + Convert.ToString(cmd_ufi.getInfo().lUnknown6) + ", UNK_FLAG=" + Convert.ToString((short)cmd_ufi.getInfo().cUnknown_flag) + ", STATE=" + Convert.ToString((byte)cmd_ufi.getInfo().state.ucState) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[FriendManager::SQLDBResponse][Log] player[UID=" + Convert.ToString(cmd_ufi.getUID()) + "] atualizou Info do Amigo[UID=" + Convert.ToString(cmd_ufi.getInfo().uid) + ", APELIDO=" + (cmd_ufi.getInfo().apelido) + ", UNK1=" + Convert.ToString(cmd_ufi.getInfo().lUnknown) + ", UNK2=" + Convert.ToString(cmd_ufi.getInfo().lUnknown2) + ", UNK3=" + Convert.ToString(cmd_ufi.getInfo().lUnknown3) + ", UNK4=" + Convert.ToString(cmd_ufi.getInfo().lUnknown4) + ", UNK5=" + Convert.ToString(cmd_ufi.getInfo().lUnknown5) + ", UNK6=" + Convert.ToString(cmd_ufi.getInfo().lUnknown6) + ", UNK_FLAG=" + Convert.ToString((short)cmd_ufi.getInfo().cUnknown_flag) + ", STATE=" + Convert.ToString((byte)cmd_ufi.getInfo().state.ucState) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         break;
                     }
                 case 0:

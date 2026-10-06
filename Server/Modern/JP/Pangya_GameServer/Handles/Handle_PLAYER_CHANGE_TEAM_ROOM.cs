@@ -27,7 +27,7 @@ namespace Pangya_GameServer.Handles
             try
             {
 
-                var r = (Player.GetRoom()) ?? throw new exception("[Lobby.Room::RequestChangePlayerTeamRoom][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar de team(time) na sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas a sala nao existe. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                var r = (Player.GetRoom()) ?? throw new exception("[Lobby.Room::RequestChangePlayerTeamRoom][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar de Team(time) na sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas a sala nao existe. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         10, 0));
 
                 byte team = Packet.ReadByte();
@@ -36,17 +36,17 @@ namespace Pangya_GameServer.Handles
 
                 if (pPri == null)
                 {
-                    throw new exception("[Room::RequestChangeTeam] [Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou trocar o team(time) na sala[NUMERO=" + r.GetRoomId() + "], mas a sala nao tem o info do Player. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Room::RequestChangeTeam] [Error] Normal[UID=" + Player.UserInfo.UID + "] tentou trocar o Team(time) na sala[NUMERO=" + r.GetRoomId() + "], mas a sala nao tem o info do Player. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         1505, 0));
                 }
 
                 if (r.TeamCount() < 2)
                 {
-                    throw new exception("[Room::RequestChangeTeam] [Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou trocar o team(time) na sala[NUMERO=" + r.GetRoomId() + "], mas a sala nao tem teans(times) suficiente. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Room::RequestChangeTeam] [Error] Normal[UID=" + Player.UserInfo.UID + "] tentou trocar o Team(time) na sala[NUMERO=" + r.GetRoomId() + "], mas a sala nao tem teans(times) suficiente. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         1506, 0));
                 }
 
-                // Sai do outro team(time) se ele estiver
+                // Sai do outro Team(time) se ele estiver
                 try
                 {
 
@@ -56,13 +56,13 @@ namespace Pangya_GameServer.Handles
                 catch (exception e)
                 {
 
-                    _smp.message_pool.getInstance().push(new message("[Room::RequestChangeTeam][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Room::RequestChangeTeam][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
-                // Add o Player ao (team)time
+                // Add o Player ao (Team)time
                 r.AddPlayerTeam(Player, team);
 
-                pPri.state_flag.team = team;
+                pPri.State.Team = team;
 
                 r.UpdatePlayerInfo(Player);
 
@@ -78,7 +78,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Room::RequestChangeTeam][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Room::RequestChangeTeam][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

@@ -28,7 +28,7 @@ namespace Pangya_GameServer.Handles
             byte opt = 0;
             byte error = 2;
 
-            MemberInfo mi = null;
+            PlayerMemberInfo mi = null;
 
             try
             {
@@ -36,21 +36,21 @@ namespace Pangya_GameServer.Handles
 
                 if (opt != 0)
                 {
-                    _smp.message_pool.getInstance().push(new message(
-                       $"[Lobby::requestCheckNick][WARNING] Player[UID={Player.UserInfo.uid}] Pediu para Check Nickname: {nick}, [OPT={opt}] diferente de 0.",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                       $"[Lobby::requestCheckNick][WARNING] Player[UID={Player.UserInfo.UID}] Pediu para Check Nickname: {nick}, [OPT={opt}] diferente de 0.",
                        type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 nick = Packet.ReadPStr();
 
-                _smp.message_pool.getInstance().push(new message($"[Lobby::requestCheckNick][Log] Player[UID={Player.UserInfo.uid}, IGN_CHECK={nick}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Lobby::requestCheckNick][Log] Player[UID={Player.UserInfo.UID}, IGN_CHECK={nick}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 if (nc == NICK_CHECK.SUCCESS && Regex.IsMatch(nick, @".*[ ].*"))
                 {
                     nc = NICK_CHECK.EMPETY_ERROR;
 
-                    _smp.message_pool.getInstance().push(new message(
-                       $"[Lobby::requestCheckNick][Log] Player[UID={Player.UserInfo.uid}] Pediu para verificar o nick contem espaco em branco: {nick}",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                       $"[Lobby::requestCheckNick][Log] Player[UID={Player.UserInfo.UID}] Pediu para verificar o nick contem espaco em branco: {nick}",
                        type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
@@ -59,15 +59,15 @@ namespace Pangya_GameServer.Handles
                 {
                     nc = NICK_CHECK.INCORRECT_NICK;
 
-                    _smp.message_pool.getInstance().push(new message(
-                       $"[Lobby::requestCheckNick][Log] Player[UID={Player.UserInfo.uid}] Pediu para verificar o nick é menor que 4 letras ou tem caracteres que nao pode: {nick}",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                       $"[Lobby::requestCheckNick][Log] Player[UID={Player.UserInfo.UID}] Pediu para verificar o nick é menor que 4 letras ou tem caracteres que nao pode: {nick}",
                        type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 if (nc == NICK_CHECK.SUCCESS)
                 {
                     var cmd_vn = new CmdVerifyNick(nick); // Waiter
-                    NormalManagerDB.getInstance().add(0, cmd_vn, null, null);
+                    NormalManagerDB.Instance.add(0, cmd_vn, null, null);
 
                     if (cmd_vn.getException().getCodeError() != 0)
                         throw cmd_vn.getException();
@@ -79,22 +79,22 @@ namespace Pangya_GameServer.Handles
                         error = (nc == NICK_CHECK.NICK_IN_USE && cmd_vn.getUID() != 0 ? (byte)0 : (byte)2);
 
                         var cmd_mi = new CmdMemberInfo(cmd_vn.getUID()); // Waiter
-                        NormalManagerDB.getInstance().add(0, cmd_mi, null, null);
+                        NormalManagerDB.Instance.add(0, cmd_mi, null, null);
 
                         if (cmd_mi.getException().getCodeError() != 0)
                             throw cmd_mi.getException();
 
                         mi = cmd_mi.getInfo();
 
-                        _smp.message_pool.getInstance().push(new message(
-                           $"[Lobby::requestCheckNick][Log] Player[UID={Player.UserInfo.uid}] Pediu para verificar o nick ja esta em uso: {nick}",
+                        _smp.LogManager.Instance.push(new AppMessage(
+                           $"[Lobby::requestCheckNick][Log] Player[UID={Player.UserInfo.UID}] Pediu para verificar o nick ja esta em uso: {nick}",
                            type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
             }
             catch (exception e) // sua exception customizada
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                    $"[Lobby::requestCheckNick][ErrorSystem] {e.getFullMessageError()}",
                    type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -105,7 +105,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                    $"[Lobby::requestCheckNick][ErrorSystem] {e.Message}",
                    type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -120,7 +120,7 @@ namespace Pangya_GameServer.Handles
 
                 if (error == 0 && nc == NICK_CHECK.NICK_IN_USE)
                 {
-                    p.WriteUInt32(mi.uid);
+                    p.WriteUInt32(mi.UID);
                     p.WriteBytes(mi.ToArray());
                 }
 
@@ -128,7 +128,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                    $"[Lobby::requestCheckNick][ErrorSystem] {e.getFullMessageError()}",
                    type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

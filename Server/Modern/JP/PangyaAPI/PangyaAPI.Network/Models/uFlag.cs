@@ -1,412 +1,323 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PangyaAPI.Network.Models
+﻿namespace PangyaAPI.Network.Models
 {
-    public class Flag
+    /// <summary>
+    /// Representa as flags de controle e bloqueio de funcionalidades do servidor Pangya.
+    /// Utiliza uma máscara de bits (bitwise) em um inteiro de 64 bits (<ulong>), onde cada bit 
+    /// ativado ou desativado habilita ou restringe um recurso específico no jogo.
+    /// </summary>
+    public class ServerFlag
     {
-        public ulong ullFlag { get; set; }
+        /// <summary>
+        /// Obtém ou define o valor bruto combinado de todas as flags de recursos do servidor.
+        /// </summary>
+        public ulong Value { get; set; }
 
+
+
+        /// <summary>
+        /// Inicializa uma nova instância da classe <see cref="ServerFlag"/> com um valor inicial opcional.
+        /// </summary>
+        /// <param name="_ull">Valor inicial opcional das flags em formato de 64 bits (padrão é 0).</param>
+        public ServerFlag(ulong _ull = 0)
+        {
+            Value = _ull;
+        }
+
+        /// <summary>
+        /// Bit 0 (0x1): Flag desconhecida ou reservada 0.
+        /// </summary>
         public bool Unknown0
         {
-            get
-            {
-                return (ullFlag & 1) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 1) : (ullFlag & 0xFFFFFFFFFFFFFFFEuL));
-            }
+            get => (Value & 1) != 0;
+            set => Value = value ? (Value | 1) : (Value & 0xFFFFFFFFFFFFFFFEuL);
         }
 
-        public bool all_game
+        /// <summary>
+        /// Bit 1 (0x2): Controla o acesso geral a todos os modos de jogo (All Game).
+        /// </summary>
+        public bool AllGame
         {
-            get
-            {
-                return (ullFlag & 2) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 2) : (ullFlag & 0xFFFFFFFFFFFFFFFDuL));
-            }
+            get => (Value & 2) != 0;
+            set => Value = value ? (Value | 2) : (Value & 0xFFFFFFFFFFFFFFFDuL);
         }
 
-        public bool buy_and_gift_shop
+        /// <summary>
+        /// Bit 2 (0x4): Controla as compras na loja e o envio de presentes (Buy Shop and Gift).
+        /// </summary>
+        public bool BuyShopAndGift
         {
-            get
-            {
-                return (ullFlag & 4) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 4) : (ullFlag & 0xFFFFFFFFFFFFFFFBuL));
-            }
+            get => (Value & 4) != 0;
+            set => Value = value ? (Value | 4) : (Value & 0xFFFFFFFFFFFFFFFBuL);
         }
 
-        public bool gift_shop
+        /// <summary>
+        /// Bit 3 (0x8): Controla especificamente o sistema de envio de presentes da loja (Gift Shop).
+        /// </summary>
+        public bool GiftShop
         {
-            get
-            {
-                return (ullFlag & 8) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 8) : (ullFlag & 0xFFFFFFFFFFFFFFF7uL));
-            }
+            get => (Value & 8) != 0;
+            set => Value = value ? (Value | 8) : (Value & 0xFFFFFFFFFFFFFFF7uL);
         }
 
-        public bool papel_shop
+        /// <summary>
+        /// Bit 4 (0x10): Controla o acesso ao Papel Shop.
+        /// </summary>
+        public bool PapelShop
         {
-            get
-            {
-                return (ullFlag & 0x10) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x10) : (ullFlag & 0xFFFFFFFFFFFFFFEFuL));
-            }
+            get => (Value & 0x10) != 0;
+            set => Value = value ? (Value | 0x10) : (Value & 0xFFFFFFFFFFFFFFEFuL);
         }
 
-        public bool personal_shop
+        /// <summary>
+        /// Bit 5 (0x20): Controla a lojinha pessoal dos jogadores (Personal Shop / Loja Pessoal) no ChatRoom.
+        /// </summary>
+        public bool PersonalShop
         {
-            get
-            {
-                return (ullFlag & 0x20) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x20) : (ullFlag & 0xFFFFFFFFFFFFFFDFuL));
-            }
+            get => (Value & 0x20) != 0;
+            set => Value = value ? (Value | 0x20) : (Value & 0xFFFFFFFFFFFFFFDFuL);
         }
 
-        public bool stroke
+        /// <summary>
+        /// Bit 6 (0x40): Controla o modo de jogo Stroke (Versus Mode).
+        /// </summary>
+        public bool Stroke
         {
-            get
-            {
-                return (ullFlag & 0x40) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x40) : (ullFlag & 0xFFFFFFFFFFFFFFBFuL));
-            }
+            get => (Value & 0x40) != 0;
+            set => Value = value ? (Value | 0x40) : (Value & 0xFFFFFFFFFFFFFFBFuL);
         }
 
-        public bool match
+        /// <summary>
+        /// Bit 7 (0x80): Controla o modo de partida padrão (Match / Match Mode).
+        /// </summary>
+        public bool Match
         {
-            get
-            {
-                return (ullFlag & 0x80) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x80) : (ullFlag & 0xFFFFFFFFFFFFFF7FuL));
-            }
+            get => (Value & 0x80) != 0;
+            set => Value = value ? (Value | 0x80) : (Value & 0xFFFFFFFFFFFFFF7FuL);
         }
 
-        public bool tourney
+        /// <summary>
+        /// Bit 8 (0x100): Controla o modo Torneio (Tourney).
+        /// </summary>
+        public bool Tourney
         {
-            get
-            {
-                return (ullFlag & 0x100) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x100) : (ullFlag & 0xFFFFFFFFFFFFFEFFuL));
-            }
+            get => (Value & 0x100) != 0;
+            set => Value = value ? (Value | 0x100) : (Value & 0xFFFFFFFFFFFFFEFFuL);
         }
 
-        public bool team_tourney
+        /// <summary>
+        /// Bit 9 (0x200): Controla o modo Torneio em Equipe (Team Tourney).
+        /// </summary>
+        public bool TeamTourney
         {
-            get
-            {
-                return (ullFlag & 0x200) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x200) : (ullFlag & 0xFFFFFFFFFFFFFDFFuL));
-            }
+            get => (Value & 0x200) != 0;
+            set => Value = value ? (Value | 0x200) : (Value & 0xFFFFFFFFFFFFFDFFuL);
         }
 
-        public bool guild_battle
+        /// <summary>
+        /// Bit 10 (0x400): Controla as Batalhas de Guilda (Guild Battle).
+        /// </summary>
+        public bool GuildBattle
         {
-            get
-            {
-                return (ullFlag & 0x400) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x400) : (ullFlag & 0xFFFFFFFFFFFFFBFFuL));
-            }
+            get => (Value & 0x400) != 0;
+            set => Value = value ? (Value | 0x400) : (Value & 0xFFFFFFFFFFFFFBFFuL);
         }
 
-        public bool pang_battle
+        /// <summary>
+        /// Bit 11 (0x800): Controla o modo Pang Battle.
+        /// </summary>
+        public bool PangBattle
         {
-            get
-            {
-                return (ullFlag & 0x800) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x800) : (ullFlag & 0xFFFFFFFFFFFFF7FFuL));
-            }
+            get => (Value & 0x800) != 0;
+            set => Value = value ? (Value | 0x800) : (Value & 0xFFFFFFFFFFFFF7FFuL);
         }
 
-        public bool approach
+        /// <summary>
+        /// Bit 12 (0x1000): Controla o modo de jogo Approach (Aproximação).
+        /// </summary>
+        public bool Approach
         {
-            get
-            {
-                return (ullFlag & 0x1000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x1000) : (ullFlag & 0xFFFFFFFFFFFFEFFFuL));
-            }
+            get => (Value & 0x1000) != 0;
+            set => Value = value ? (Value | 0x1000) : (Value & 0xFFFFFFFFFFFFEFFFuL);
         }
 
-        public bool lounge
+        /// <summary>
+        /// Bit 13 (0x2000): Controla o acesso ao Lounge (Praça/Chat).
+        /// </summary>
+        public bool Lounge
         {
-            get
-            {
-                return (ullFlag & 0x2000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x2000) : (ullFlag & 0xFFFFFFFFFFFFDFFFuL));
-            }
+            get => (Value & 0x2000) != 0;
+            set => Value = value ? (Value | 0x2000) : (Value & 0xFFFFFFFFFFFFDFFFuL);
         }
 
-        public bool scratchy
+        /// <summary>
+        /// Bit 14 (0x4000): Controla o sistema de Raspadinha (Scratchy).
+        /// </summary>
+        public bool Scratchy
         {
-            get
-            {
-                return (ullFlag & 0x4000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x4000) : (ullFlag & 0xFFFFFFFFFFFFBFFFuL));
-            }
+            get => (Value & 0x4000) != 0;
+            set => Value = value ? (Value | 0x4000) : (Value & 0xFFFFFFFFFFFFBFFFuL);
         }
 
+        /// <summary>
+        /// Bit 15 (0x8000): Flag desconhecida ou reservada 1.
+        /// </summary>
         public bool Unknown1
         {
-            get
-            {
-                return (ullFlag & 0x8000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x8000) : (ullFlag & 0xFFFFFFFFFFFF7FFFuL));
-            }
+            get => (Value & 0x8000) != 0;
+            set => Value = value ? (Value | 0x8000) : (Value & 0xFFFFFFFFFFFF7FFFuL);
         }
 
-        public bool rank_server
+        /// <summary>
+        /// Bit 16 (0x10000): Controla o serviço de Rankings (Rank Service).
+        /// </summary>
+        public bool RankService
         {
-            get
-            {
-                return (ullFlag & 0x10000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x10000) : (ullFlag & 0xFFFFFFFFFFFEFFFFuL));
-            }
+            get => (Value & 0x10000) != 0;
+            set => Value = value ? (Value | 0x10000) : (Value & 0xFFFFFFFFFFFEFFFFuL);
         }
 
-        public bool ticker
+        /// <summary>
+        /// Bit 17 (0x20000): Controla o sistema de Ticker (mensagens globais na tela).
+        /// </summary>
+        public bool TIcker
         {
-            get
-            {
-                return (ullFlag & 0x20000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x20000) : (ullFlag & 0xFFFFFFFFFFFDFFFFuL));
-            }
+            get => (Value & 0x20000) != 0;
+            set => Value = value ? (Value | 0x20000) : (Value & 0xFFFFFFFFFFFDFFFFuL);
         }
 
-        public bool mail_box
+        /// <summary>
+        /// Bit 18 (0x40000): Controla o sistema de Correio / Caixa de Mensagens (MailBox).
+        /// </summary>
+        public bool MailBox
         {
-            get
-            {
-                return (ullFlag & 0x40000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x40000) : (ullFlag & 0xFFFFFFFFFFFBFFFFuL));
-            }
+            get => (Value & 0x40000) != 0;
+            set => Value = value ? (Value | 0x40000) : (Value & 0xFFFFFFFFFFFBFFFFuL);
         }
 
-        public bool grand_zodiac
+        /// <summary>
+        /// Bit 19 (0x80000): Controla o evento Grand Zodiac.
+        /// </summary>
+        public bool GrandZodiac
         {
-            get
-            {
-                return (ullFlag & 0x80000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x80000) : (ullFlag & 0xFFFFFFFFFFF7FFFFuL));
-            }
+            get => (Value & 0x80000) != 0;
+            set => Value = value ? (Value | 0x80000) : (Value & 0xFFFFFFFFFFF7FFFFuL);
         }
 
-        public bool single_play
+        /// <summary>
+        /// Bit 20 (0x100000): Controla o modo de Treino (Practice).
+        /// </summary>
+        public bool Practice
         {
-            get
-            {
-                return (ullFlag & 0x100000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x100000) : (ullFlag & 0xFFFFFFFFFFEFFFFFuL));
-            }
+            get => (Value & 0x100000) != 0;
+            set => Value = value ? (Value | 0x100000) : (Value & 0xFFFFFFFFFFEFFFFFuL);
         }
 
-        public bool grand_prix
+        /// <summary>
+        /// Bit 21 (0x200000): Controla o evento Grand Prix.
+        /// </summary>
+        public bool GrandPrix
         {
-            get
-            {
-                return (ullFlag & 0x200000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x200000) : (ullFlag & 0xFFFFFFFFFFDFFFFFuL));
-            }
+            get => (Value & 0x200000) != 0;
+            set => Value = value ? (Value | 0x200000) : (Value & 0xFFFFFFFFFFDFFFFFuL);
         }
 
+        /// <summary>
+        /// Bits 22-23 (0xC00000): Flags desconhecidas ou reservadas 2.
+        /// </summary>
         public bool Unknown2
         {
-            get
-            {
-                return (ullFlag & 0xC00000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0xC00000) : (ullFlag & 0xFFFFFFFFFF3FFFFFuL));
-            }
+            get => (Value & 0xC00000) != 0;
+            set => Value = value ? (Value | 0xC00000) : (Value & 0xFFFFFFFFFF3FFFFFuL);
         }
 
-        public bool guild
+        /// <summary>
+        /// Bit 24 (0x1000000): Controla o sistema de Guildas (Guild).
+        /// </summary>
+        public bool Guild
         {
-            get
-            {
-                return (ullFlag & 0x1000000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x1000000) : (ullFlag & 0xFFFFFFFFFEFFFFFFuL));
-            }
+            get => (Value & 0x1000000) != 0;
+            set => Value = value ? (Value | 0x1000000) : (Value & 0xFFFFFFFFFEFFFFFFuL);
         }
 
-        public bool ssc
+        /// <summary>
+        /// Bit 25 (0x2000000): Controla o modo Special Shuffler Course.
+        /// </summary>
+        public bool SpecialShufflerCourse
         {
-            get
-            {
-                return (ullFlag & 0x2000000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x2000000) : (ullFlag & 0xFFFFFFFFFDFFFFFFuL));
-            }
+            get => (Value & 0x2000000) != 0;
+            set => Value = value ? (Value | 0x2000000) : (Value & 0xFFFFFFFFFDFFFFFFuL);
         }
 
+        /// <summary>
+        /// Bits 26-27 (0xC000000): Flags desconhecidas ou reservadas 3.
+        /// </summary>
         public bool Unknown3
         {
-            get
-            {
-                return (ullFlag & 0xC000000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0xC000000) : (ullFlag & 0xFFFFFFFFF3FFFFFFuL));
-            }
+            get => (Value & 0xC000000) != 0;
+            set => Value = value ? (Value | 0xC000000) : (Value & 0xFFFFFFFFF3FFFFFFuL);
         }
 
-        public bool memorial_shop
+        /// <summary>
+        /// Bit 28 (0x10000000): Controla o acesso ao Memorial Shop.
+        /// </summary>
+        public bool MemorialShop
         {
-            get
-            {
-                return (ullFlag & 0x10000000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x10000000) : (ullFlag & 0xFFFFFFFFEFFFFFFFuL));
-            }
+            get => (Value & 0x10000000) != 0;
+            set => Value = value ? (Value | 0x10000000) : (Value & 0xFFFFFFFFEFFFFFFFuL);
         }
 
-        public bool short_game
+        /// <summary>
+        /// Bit 29 (0x20000000): Controla o modo Short Game.
+        /// </summary>
+        public bool ShortGame
         {
-            get
-            {
-                return (ullFlag & 0x20000000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x20000000) : (ullFlag & 0xFFFFFFFFDFFFFFFFuL));
-            }
+            get => (Value & 0x20000000) != 0;
+            set => Value = value ? (Value | 0x20000000) : (Value & 0xFFFFFFFFDFFFFFFFuL);
         }
 
-        public bool char_mastery
+        /// <summary>
+        /// Bit 30 (0x40000000): Controla o sistema de Maestria de Personagem (Character Mastery).
+        /// </summary>
+        public bool CharacterMastery
         {
-            get
-            {
-                return (ullFlag & 0x40000000) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x40000000) : (ullFlag & 0xFFFFFFFFBFFFFFFFuL));
-            }
+            get => (Value & 0x40000000) != 0;
+            set => Value = value ? (Value | 0x40000000) : (Value & 0xFFFFFFFFBFFFFFFFuL);
         }
 
+        /// <summary>
+        /// Bit 31 (0x80000000): Flag desconhecida ou reservada 4.
+        /// </summary>
         public bool Unknown4
         {
-            get
-            {
-                return (ullFlag & 0x80000000u) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x80000000u) : (ullFlag & 0xFFFFFFFF7FFFFFFFuL));
-            }
+            get => (Value & 0x80000000u) != 0;
+            set => Value = value ? (Value | 0x80000000u) : (Value & 0xFFFFFFFF7FFFFFFFuL);
         }
 
-        public bool lolo_copound_card
+        /// <summary>
+        /// Bit 32 (0x100000000): Controla o sistema de Compound/Card do Lolo (Lolo Compound Card).
+        /// </summary>
+        public bool LoloCopoundCard
         {
-            get
-            {
-                return (ullFlag & 0x100000000L) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x100000000L) : (ullFlag & 0xFFFFFFFEFFFFFFFFuL));
-            }
+            get => (Value & 0x100000000L) != 0;
+            set => Value = value ? (Value | 0x100000000L) : (Value & 0xFFFFFFFEFFFFFFFFuL);
         }
 
-        public bool cadie_recycle
+        /// <summary>
+        /// Bit 33 (0x200000000): Controla a reciclagem da Cadie (Cadie Recycle / Magic Box).
+        /// </summary>
+        public bool CadieRecycle
         {
-            get
-            {
-                return (ullFlag & 0x200000000L) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x200000000L) : (ullFlag & 0xFFFFFFFDFFFFFFFFuL));
-            }
+            get => (Value & 0x200000000L) != 0;
+            set => Value = value ? (Value | 0x200000000L) : (Value & 0xFFFFFFFDFFFFFFFFuL);
         }
 
-        public bool legacy_tiki_shop
+        /// <summary>
+        /// Bit 34 (0x400000000): Controla o sistema da Loja do Tiki (Legacy Tiki Shop).
+        /// </summary>
+        public bool LegacyTikiShop
         {
-            get
-            {
-                return (ullFlag & 0x400000000L) != 0;
-            }
-            set
-            {
-                ullFlag = (value ? (ullFlag | 0x400000000L) : (ullFlag & 0xFFFFFFFBFFFFFFFFuL));
-            }
-        }
-
-        public Flag(ulong _ull = 0uL)
-        {
-            ullFlag = _ull;
+            get => (Value & 0x400000000L) != 0;
+            set => Value = value ? (Value | 0x400000000L) : (Value & 0xFFFFFFFBFFFFFFFFuL);
         }
     }
 }

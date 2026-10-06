@@ -25,9 +25,9 @@ namespace Pangya_GameServer.Handles
 
             try
             {
-                if (Player.UserInfo.block_flag.m_flag.char_mastery)
+                if (Player.UserInfo.BlockFlag.Flag.CharacterMastery)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsDown][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou desupar Stats do character, mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsDown][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou desupar Stats do character, mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         9, 0x790001));
                 }
 
@@ -39,35 +39,35 @@ namespace Pangya_GameServer.Handles
 
                 if (pCi == null || pCi._typeid != ci._typeid)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsDown][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou desupar o stat[value=" + (stat) + "] do Character[TYPEID=" + (ci._typeid) + ", ID=" + (ci.id) + "] que ele nao possui. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsDown][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou desupar o stat[value=" + (stat) + "] do Character[TYPEID=" + (ci._typeid) + ", ID=" + (ci.id) + "] que ele nao possui. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         550, 0x5200551));
                 }
 
-                var character = sIff.getInstance().findCharacter(pCi._typeid);
+                var character = sIff.Instance.findCharacter(pCi._typeid);
 
                 if (character == null)
                 {
-                    throw new exception("[Lobby::RequestChracterStatsDown][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou desupar stat[value=" + (stat) + "] do Character[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas ele nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestChracterStatsDown][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou desupar stat[value=" + (stat) + "] do Character[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas ele nao existe no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         553, 0x5200554));
                 }
 
                 if (stat > (int)CharacterInfo.Stats.S_CURVE)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsDown][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou desupar um stat[value=" + (stat) + "] invalido do Character[ID=" + (pCi.id) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsDown][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou desupar um stat[value=" + (stat) + "] invalido do Character[ID=" + (pCi.id) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         551, 0x5200552));
                 }
 
                 if ((char)(pCi.pcl[stat] - 1) < 0)
                 {
-                    throw new exception("[Lobby::RequestCharacterStatsDown][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou desupar um stat[value=" + (stat) + "] do Character[ID=" + (pCi.id) + "] que ele nao tem mais valor upado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestCharacterStatsDown][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou desupar um stat[value=" + (stat) + "] do Character[ID=" + (pCi.id) + "] que ele nao tem mais valor upado. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         552, 0x5200553));
                 }
 
                 pCi.pcl[stat]--;
 
                 // Update on DB
-                NormalManagerDB.getInstance().add(7,
-                     new CmdUpdateCharacterPCL(Player.UserInfo.uid, pCi),
+                NormalManagerDB.Instance.add(7,
+                     new CmdUpdateCharacterPCL(Player.UserInfo.UID, pCi),
                      null, null);
 
                 // Atualiza item no Jogo
@@ -79,7 +79,7 @@ namespace Pangya_GameServer.Handles
                 p.WriteByte(0xC9);
                 p.WriteUInt32(pCi._typeid);
                 p.WriteInt32(pCi.id);
-                p.WriteUInt32(0); // Flag Time
+                p.WriteUInt32(0); // ServerFlag Time
                 p.WriteUInt32(0); // qntd ant
                 p.WriteUInt32(0); // qntd dep
                 p.WriteUInt32(0); // qntd
@@ -111,7 +111,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestCharacterStatsDown][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestCharacterStatsDown][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x270);
 

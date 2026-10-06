@@ -25,7 +25,7 @@ namespace Pangya_GameServer.Repository
 
                 if (m_ib.index < 0)
                     throw new exception("[CmdUseItemBuff::lineResult][Error] m_ib[index=" + (m_ib.index) + "] is invalid, nao conseguiu usar o Item Buff[TYPEID="
-                            + (m_ib._typeid) + "] para o PLAYER[UID=" + (m_uid) + "]");
+                            + (m_ib._typeid) + "] para o Normal[UID=" + (m_uid) + "]");
 
             }
             catch (Exception ex)
@@ -48,7 +48,7 @@ namespace Pangya_GameServer.Repository
                 + (m_ib.tipo) + ", " + (m_ib.percent) + ", " + (m_time));
 
             checkResponse(r, "nao conseguiu usar Item[TYPEID=" + (m_ib._typeid) + ", TIPO=" + (m_ib.tipo) + ", PERCENT="
-                    + (m_ib.percent) + ", TEMPO=" + (m_time) + "] do PLAYER[UID=" + (m_uid) + "]");
+                    + (m_ib.percent) + ", TEMPO=" + (m_time) + "] do Normal[UID=" + (m_uid) + "]");
             return r;
         }
 

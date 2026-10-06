@@ -1,4 +1,4 @@
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Roms.GameBase.Modes;
 using Pangya_GameServer.Session;
@@ -14,12 +14,12 @@ namespace Pangya_GameServer.Roms.GameModes
         #endregion
 
         #region Constructor & Destructor
-        public GrandZodiacPractice(List<Player> players, RoomInfo roomInfo, RateValue rateValue)
+        public GrandZodiacPractice(List<Player> players, GameRoomInfoModel roomInfo, RateValue rateValue)
             : base(players, roomInfo, rateValue)
         {
             _initGrandZodiacState = false;
 
-            // Inicializa conquistas específicas deste modo
+            // Inicializa conquistas específicas deste HoleMode
             InitAllAchievementPlayers(0x6C40003Fu);
 
             State = InitRoomGame();
@@ -52,7 +52,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[GrandZodiacPractice::ChangeHole][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiacPractice::ChangeHole][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -76,7 +76,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[GrandZodiacPractice::UpdateFinishHole][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiacPractice::UpdateFinishHole][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
         #endregion
@@ -95,7 +95,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     {
                         // Envia pacote notificando que o tempo acabou
                         var p = new Packet(0x8D);
-                        p.WriteUInt32(RoomInfo.time_30s);
+                        p.WriteUInt32(RoomInfo.TimeMin);
                         session.Send(p);
                     }
                 }
@@ -115,11 +115,11 @@ namespace Pangya_GameServer.Roms.GameModes
                     if (Timer != null)
                     {
                         // Validação de integridade de tempo
-                        isHackerOrBug = ((int)(RoomInfo.time_30s - Timer.getElapsed()) / 60000) >= 1;
+                        isHackerOrBug = ((int)(RoomInfo.TimeMin - Timer.getElapsed()) / 60000) >= 1;
 
                         if (isHackerOrBug && option == 0x12C)
                         {
-                            _smp.message_pool.getInstance().push(new message($"[GrandZodiacPractice::FinishGame][Warning] PLAYER[UID={session.UserInfo.uid}] Sala[{RoomInfo.numero}] Tempo inconsistente. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiacPractice::FinishGame][Warning] Normal[UID={session.UserInfo.UID}] Sala[{RoomInfo.RoomID}] Tempo inconsistente. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
 
@@ -137,7 +137,7 @@ namespace Pangya_GameServer.Roms.GameModes
         {
             if (Players.Count > 0 && GameInitState == 1)
             {
-                var pgi = InitPlayerInfo("finish_gz_practice", "tentou terminar o modo Practice", session);
+                var pgi = InitPlayerInfo("finish_gz_practice", "tentou terminar o HoleMode Practice", session);
 
                 if (pgi.flag == PlayerGameInfo.eFLAG_GAME.PLAYING)
                 {
@@ -200,7 +200,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     exp = (int)(exp * TRANSF_SERVER_RATE_VALUE(pgi.used_item.rate.exp) * TRANSF_SERVER_RATE_VALUE(RateValue.exp));
                 }
 
-                // Se não for level máximo, limpa para recalcular no addExp
+                // Se não for Level máximo, limpa para recalcular no addExp
                 if (pgi.level < 70) pgi.data.exp = exp;
             }
         }
@@ -243,7 +243,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[GrandZodiacPractice::ProcessRequestFinishData][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiacPractice::ProcessRequestFinishData][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 

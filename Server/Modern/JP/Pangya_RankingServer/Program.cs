@@ -17,7 +17,7 @@ ShowBanner();
 try
 {
     // 2. Instanciação Única 
-    await RankingServer.getInstance().StartAsync();
+    await RankingServer.Instance.StartAsync();
 
     LogMessage("Digite 'help' ver os comandos disponiveis.");
     // 5. Loop de Comandos (Moderno e Simples)
@@ -26,13 +26,13 @@ try
         var input = Console.ReadLine()?.ToLower();
 
         var comando = new Queue<string>(input.Split(' '));
-        if (RankingServer.getInstance().CheckCommand(comando))
+        if (RankingServer.Instance.CheckCommand(comando))
         {
-            _smp.message_pool.getInstance().push(new message($"[RankingService::CheckCommand][Log] Command Executed-> {input}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[RankingService::CheckCommand][Log] Command Executed-> {input}", type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
         else
         {
-            _smp.message_pool.getInstance().push(new message($"[RankingService::CheckCommand][Log] Command no exist-> {input}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[RankingService::CheckCommand][Log] Command no exist-> {input}", type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
     }
 }
@@ -52,5 +52,5 @@ void ShowBanner()
 
 void LogMessage(string text)
 {
-    _smp.message_pool.getInstance().push(new message($"[RankingService::System][Debug] {text}", 0));
+    _smp.LogManager.Instance.push(new AppMessage($"[RankingService::System][Debug] {text}", 0));
 }

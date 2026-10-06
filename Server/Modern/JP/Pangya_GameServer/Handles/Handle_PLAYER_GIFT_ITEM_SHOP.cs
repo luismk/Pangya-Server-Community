@@ -43,16 +43,16 @@ namespace Pangya_GameServer.Handles
                 ulong pang = 0Ul;
                 ulong cookie = 0Ul;
 
-                if (Player.UserInfo.block_flag.m_flag.gift_shop || Player.UserInfo.block_flag.m_flag.buy_and_gift_shop)
+                if (Player.UserInfo.BlockFlag.Flag.GiftShop || Player.UserInfo.BlockFlag.Flag.BuyShopAndGift)
                 {
-                    throw new exception("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear PLAYER [UID=" + (uid_to_send) + "], mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear Normal [UID=" + (uid_to_send) + "], mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         2, 0x790001));
                 }
 
-                // Verifica o level do Player e bloquea se não tiver level Beginner E
-                if (Player.UserInfo.Member.level < (ushort)enLEVEL.BEGINNER_E)
+                // Verifica o Level do Player e bloquea se não tiver Level Beginner E
+                if (Player.UserInfo.Member.GameLevel < (ushort)enLEVEL.BEGINNER_E)
                 {
-                    throw new exception("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + ", LEVEL=" + (Player.UserInfo.Member.level) + "] tentou presentear o PLAYER [UID=" + (uid_to_send) + "], mas o level dele é menor que Beginner E.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + ", LEVEL=" + (Player.UserInfo.Member.GameLevel) + "] tentou presentear o Normal [UID=" + (uid_to_send) + "], mas o Level dele é menor que Beginner E.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         3500, 1));
                 }
 
@@ -66,7 +66,7 @@ namespace Pangya_GameServer.Handles
                         bi = new BuyItem().ToRead(Packet);
 
                         // Verifica se o item pode ser presenteado
-                        if (sIff.getInstance().IsGiftItem(bi._typeid))
+                        if (sIff.Instance.IsGiftItem(bi._typeid))
                         {
                             // Inicializa o item que o Player vai comprar
                             if (bi.pang > 0)
@@ -86,7 +86,7 @@ namespace Pangya_GameServer.Handles
 
                             if (item._typeid == 0)
                             {
-                                _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] ao inicializar item from buyItem, item typeid: " + (bi._typeid) + " bug. para o PLAYER [UID=" + Player.UserInfo.uid + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] ao inicializar item from buyItem, item typeid: " + (bi._typeid) + " bug. para o Normal [UID=" + Player.UserInfo.UID + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 p.init_plain(0x6A);
                                 p.WriteUInt32(1);
@@ -99,7 +99,7 @@ namespace Pangya_GameServer.Handles
 
                             if (item.is_cash.IsTrue() ? (item.desconto != 0 ? bi.cookie != (item.desconto * item.qntd) : bi.cookie != (item.price * item.qntd)) : (item.desconto != 0 ? bi.pang != (item.desconto * item.qntd) : bi.pang != (item.price * item.qntd)))
                             {
-                                _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear para o PLAYER [UID=" + (uid_to_send) + "] um item com preco[server=" + ((item.desconto != 0 ? (item.desconto * item.qntd) : (item.price * item.qntd))) + ", cliente=" + ((item.is_cash.IsTrue() ? bi.cookie : bi.pang)) + "] diferente, item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear para o Normal [UID=" + (uid_to_send) + "] um item com preco[server=" + ((item.desconto != 0 ? (item.desconto * item.qntd) : (item.price * item.qntd))) + ", cliente=" + ((item.is_cash.IsTrue() ? bi.cookie : bi.pang)) + "] diferente, item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 p.init_plain(0x6A);
                                 p.WriteUInt32(2);
@@ -113,7 +113,7 @@ namespace Pangya_GameServer.Handles
                             if (!ItemManager.isTimeItem(item.date) || ItemManager.betweenTimeSystem(ref item.date))
                             {
                                 // para ele verificar se o Player tem o caddie antes de enviar o part do caddie
-                                if ((sIff.getInstance().IsCanOverlapped(item._typeid) && sIff.getInstance().getItemGroupIdentify(item._typeid) != IFF_GROUP.CAD_ITEM) || !ItemManager.ownerItem(uid_to_send, item._typeid))
+                                if ((sIff.Instance.IsCanOverlapped(item._typeid) && sIff.Instance.getItemGroupIdentify(item._typeid) != IFF_GROUP.CAD_ITEM) || !ItemManager.ownerItem(uid_to_send, item._typeid))
                                 {
                                     if (ItemManager.isSetItem(item._typeid))
                                     {
@@ -135,7 +135,7 @@ namespace Pangya_GameServer.Handles
                                         }
                                         else
                                         {
-                                            _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear para o PLAYER [UID=" + (uid_to_send) + "] um set item que nao tem item, item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                            _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear para o Normal [UID=" + (uid_to_send) + "] um set item que nao tem item, item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                             p.init_plain(0x6A);
                                             p.WriteUInt32(3);
@@ -159,9 +159,9 @@ namespace Pangya_GameServer.Handles
                                         }
                                     }
                                 }
-                                else if (sIff.getInstance().getItemGroupIdentify(item._typeid) == IFF_GROUP.CAD_ITEM)
+                                else if (sIff.Instance.getItemGroupIdentify(item._typeid) == IFF_GROUP.CAD_ITEM)
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear um CaddieItem que o PLAYER [UID=" + (uid_to_send) + "] nao tem o caddie, item typeid: " + (bi._typeid), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear um CaddieItem que o Normal [UID=" + (uid_to_send) + "] nao tem o caddie, item typeid: " + (bi._typeid), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                     p.init_plain(0x6A);
                                     p.WriteUInt32(11);
@@ -173,7 +173,7 @@ namespace Pangya_GameServer.Handles
                                 }
                                 else
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear um item que o PLAYER [UID=" + (uid_to_send) + "] ja tem, item typeid: " + (bi._typeid), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear um item que o Normal [UID=" + (uid_to_send) + "] ja tem, item typeid: " + (bi._typeid), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                     p.init_plain(0x6A);
                                     p.WriteUInt32(4);
@@ -186,7 +186,7 @@ namespace Pangya_GameServer.Handles
                             }
                             else
                             {
-                                _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear para o PLAYER [UID=" + (uid_to_send) + "] um item que nao esta na data para esta disponivel no shop, item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear para o Normal [UID=" + (uid_to_send) + "] um item que nao esta na data para esta disponivel no ShopRoom, item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 p.init_plain(0x6A);
                                 p.WriteUInt32(5);
@@ -199,7 +199,7 @@ namespace Pangya_GameServer.Handles
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear para o PLAYER [UID=" + (uid_to_send) + "] um item que nao pode ser comprado[indisponivel no shop], item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear para o Normal [UID=" + (uid_to_send) + "] um item que nao pode ser comprado[indisponivel no ShopRoom], item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             p.init_plain(0x6A);
                             p.WriteUInt32(6);
@@ -213,7 +213,7 @@ namespace Pangya_GameServer.Handles
 
                     if (Player.UserInfo.Cookie < cookie || Player.UserInfo.Statistics.pang < pang)
                     {
-                        _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear para o PLAYER [UID=" + (uid_to_send) + "] um item, mas nao tem moedas(Pang ou Cookie) suficiente, item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear para o Normal [UID=" + (uid_to_send) + "] um item, mas nao tem moedas(Pang ou Cookie) suficiente, item typeid: " + (bi._typeid) + ". Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         p.init_plain(0x6A);
                         p.WriteUInt32(7);
@@ -226,12 +226,12 @@ namespace Pangya_GameServer.Handles
 
                     try
                     {
-                        // Consome o cookie e pang, Antes de adicionar os itens
+                        // Consome o cookie e Pang, Antes de adicionar os itens
                         Player.UserInfo.consomeMoeda(pang, cookie);
                     }
                     catch (exception e)
                     {
-                        _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         if (ExceptionError.STDA_ERROR_CHECK_SOURCE_AND_ERROR_TYPE(e.getCodeError(),
                             STDA_ERROR_TYPE.PLAYER_INFO,
@@ -255,18 +255,18 @@ namespace Pangya_GameServer.Handles
 
                     try
                     {
-                        if ((mail_id = MailManager.SendMailWithItem(Player.UserInfo.uid,
+                        if ((mail_id = MailManager.SendMailWithItem(Player.UserInfo.UID,
                             uid_to_send, msg, v_item)) <= 0)
                         {
-                            throw new exception("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear um PLAYER [UID=" + (uid_to_send) + "] com o Item[TYPEID=" + (bi._typeid) + "], mas nao conseguiu colocar o item no mail box do Player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear um Normal [UID=" + (uid_to_send) + "] com o Item[TYPEID=" + (bi._typeid) + "], mas nao conseguiu colocar o item no mail box do Player. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 1, 0x5800101));
                         }
                     }
                     catch (exception e)
                     {
-                        _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
-                        _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] ao add os itens que o PLAYER [UID=" + Player.UserInfo.uid + "] presenteou para o PLAYER [UID=" + (uid_to_send) + "]. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
-                        _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] devolve as moedas gasta deu erro no add itens no db para o Player.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] ao add os itens que o Normal [UID=" + Player.UserInfo.UID + "] presenteou para o Normal [UID=" + (uid_to_send) + "]. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] devolve as moedas gasta deu erro no add itens no db para o Player.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         // Devolve as moedas gasta para o Player
                         Player.UserInfo.addMoeda(pang, cookie);
@@ -293,9 +293,9 @@ namespace Pangya_GameServer.Handles
                                          $"QNTD_DEPOIS={el.stat.qntd_dep}]");
                     }
 
-                    var log_msg = $"[Lobby::RequestGiftItemShop][Sucess] PLAYER [UID=" + Player.UserInfo.uid + "] MailBox[MAIL_ID=" + (mail_id) + "] mandou " + (v_item.Count) + " presente(s), Moedas(CP=" + (cookie) + ", PANG=" + (pang) + "), do Shop para o PLAYER [UID=" + (uid_to_send) + "]. Item(ns) { " + log_itens + " }";
+                    var log_msg = $"[Lobby::RequestGiftItemShop][Sucess] Normal [UID=" + Player.UserInfo.UID + "] MailBox[MAIL_ID=" + (mail_id) + "] mandou " + (v_item.Count) + " presente(s), Moedas(CP=" + (cookie) + ", PANG=" + (pang) + "), do Shop para o Normal [UID=" + (uid_to_send) + "]. Item(ns) { " + log_itens + " }";
 
-                    _smp.message_pool.getInstance().push(new message(log_msg, type_msg.CL_ONLY_FILE_LOG));
+                    _smp.LogManager.Instance.push(new AppMessage(log_msg, type_msg.CL_ONLY_FILE_LOG));
 
                     if (pang > 0)
                     {
@@ -323,11 +323,11 @@ namespace Pangya_GameServer.Handles
 
                     Player.Send(p);
 
-                    NormalManagerDB.getInstance().add(0, new CmdItemBuyShopLog(Player.UserInfo.uid, bi), null, this);
+                    NormalManagerDB.Instance.add(0, new CmdItemBuyShopLog(Player.UserInfo.UID, bi), null, this);
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou presentear para o PLAYER [UID=" + (uid_to_send) + "] um item, mas nao enviou nenhum item no Request. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou presentear para o Normal [UID=" + (uid_to_send) + "] um item, mas nao enviou nenhum item no Request. Hacker ou bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     p.init_plain(0x6A);
                     p.WriteUInt32(9);
@@ -339,7 +339,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestGiftItemShop][Error] PLAYER [UID=" + Player.UserInfo.uid + "] error desconhecido: " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestGiftItemShop][Error] Normal [UID=" + Player.UserInfo.UID + "] error desconhecido: " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x6A);
                 p.WriteUInt32(ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL ? ExceptionError.STDA_SYSTEM_ERROR_DECODE(e.getCodeError()) : 10);

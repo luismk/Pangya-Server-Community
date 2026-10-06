@@ -54,7 +54,7 @@ namespace Pangya_GameServer.Repository
 
             var r = _update(m_szConsulta[0] + Convert.ToString((ushort)m_locker) + m_szConsulta[1] + Convert.ToString(m_uid));
 
-            checkResponse(r, "nao conseguiu atualizar o modo[locker=" + Convert.ToString(m_locker) + "] do dolfini locker do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o HoleMode[locker=" + Convert.ToString(m_locker) + "] do dolfini locker do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

@@ -106,13 +106,13 @@ namespace Pangya_GameServer.Feature
             this.map_cii_change = new Dictionary<int, CounterItemCtx>();
             this.v_reward = new List<Reward>();
 
-            if (!sIff.getInstance().isLoad())
+            if (!sIff.Instance.isLoad())
             {
-                sIff.getInstance().Init();
+                sIff.Instance.Init();
             }
 
             // Tempor�rio CounterItemInfo
-            var counterInfos = sIff.getInstance().getCounterItem();
+            var counterInfos = sIff.Instance.getCounterItem();
             foreach (var el in counterInfos)
             {
                 var c = new Counter
@@ -254,16 +254,16 @@ namespace Pangya_GameServer.Feature
                         {
 
                             // Atualiza o Counter no banco de dados
-                          NormalManagerDB.getInstance().add(3, new CmdUpdateCounterItem(_session.UserInfo.uid, el.Value),  SQLDBResponse, this);
+                          NormalManagerDB.Instance.add(3, new CmdUpdateCounterItem(_session.UserInfo.UID, el.Value),  SQLDBResponse, this);
 
                             p.WriteByte(2); // Type
                             p.WriteUInt32(el.Value._typeid);
                             p.WriteInt32(el.Value.id);
-                            p.WriteInt32(0); // Flag
+                            p.WriteInt32(0); // ServerFlag
                             p.WriteInt32(el.Value.last_value); // Qtnd Antes
                             p.WriteInt32(el.Value.value); // Qtnd Depois
                             p.WriteInt32(el.Value.increase_value); // Qtnd que add
-                            p.WriteZero(25); // 25 bytes que n�o usa com esse tipo de item
+                            p.WriteZero(25); // 25 bytes que n�o usa com esse Type de item
                         }
 
                         _session.Send(p);
@@ -292,7 +292,7 @@ namespace Pangya_GameServer.Feature
                             if ((rt = ItemManager.addItem(item,
                                 _session, 0, 0)) < 0)
                             {
-                                throw new exception("[AchievementSystem::finish_and_update][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou adicionar o item[TYPEID=" + Convert.ToString(item._typeid) + "], mas nao conseguiu adicionar o item. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.SYS_ACHIEVEMENT,
+                                throw new exception("[AchievementSystem::finish_and_update][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou adicionar o item[TYPEID=" + Convert.ToString(item._typeid) + "], mas nao conseguiu adicionar o item. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.SYS_ACHIEVEMENT,
                                     50, 0));
                             }
 
@@ -313,10 +313,10 @@ namespace Pangya_GameServer.Feature
                             p.WriteByte(el.type); // Type
                             p.WriteUInt32(el._typeid);
                             p.WriteInt32(el.id);
-                            p.WriteInt32(el.flag); // Flag
+                            p.WriteInt32(el.flag); // ServerFlag
                             p.WriteBytes(el.stat.ToArray());
                             p.WriteInt32((el.STDA_C_ITEM_TIME > 0) ? el.STDA_C_ITEM_TIME : el.STDA_C_ITEM_QNTD); // Qtnd que add
-                            p.WriteZero(25); // 25 bytes que n�o usa com esse tipo de item
+                            p.WriteZero(25); // 25 bytes que n�o usa com esse Type de item
                         }
 
                         _session.Send(p);
@@ -360,7 +360,7 @@ namespace Pangya_GameServer.Feature
                                 p.WriteUInt32(cii._typeid);
                                 p.WriteUInt32((uint)cii.id);
                             }
-                            else // n�o tem o counter item id e nem o typeid
+                            else // n�o tem o counter item Login e nem o typeid
                             {
                                 p.WriteZero(8);
                             }
@@ -380,7 +380,7 @@ namespace Pangya_GameServer.Feature
 
                 // N�o relan�a mais por que a resposta de quest o cliente j� teve, aqui � achievement, que deu erro ele nao precisa saber n�o
                 // Mas o server precisa do log para ajeitar depois
-                _smp.message_pool.getInstance().push(new message("[AchievementSystem::finish_and_update][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[AchievementSystem::finish_and_update][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -835,7 +835,7 @@ namespace Pangya_GameServer.Feature
             foreach (var el in v_quest_clear)
             {
                 // Verifica se � Quest Conclu�da
-                if (sIff.getInstance().getItemGroupIdentify(el.achievement_typeid) == IFF_GROUP.QUEST_ITEM)
+                if (sIff.Instance.getItemGroupIdentify(el.achievement_typeid) == IFF_GROUP.QUEST_ITEM)
                 {
                     count.value++;
                 }
@@ -873,7 +873,7 @@ namespace Pangya_GameServer.Feature
         { 
             if (_qsi.id <= 0 || _qsi._typeid == 0)
             {
-                _smp.message_pool.getInstance().push(new message("[AchievementSystem::checkQuestClear][Error] QuestStuffinfo _qsi is invalid", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[AchievementSystem::checkQuestClear][Error] QuestStuffinfo _qsi is invalid", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return (byte)eSTATE.NOT_MATCH;
             }
 
@@ -882,7 +882,7 @@ namespace Pangya_GameServer.Feature
 
             byte ret = (byte)eSTATE.NOT_MATCH;
 
-            var qs = sIff.getInstance().findQuestStuff(_qsi._typeid);
+            var qs = sIff.Instance.findQuestStuff(_qsi._typeid);
             if (qs != null)
             {
                 for (int i = 0; i < qs.counter_item._typeid.Length; ++i)
@@ -931,7 +931,7 @@ namespace Pangya_GameServer.Feature
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message($"[AchievementSystem::checkQuestClear][Error] Quest stuff [TYPEID={_qsi._typeid}] nao encontrado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[AchievementSystem::checkQuestClear][Error] Quest stuff [TYPEID={_qsi._typeid}] nao encontrado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -995,7 +995,7 @@ namespace Pangya_GameServer.Feature
                         }
 
                         // --- Processamento de Recompensas ---
-                        var qs = sIff.getInstance().findQuestStuff(el._typeid);
+                        var qs = sIff.Instance.findQuestStuff(el._typeid);
                         if (qs == null)
                         {
                             throw new exception($"[Error] IFF Quest {el._typeid} nao encontrado.",
@@ -1016,7 +1016,7 @@ namespace Pangya_GameServer.Feature
 
                         // Finalização da Quest
                         el.clear_date_unix = (uint)UtilTime.GetLocalTimeAsUnix();
-                        NormalManagerDB.getInstance().add(1, new CmdUpdateQuestUser(_session.UserInfo.uid, el), SQLDBResponse, this);
+                        NormalManagerDB.Instance.add(1, new CmdUpdateQuestUser(_session.UserInfo.UID, el), SQLDBResponse, this);
 
                         v_quest_clear.Add(new QuestClear(_ai._typeid, el._typeid));
 
@@ -1024,12 +1024,12 @@ namespace Pangya_GameServer.Feature
                         if (_ai.CheckAllQuestClear())
                         {
                             _ai.status = (int)ACHIEVEMENT_STATUS.CONCLUEDED;
-                           NormalManagerDB.getInstance().add(2, new CmdUpdateAchievementUser(_session.UserInfo.uid, _ai), SQLDBResponse, this);
+                           NormalManagerDB.Instance.add(2, new CmdUpdateAchievementUser(_session.UserInfo.UID, _ai), SQLDBResponse, this);
                         }
                     }
-                    // CORREÇÃO AQUI: (ret & flag) != 0
+                    // CORREÇÃO AQUI: (ret & ServerFlag) != 0
                     else if ((ret & (byte)eSTATE.INCREMENT_COUNTER) != 0 &&
-                            (sIff.getInstance().getItemGroupIdentify(_ai._typeid) == IFF_GROUP.QUEST_ITEM || _ai.quest_base_typeid != 0))
+                            (sIff.Instance.getItemGroupIdentify(_ai._typeid) == IFF_GROUP.QUEST_ITEM || _ai.quest_base_typeid != 0))
                     {
                         CHECK_CHANGE_COUNTER_AND_INCREMENT_AND_SAVE(pcii, _c);
                         necessary_update = true;
@@ -1043,9 +1043,9 @@ namespace Pangya_GameServer.Feature
         private int UpdateACounterItemInfo(Player _session, uint _typeid, int _value)
         {
 
-            CmdAddCounterItem cmd_aci = new CmdAddCounterItem(_session.UserInfo.uid, _typeid, _value);
+            CmdAddCounterItem cmd_aci = new CmdAddCounterItem(_session.UserInfo.UID, _typeid, _value);
 
-           NormalManagerDB.getInstance().add(0, cmd_aci, null, null);
+           NormalManagerDB.Instance.add(0, cmd_aci, null, null);
 
             if (cmd_aci.getException().getCodeError() != 0)
             {
@@ -1065,10 +1065,10 @@ namespace Pangya_GameServer.Feature
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[AchievementSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[AchievementSystem::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
              

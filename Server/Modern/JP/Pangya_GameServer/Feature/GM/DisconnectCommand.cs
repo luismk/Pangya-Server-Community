@@ -21,7 +21,7 @@ namespace Pangya_GameServer.Feature.GM
                 int targetOid = pkt.ReadInt32();
 
                 // 2. Localização da sessão no Singleton do GameServer
-                var target = GameServer.getInstance().FindSessionByOid(targetOid);
+                var target = GameServer.Instance.FindSessionByOid(targetOid);
 
                 if (target == null)
                 {
@@ -29,14 +29,14 @@ namespace Pangya_GameServer.Feature.GM
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 8, 0));
                 }
 
-                if (target.UserInfo.uid == session.UserInfo.uid)
+                if (target.UserInfo.UID == session.UserInfo.UID)
                 { 
                     return; // Interrompe a execução aqui
                 } 
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[DisconnectCommand][Error] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

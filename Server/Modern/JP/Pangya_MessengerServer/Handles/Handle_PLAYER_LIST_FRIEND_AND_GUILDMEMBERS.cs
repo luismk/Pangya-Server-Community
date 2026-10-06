@@ -15,11 +15,11 @@ namespace Pangya_MessengerServer.Handles
         {
             try
             {
-                MessengerServer.getInstance().SendUpdatedFriendList(Player);
+                MessengerServer.Instance.SendUpdatedFriendList(Player);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_FRIEND_GUILD_LIST][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_FRIEND_GUILD_LIST][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
 

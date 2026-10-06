@@ -29,7 +29,7 @@ namespace Pangya_GameServer.Repository
              
             var r = consulta(m_szConsulta + m_uid);
 
-            checkResponse(r, "nao conseguiu encontrar o Aviso[assist=" + (m_check ? "ON" : "OFF") + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu encontrar o Aviso[assist=" + (m_check ? "ON" : "OFF") + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

@@ -79,7 +79,7 @@ namespace Pangya_RankingServer.Repository
             if (m_entry.TryGetValue(uid, out var existingRC))
             {
                 // Já existe um personagem
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[CmdRankRegistryCharacterInfo::lineResult][WARNING] Player[UID={uid}] " +
                     $"CHARACTER_ANT[TYPEID={existingRC.getCharacterInfo()._typeid}, ID={existingRC.getCharacterInfo().id}] " +
                     $"CHARACTER_REPLACE[TYPEID={ce._typeid}, ID={ce.id}] já tem mais de um character equipado no rank. Trocando o character antigo pelo novo.",

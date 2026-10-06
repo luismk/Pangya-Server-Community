@@ -28,25 +28,25 @@ namespace Pangya_GameServer.Handles
                 string msg = Packet.ReadPStr();
 
                 if (string.IsNullOrEmpty(nickname))
-                    throw new exception(" PLAYER[UID=" + (Player.UserInfo.uid) + "] tentou enviar msg[MESSAGE="
+                    throw new exception(" Normal[UID=" + (Player.UserInfo.UID) + "] tentou enviar msg[MESSAGE="
                             + nickname + "], vazio. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 1/*UNKNOWN ERROR*/));
 
                 if (!Tools.Sanitize(nickname))
-                    throw new exception(" PLAYER[UID=" + (Player.UserInfo.uid) + "] tentou enviar msg[MESSAGE="
+                    throw new exception(" Normal[UID=" + (Player.UserInfo.UID) + "] tentou enviar msg[MESSAGE="
                             + nickname + "], tentativa de inject. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 1/*UNKNOWN ERROR*/));
 
                 if (string.IsNullOrEmpty(msg))
-                    throw new exception(" PLAYER[UID=" + (Player.UserInfo.uid) + "] tentou enviar msg[MESSAGE="
+                    throw new exception(" Normal[UID=" + (Player.UserInfo.UID) + "] tentou enviar msg[MESSAGE="
                             + msg + "], vazio. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 1/*UNKNOWN ERROR*/));
 
                 if (m_ci != null)
                 {
-                    var gmList = GameServer.getInstance().FindAllGM();
+                    var gmList = GameServer.Instance.FindAllGM();
 
                     if (gmList.Any())
                     {
-                        string msg_gm = "\\5" + Player.UserInfo.nickname + ": '" + msg + "'";
-                        string from = "\\1[Channel=" + m_ci.getName() + ", \\1ROOM=" + Player.UserInfo.Member.sala_numero + "]";
+                        string msg_gm = "\\5" + Player.UserInfo.NickName + ": '" + msg + "'";
+                        string from = "\\1[Channel=" + m_ci.getName() + ", \\1ROOM=" + Player.UserInfo.Member.RoomID + "]";
 
                         int index = from.IndexOf(' ');
                         if (index != -1)
@@ -54,8 +54,8 @@ namespace Pangya_GameServer.Handles
 
                         foreach (Player el in gmList)
                         {
-                            if (((el.m_gi.channel > 0 && el.UserInfo.Channel == m_ci.getId()) || el.m_gi.whisper.IsTrue() || el.m_gi.isOpenPlayerWhisper(Player.UserInfo.uid))
-                                && (el.UserInfo.Channel != Player.UserInfo.Channel || el.UserInfo.Member.sala_numero != Player.UserInfo.Member.sala_numero))
+                            if (((el.m_gi.channel > 0 && el.UserInfo.Channel == m_ci.getId()) || el.m_gi.whisper.IsTrue() || el.m_gi.isOpenPlayerWhisper(Player.UserInfo.UID))
+                                && (el.UserInfo.Channel != Player.UserInfo.Channel || el.UserInfo.Member.RoomID != Player.UserInfo.Member.RoomID))
                             {
                                 el.Send(Handle_PACKET_RESPONSE.pacote040(from, msg_gm, 0));
                             }
@@ -65,24 +65,24 @@ namespace Pangya_GameServer.Handles
                     // 5. Executa comandos e envia a mensagem para sala ou lobby
                     var comando = new Queue<string>(msg.Split(' '));
 
-                    if (Player.UserInfo.Member.sala_numero != -1)
+                    if (Player.UserInfo.Member.RoomID != -1)
                     {
                         var r = Player.GetRoom();
 
-                        r?.SendBroadCast(Handle_PACKET_RESPONSE.pacote040(Player.UserInfo.nickname, msg, ((Player.UserInfo.UserCapabilities.game_master) ? eChatMsg.CHAT_GM : 0)));
+                        r?.SendBroadCast(Handle_PACKET_RESPONSE.pacote040(Player.UserInfo.NickName, msg, ((Player.UserInfo.UserCapabilities.IsGameMaster) ? eChatMsg.CHAT_GM : 0)));
                     }
                     else
                     {
-                        var flag = Player.UserInfo.UserCapabilities.game_master ? eChatMsg.CHAT_GM : 0;
-                        m_ci.SendBroadcast(Handle_PACKET_RESPONSE.pacote040(Player.UserInfo.nickname, msg, flag));
+                        var flag = Player.UserInfo.UserCapabilities.IsGameMaster ? eChatMsg.CHAT_GM : 0;
+                        m_ci.SendBroadcast(Handle_PACKET_RESPONSE.pacote040(Player.UserInfo.NickName, msg, flag));
                     }
-                    if (Player.UserInfo.UserCapabilities.game_master)
+                    if (Player.UserInfo.UserCapabilities.IsGameMaster)
                         m_ci.CommandByChat(Player, comando);
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_CHAT][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_CHAT][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;

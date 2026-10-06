@@ -83,7 +83,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_log_id) + ", " + Convert.ToString(m_item._typeid) + ", " + Convert.ToString(m_item.qntd) + ", " + Convert.ToString(m_item.price));
 
-            checkResponse(r, "nao conseguiu inserir CPLogItem[LOD_ID=" + Convert.ToString(m_log_id) + ", ITEM_TYPEID=" + Convert.ToString(m_item._typeid) + ", ITEM_QNTD=" + Convert.ToString(m_item.qntd) + ", ITEM_PRICE=" + Convert.ToString(m_item.price) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu inserir CPLogItem[LOD_ID=" + Convert.ToString(m_log_id) + ", ITEM_TYPEID=" + Convert.ToString(m_item._typeid) + ", ITEM_QNTD=" + Convert.ToString(m_item.qntd) + ", ITEM_PRICE=" + Convert.ToString(m_item.price) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

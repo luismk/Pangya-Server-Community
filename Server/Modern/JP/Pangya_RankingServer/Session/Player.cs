@@ -18,20 +18,20 @@ namespace Pangya_RankingServer.Session
 
         public override string GetNickname()
         {
-            return UserInfo.nickname;
+            return UserInfo.NickName;
         }
 
         public override uint GetUID()
         {
-            return UserInfo.uid;
+            return UserInfo.UID;
         }
 
         public override string GetID()
         {
-            return UserInfo.id;
+            return UserInfo.Login;
         }
 
-        public override uint GetCapability() { return UserInfo.m_cap; }
+        public override uint GetCapability() { return UserInfo.Capability; }
 
         public override byte GetStateLogged()
         {

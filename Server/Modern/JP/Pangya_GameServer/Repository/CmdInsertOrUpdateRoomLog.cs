@@ -71,20 +71,20 @@ namespace Pangya_GameServer.Repository
         {
             var query = m_szConsulta[(int)m_type];
             //para adicionar salas com string em japones!
-            var r = procedure(query, makeText(m_log.name) + ", " +
-            m_log.num_player + ", " +
-            m_log.max_player + ", " +
-            m_log.type_extend + ", " +
+            var r = procedure(query, makeText(m_log.Name) + ", " +
+            m_log.CurrentUsers + ", " +
+            m_log.MaxUsers + ", " +
+            m_log.SpecialRoomFLag + ", " +
             m_log.uid + ", " +
             makeText(m_log.roomId.ToString()) + ", " + // deu erro -> Conversão inválida de 'System.String' em 'System.Guid'.
             m_log.character + ", " +
             m_log.caddie + ", " +
             m_log.mascot + ", " +
             m_log.club + ", " +
-            m_log.tipo + ", " +
-            m_log.modo + ", " +
-            m_log.qntd_hole + ", " +
-            Convert.ToInt32(m_log.course) + ", " +
+            m_log.RealRoomType + ", " +
+            m_log.HoleMode + ", " +
+            m_log.HoleCount + ", " +
+            Convert.ToInt32(m_log.CourseIndex) + ", " +
             (m_log.hole == 0 ? 1 : m_log.hole) + ", " + //o primeiro hole é zero né
             m_log.score + ", " +
             m_log.exp + ", " +
@@ -98,7 +98,7 @@ namespace Pangya_GameServer.Repository
            Convert.ToInt32(m_log.finish_game) + ", " +
             m_log.assist_flag + ", " +
             m_log.Win_trofeu + ", " +
-            m_log.master + ", " +
+            m_log.OwnerUID + ", " +
             Convert.ToInt32(m_log.Is_short_game) + ", " +
             Convert.ToInt32(m_log.Is_natural) + ", " +
             m_log.HitHio + ", " +

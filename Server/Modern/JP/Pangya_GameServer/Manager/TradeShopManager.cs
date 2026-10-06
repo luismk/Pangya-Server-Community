@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Pangya_GameServer.Models;
 using PangyaAPI.IFF.Handle.JP;
 using PangyaAPI.Network;
 using PangyaAPI.Utilities;
@@ -12,6 +11,7 @@ using PangyaAPI.IFF.Flags;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Session;
 using Pangya_GameServer.Feature.Personal;
+using Pangya_GameServer.Models.Game;
 
 namespace Pangya_GameServer.Manager
 {
@@ -61,7 +61,7 @@ namespace Pangya_GameServer.Manager
         }
 
 
-        public TradeShopManager(RoomInfo _ri)
+        public TradeShopManager(GameRoomInfoModel _ri)
         {
             try
             {
@@ -107,7 +107,7 @@ namespace Pangya_GameServer.Manager
                 // unlock
                 unlock();
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::hasNameInSomeShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::hasNameInSomeShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -136,7 +136,7 @@ namespace Pangya_GameServer.Manager
                 // unlock
                 unlock();
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::findShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::findShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -165,7 +165,7 @@ namespace Pangya_GameServer.Manager
                 // unlock
                 unlock();
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::findShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::findShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -186,7 +186,7 @@ namespace Pangya_GameServer.Manager
             catch (Exception e)
             {
                 // Registra o erro no sistema de mensagens
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                      "[PersonalShopManager::findShopIt][ErrorSystem] " + e.Message,
                      type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -218,7 +218,7 @@ namespace Pangya_GameServer.Manager
                 // unlock
                 unlock();
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::findShopIt][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::findShopIt][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -245,7 +245,7 @@ namespace Pangya_GameServer.Manager
                 // unlock
                 unlock();
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::delete_shop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::delete_shop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -253,27 +253,27 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT);
 
             try
             {
 
-                // Sala não é Lounge, não tem como o player abrir um shop
-                if ((ROOM_INFO_TYPE)m_ri.tipo != ROOM_INFO_TYPE.LOUNGE)
+                // Sala não é Lounge, não tem como o player abrir um ShopRoom
+                if ((RoomTypeFlags)m_ri.RealRoomType != RoomTypeFlags.LOUNGE)
                 {
                     return false;
                 }
 
                 var ps = findShop(_session);
 
-                // Player não tem um shop aberto na sala
+                // Player não tem um ShopRoom aberto na sala
                 if (ps == null)
                 {
                     return false;
                 }
 
-                // O item não está à venda no shop do player
+                // O item não está à venda no ShopRoom do player
                 if (ps.findItemById(_item_id) == null)
                 {
                     return false;
@@ -283,23 +283,23 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::isItemForSale][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::isItemForSale][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
-            // O item está à venda no shop do player
+            // O item está à venda no ShopRoom do player
             return true;
         }
 
-        public PlayerRoomInfo.PersonShop getPersonShop(Player _session)
+        public PlayerRoomInfo.PlayerRoomInfoShop getPersonShop(Player _session)
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT);
 
-            PlayerRoomInfo.PersonShop person = new PlayerRoomInfo.PersonShop() { active = 0u };
+            PlayerRoomInfo.PlayerRoomInfoShop person = new PlayerRoomInfo.PlayerRoomInfoShop() { active = 0u };
 
-            if ((ROOM_INFO_TYPE)m_ri.tipo != ROOM_INFO_TYPE.LOUNGE)
+            if ((RoomTypeFlags)m_ri.RealRoomType != RoomTypeFlags.LOUNGE)
             {
                 return person;
             }
@@ -318,7 +318,7 @@ namespace Pangya_GameServer.Manager
             else
             {
                 person.active = 1u;
-                person.name = ps.getName();
+                person.Name = ps.getName();
             }
             return person;
         }
@@ -327,7 +327,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_DELETE);
 
             try
@@ -339,7 +339,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::destroyShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::destroyShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -347,33 +347,33 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT); 
 
             try
             {
 
-                if ((ROOM_INFO_TYPE)m_ri.tipo != ROOM_INFO_TYPE.LOUNGE)
+                if ((RoomTypeFlags)m_ri.RealRoomType != RoomTypeFlags.LOUNGE)
                 {
-                    throw new exception("[PersonalShopManager::openShopToEdit][Error][Warning] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou abri um personal shop para venda em uma sala[TIPO=" + Convert.ToString((ushort)(ROOM_INFO_TYPE)m_ri.tipo) + ", NUMERO=" + Convert.ToString(m_ri.numero) + "] diferente de Lounge. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::openShopToEdit][Error][Warning] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou abri um personal ShopRoom para venda em uma sala[TIPO=" + Convert.ToString((ushort)(RoomTypeFlags)m_ri.RealRoomType) + ", NUMERO=" + Convert.ToString(m_ri.RoomID) + "] diferente de Lounge. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         100, 52001001));
                 }
 
-                if (_session.UserInfo.block_flag.m_flag.personal_shop)
+                if (_session.UserInfo.BlockFlag.Flag.PersonalShop)
                 {
-                    throw new exception("[PersonalShopManager::openShopToEdit][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou abrir um personal shop para vender na sala[NUMERO=" + Convert.ToString(m_ri.numero) + "], mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::openShopToEdit][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou abrir um personal ShopRoom para vender na sala[NUMERO=" + Convert.ToString(m_ri.RoomID) + "], mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         4, 0x790001));
                 }
 
-                if (_session.UserInfo.level < LIMIT_MIN_PERSONAL)
+                if (_session.UserInfo.Level < LIMIT_MIN_PERSONAL)
                 {
-                    throw new exception("[PersonalShopManager::openShopToEdit][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + ", LEVEL=" + Convert.ToString(_session.UserInfo.level) + "] tentou abrir um personal shop para vender na sala[NUMERO=" + Convert.ToString(m_ri.numero) + $"], mas o level dele é menor que {((enLEVEL)LIMIT_MIN_PERSONAL)}.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::openShopToEdit][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + ", LEVEL=" + Convert.ToString(_session.UserInfo.Level) + "] tentou abrir um personal ShopRoom para vender na sala[NUMERO=" + Convert.ToString(m_ri.RoomID) + $"], mas o Level dele é menor que {((enLEVEL)LIMIT_MIN_PERSONAL)}.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         3, 0));
                 }
 
-                if (shopsByPlayer.Count >= (uint)(m_ri.max_player * 0.8f))
+                if (shopsByPlayer.Count >= (uint)(m_ri.MaxUsers * 0.8f))
                 {
-                    throw new exception("[PersonalShopManager::openShopToEdit][Info] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] chegou no limite de shop(s) permitidos na sala[NUMERO=" + Convert.ToString(m_ri.numero) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::openShopToEdit][Info] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] chegou no limite de ShopRoom(s) permitidos na sala[NUMERO=" + Convert.ToString(m_ri.RoomID) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         101, 5200102));
                 }
 
@@ -398,12 +398,12 @@ namespace Pangya_GameServer.Manager
                         // unlock
                         unlock();
 
-                        // Error, fail to insert personal shop into map
-                        throw new exception("[PersonalShopManager::openShopToEdit][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] nao conseguiu adicionar o shop do player para ao map.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                        // Error, fail to insert personal ShopRoom into map
+                        throw new exception("[PersonalShopManager::openShopToEdit][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] nao conseguiu adicionar o ShopRoom do player para ao map.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                             701, 5200701));
                     }
 
-                    // new personal shop
+                    // new personal ShopRoom
                     ps = r.m_shop;
 
                     // unlock
@@ -414,8 +414,8 @@ namespace Pangya_GameServer.Manager
 
                 _out_packet.WriteUInt32(1);
 
-                _out_packet.WriteString(_session.UserInfo.nickname);
-                _out_packet.WriteUInt32(_session.UserInfo.uid);
+                _out_packet.WriteString(_session.UserInfo.NickName);
+                _out_packet.WriteUInt32(_session.UserInfo.UID);
 
                 // sucesso, enviar o pacote para a sala toda
                 return true;
@@ -424,7 +424,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::openShopToEdit][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::openShopToEdit][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 _out_packet.init_plain(0xE5);
 
@@ -439,7 +439,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT);
 
             Packet p = new Packet();
@@ -451,7 +451,7 @@ namespace Pangya_GameServer.Manager
 
                 if ((ps = findShop(_session)) == null)
                 {
-                    throw new exception("[PersonalShopManager::cancelEditShop][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou cancela edit Personal Shop, mas ele nao tem nenhum na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::cancelEditShop][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou cancela edit Personal Shop, mas ele nao tem nenhum na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         400, 5200401));
                 }
 
@@ -461,7 +461,7 @@ namespace Pangya_GameServer.Manager
 
                 _out_packet.WriteUInt32(1); // OK
 
-                _out_packet.WriteString(_session.UserInfo.nickname);
+                _out_packet.WriteString(_session.UserInfo.NickName);
 
                 // sucesso, enviar o pacote para a sala toda
                 return true;
@@ -470,7 +470,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::cancelEditShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::cancelEditShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xE3);
 
@@ -486,7 +486,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_DELETE);
 
             Packet p = new Packet();
@@ -494,16 +494,16 @@ namespace Pangya_GameServer.Manager
             try
             {
 
-                // Verifica se o player tem um shop aberto
+                // Verifica se o player tem um ShopRoom aberto
                 PersonalShop ps = null;
 
                 if ((ps = findShop(_session)) == null)
                 {
-                    throw new exception("[PersonalShopManager::closeShop][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] nao tem um personal shop criado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::closeShop][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] nao tem um personal ShopRoom criado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         150, 5200151));
                 }
 
-                // Deleta shop
+                // Deleta ShopRoom
                 delete_shop(_session);
 
                 // Sucesso
@@ -511,8 +511,8 @@ namespace Pangya_GameServer.Manager
 
                 _out_packet.WriteUInt32(1);
 
-                _out_packet.WriteString(_session.UserInfo.nickname);
-                _out_packet.WriteUInt32(_session.UserInfo.uid);
+                _out_packet.WriteString(_session.UserInfo.NickName);
+                _out_packet.WriteUInt32(_session.UserInfo.UID);
 
                 // sucesso, enviar o pacote para a sala toda
                 return true;
@@ -521,7 +521,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::closeShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::closeShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xE5);
 
@@ -537,7 +537,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT);
 
             Packet p = new Packet();
@@ -547,14 +547,14 @@ namespace Pangya_GameServer.Manager
 
                 if (_name.Length == 0)
                 {
-                    throw new exception("[PersonalShopManager::changeShopName][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou trocar o no do shop mas enviou uma string vazia. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::changeShopName][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou trocar o no do ShopRoom mas enviou uma string vazia. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         200, 5200201));
                 }
 
-                // Verifica se esse nome de shop já existe na sala, tirando o dele é claro
-                if (hasNameInSomeShop(_name, _session.UserInfo.uid))
+                // Verifica se esse Name de ShopRoom já existe na sala, tirando o dele é claro
+                if (hasNameInSomeShop(_name, _session.UserInfo.UID))
                 {
-                    throw new exception("[PersonalShopManager::changeShopName][Info] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou trocar o name[value=" + _name + "] do Personal Shop dele, but already exists on room.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::changeShopName][Info] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou trocar o Name[value=" + _name + "] do Personal Shop dele, but already exists on room.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         201, 5200202));
                 }
 
@@ -562,7 +562,7 @@ namespace Pangya_GameServer.Manager
 
                 if ((ps = findShop(_session)) == null)
                 {
-                    throw new exception("[PersonalShopManager::changeShopName][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] nao tem um personal shop nessa sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::changeShopName][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] nao tem um personal ShopRoom nessa sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         202, 5200203));
                 }
 
@@ -574,9 +574,9 @@ namespace Pangya_GameServer.Manager
 
                 _out_packet.WriteString(ps.getName());
 
-                _out_packet.WriteUInt32(_session.UserInfo.uid);
+                _out_packet.WriteUInt32(_session.UserInfo.UID);
 
-                _out_packet.WriteString(_session.UserInfo.nickname);
+                _out_packet.WriteString(_session.UserInfo.NickName);
 
                 // sucesso, enviar o pacote para a sala toda
                 return true;
@@ -585,7 +585,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::changeShopName][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::changeShopName][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xE8);
 
@@ -599,7 +599,7 @@ namespace Pangya_GameServer.Manager
 
         public void RequestChatRoomOpenShop(Player _session, Packet _packet)
         {
-            Locker _locker = new Locker(this, _session.UserInfo.uid, eTYPE_LOCK.TL_SELECT);
+            Locker _locker = new Locker(this, _session.UserInfo.UID, eTYPE_LOCK.TL_SELECT);
             var p = new Packet();
 
             try
@@ -609,20 +609,20 @@ namespace Pangya_GameServer.Manager
                 // 1. Limite de itens na loja (Padrão Pangya é geralmente entre 6 a 10)
                 if (count == 0 || count > 10)
                 {
-                    throw new exception($"[HACK] PLAYER[UID={_session.UserInfo.uid}] tentou abrir shop com {count} itens.",
+                    throw new exception($"[HACK] Normal[UID={_session.UserInfo.UID}] tentou abrir ShopRoom com {count} itens.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER, 250, 5200251));
                 }
 
                 PersonalShop ps = findShop(_session);
                 if (ps == null)
                 {
-                    throw new exception($"[Error] PLAYER[UID={_session.UserInfo.uid}] não tem instância de Shop.",
+                    throw new exception($"[Error] Normal[UID={_session.UserInfo.UID}] não tem instância de Shop.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER, 251, 5200252));
                 }
 
                 ps.clearItem();
 
-                // Lista temporária para evitar que o player coloque o MESMO ID de item várias vezes no shop
+                // Lista temporária para evitar que o player coloque o MESMO ID de item várias vezes no ShopRoom
                 List<(int id, uint typeid)> addedItemIds = new List<(int id, uint typeid)>();
 
                 for (var i = 0; i < count; ++i)
@@ -633,36 +633,36 @@ namespace Pangya_GameServer.Manager
                     // 2. SEGURANÇA: Verificar se o player REALMENTE possui o item no inventário (Warehouse) 
                     if (!_session.Inventory.ItemExist(psi.item._typeid))
                     {
-                        throw new exception($"[HACK] PLAYER[UID={_session.UserInfo.uid}] tentou vender Item ID[{psi.item.id}] que NÃO POSSUI.",
+                        throw new exception($"[HACK] Normal[UID={_session.UserInfo.UID}] tentou vender Item ID[{psi.item.id}] que NÃO POSSUI.",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 30, 0));
                     }
 
-                    var iff = sIff.getInstance().getItemGroupIdentify(psi.item._typeid);
+                    var iff = sIff.Instance.getItemGroupIdentify(psi.item._typeid);
                     var qntd = 0;
                     switch (iff)
                     {
                         case IFF_GROUP.CLUBSET:
                         case IFF_GROUP.ITEM:
-                            if (sIff.getInstance().IsExist(psi.item._typeid))
+                            if (sIff.Instance.IsExist(psi.item._typeid))
                                 qntd = _session.Inventory.FindWarehouseItemByTypeid(psi.item._typeid).STDA_C_ITEM_QNTD;
                             break;
 
                         case IFF_GROUP.PART:
-                            if (sIff.getInstance().IsExist(psi.item._typeid) && _session.Inventory.FindWarehouseItemByTypeid(psi.item._typeid) != null)
+                            if (sIff.Instance.IsExist(psi.item._typeid) && _session.Inventory.FindWarehouseItemByTypeid(psi.item._typeid) != null)
                                 qntd = _session.Inventory.FindWarehouseItemByTypeid(psi.item._typeid).STDA_C_ITEM_QNTD == 0 ? 1 : _session.Inventory.FindWarehouseItemByTypeid(psi.item._typeid).STDA_C_ITEM_QNTD;//coloca 1, pq ai ele verifica, se a quantidade bateu
                             break;
                         case IFF_GROUP.CARD:
-                            if (sIff.getInstance().IsExist(psi.item._typeid))
+                            if (sIff.Instance.IsExist(psi.item._typeid))
                                 qntd = _session.Inventory.FindCardByTypeid(psi.item._typeid).qntd;
                             break;
                         default:
-                            throw new exception($"[HACK] PLAYER[UID={_session.UserInfo.uid}] test 1].",
+                            throw new exception($"[HACK] Normal[UID={_session.UserInfo.UID}] test 1].",
                            ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 31, 0));
                     }
                     // 3. SEGURANÇA: Verificar a QUANTIDADE real no inventário
                     if (psi.item.qntd <= 0 || psi.item.qntd > qntd)
                     {
-                        throw new exception($"[HACK] PLAYER[UID={_session.UserInfo.uid}] tentou vender QNTD[{psi.item.qntd}] mas só possui [{qntd}].",
+                        throw new exception($"[HACK] Normal[UID={_session.UserInfo.UID}] tentou vender QNTD[{psi.item.qntd}] mas só possui [{qntd}].",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP, 31, 0));
                     }
 
@@ -684,13 +684,13 @@ namespace Pangya_GameServer.Manager
                 // Finaliza a abertura
                 ps.setState(PersonalShop.STATE.OPEN);
 
-                _smp.message_pool.getInstance().push(new message($"[PersonalShop::openShop][Info] Player {_session.UserInfo.uid} abriu loja com {ps.getCountItem()} itens.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[PersonalShop::openShop][Info] Player {_session.UserInfo.UID} abriu loja com {ps.getCountItem()} itens.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Resposta de Sucesso (0xEB)
                 p.init_plain(0xEB);
                 p.WriteUInt32(1);
-                p.WriteString(_session.UserInfo.nickname, 22);
-                p.WriteUInt32(_session.UserInfo.uid);
+                p.WriteString(_session.UserInfo.NickName, 22);
+                p.WriteUInt32(_session.UserInfo.UID);
                 ps.putItemOnPacket(p);
 
                 _session.Send(p);
@@ -702,7 +702,7 @@ namespace Pangya_GameServer.Manager
                 {
                     p.init_plain(0x40);
                     p.WriteByte(7);
-                    p.WriteString(_session.UserInfo.nickname);
+                    p.WriteString(_session.UserInfo.NickName);
                     p.WriteString("O preço do Card está fora do limite permitido.");
                     _session.Send(p);
                 }
@@ -724,7 +724,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT);
 
             Packet p = new Packet();
@@ -740,7 +740,7 @@ namespace Pangya_GameServer.Manager
 
                 if ((ps = findShop(owner_uid)) == null)
                 {
-                    throw new exception("[room::requestBuyItemSaleShop][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou comprar item[TYPEID=" + Convert.ToString(psi.item._typeid) + ", ID=" + Convert.ToString(psi.item.id) + "] no Shop[Owner UID=" + Convert.ToString(owner_uid) + "], mas ele nao tem um shop nesta nessa sala[numero=" + Convert.ToString(m_ri.numero) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[room::requestBuyItemSaleShop][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou comprar item[TYPEID=" + Convert.ToString(psi.item._typeid) + ", ID=" + Convert.ToString(psi.item.id) + "] no Shop[Owner UID=" + Convert.ToString(owner_uid) + "], mas ele nao tem um ShopRoom nesta nessa sala[RoomID=" + Convert.ToString(m_ri.RoomID) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         551, 5200552));
                 }
 
@@ -749,7 +749,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::buyInShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::buyInShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xEC);
 
@@ -763,7 +763,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT);
 
             Packet p = new Packet();
@@ -775,7 +775,7 @@ namespace Pangya_GameServer.Manager
 
                 if ((ps = findShop(_session)) == null)
                 {
-                    throw new exception("[PersonalShopManager::visitCountShop][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou pedir visit count do Personal Shop, mas ele nao tem na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::visitCountShop][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou pedir visit count do Personal Shop, mas ele nao tem na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         300, 5200301));
                 }
 
@@ -791,7 +791,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::visitCountShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::visitCountShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xE9);
 
@@ -805,7 +805,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT);
 
             Packet p = new Packet();
@@ -817,7 +817,7 @@ namespace Pangya_GameServer.Manager
 
                 if ((ps = findShop(_session)) == null)
                 {
-                    throw new exception("[PersonalShopManager::pangShop][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou pedir pang sale do Personal Shop, mas ele nao tem na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::pangShop][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou pedir Pang sale do Personal Shop, mas ele nao tem na sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         350, 5200351));
                 }
 
@@ -833,7 +833,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::pangShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::pangShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xEA);
 
@@ -847,7 +847,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT);
 
             var p = new Packet();
@@ -859,14 +859,14 @@ namespace Pangya_GameServer.Manager
 
                 if ((ps = findShop(_owner_uid)) == null)
                 {
-                    throw new exception("[PersonalShopManager::viewShop][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou ver o Shop[Owner UID=" + Convert.ToString(_owner_uid) + "], mas ele nao tem um shop nesta nessa sala[numero=" + Convert.ToString(m_ri.numero) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::viewShop][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou ver o Shop[Owner UID=" + Convert.ToString(_owner_uid) + "], mas ele nao tem um ShopRoom nesta nessa sala[RoomID=" + Convert.ToString(m_ri.RoomID) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         451, 5200452));
                 }
 
                 try
                 {
                     // Add Client 
-                    if (ps.findClientByUID(_session.UserInfo.uid) == null)
+                    if (ps.findClientByUID(_session.UserInfo.UID) == null)
                         ps.addClient(_session);
                 }
                 catch (exception e)
@@ -877,7 +877,7 @@ namespace Pangya_GameServer.Manager
                         6))
                     {
 
-                        _smp.message_pool.getInstance().push(new message("[PersonalShopManager::viewShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::viewShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                         throw new exception("[PersonalShopManager::viewShop][Info] " + e.getFullMessageError(), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                             452, 5200453));
@@ -892,11 +892,11 @@ namespace Pangya_GameServer.Manager
 
                 p.WriteUInt32(1); // OK
 
-                p.WriteString(ps.getOwner().UserInfo.nickname, 22);
+                p.WriteString(ps.getOwner().UserInfo.NickName, 22);
 
                 p.WriteString(ps.getName());//okay
 
-                p.WriteUInt32(ps.getOwner().UserInfo.uid);
+                p.WriteUInt32(ps.getOwner().UserInfo.UID);
 
                 ps.putItemOnPacket(p);
                 _session.Send(p);
@@ -905,7 +905,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::viewShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::viewShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xE6);
 
@@ -919,7 +919,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_SELECT);
 
             Packet p = new Packet();
@@ -931,7 +931,7 @@ namespace Pangya_GameServer.Manager
 
                 if ((ps = findShop(_owner_uid)) == null)
                 {
-                    throw new exception("[PersonalShopManager::closeViewShop][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou fechar o Shop[Owner UID=" + Convert.ToString(_owner_uid) + "], mas ele nao tem um shop nesta nessa sala[numero=" + Convert.ToString(m_ri.numero) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
+                    throw new exception("[PersonalShopManager::closeViewShop][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou fechar o Shop[Owner UID=" + Convert.ToString(_owner_uid) + "], mas ele nao tem um ShopRoom nesta nessa sala[RoomID=" + Convert.ToString(m_ri.RoomID) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PERSONAL_SHOP_MANAGER,
                         501, 5200502));
                 }
 
@@ -949,7 +949,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::closeViewShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::closeViewShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0xE7);
 
@@ -997,7 +997,7 @@ namespace Pangya_GameServer.Manager
                 // unlock
                 unlock();
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::clear_shops][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::clear_shops][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1006,7 +1006,7 @@ namespace Pangya_GameServer.Manager
         {
             return shopsByPlayer.Values.Any(_el =>
                 _el.m_shop != null &&
-                _el.m_shop.getOwner().UserInfo.uid != _owner_uid &&
+                _el.m_shop.getOwner().UserInfo.UID != _owner_uid &&
                 _el.m_shop.getName() == _name);
         }
 
@@ -1052,7 +1052,7 @@ namespace Pangya_GameServer.Manager
              return false;
 
          var owner = shop.getOwner();
-         return owner.UserInfo.uid == _owner_uid;
+         return owner.UserInfo.UID == _owner_uid;
      });
 
             var dic = new Dictionary<Player, PersonalShopCtx>();
@@ -1145,7 +1145,7 @@ namespace Pangya_GameServer.Manager
         {
 
             Locker _locker = new Locker(this,
-                _session.UserInfo.uid,
+                _session.UserInfo.UID,
                 eTYPE_LOCK.TL_DELETE);
 
             try
@@ -1157,14 +1157,14 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PersonalShopManager::destroyShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PersonalShopManager::destroyShop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
         protected Dictionary<Player, PersonalShopCtx> shopsByPlayer = new Dictionary<Player, PersonalShopCtx>();
 
         // Owner room info
-        protected RoomInfo m_ri;
+        protected GameRoomInfoModel m_ri;
         private object m_cs = new object();
     }
 }

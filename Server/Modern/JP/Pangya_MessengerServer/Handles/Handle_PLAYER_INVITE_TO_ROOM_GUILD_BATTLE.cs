@@ -22,15 +22,15 @@ namespace Pangya_MessengerServer.Handles
                 uint player_invited_uid = Packet.ReadUInt32();
 
                 // Validação de Integridade: O UID de quem convida deve ser o mesmo da sessão
-                if (player_invite_uid != Player.UserInfo.uid)
+                if (player_invite_uid != Player.UserInfo.UID)
                 {
-                    throw new exception($"[MessengerService::HandleInviteGB][Error] Player[UID={Player.UserInfo.uid}] não bate com UID={player_invite_uid} do request. Hacker ou Bug.",
+                    throw new exception($"[MessengerService::HandleInviteGB][Error] Player[UID={Player.UserInfo.UID}] não bate com UID={player_invite_uid} do request. Hacker ou Bug.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MESSAGE_SERVER, 3750, 0));
                 }
 
                 // Log detalhado para monitoramento da Guild Battle no Pangya Fun
-                _smp.message_pool.getInstance().push(new message(
-                    $"[MessengerService::HandleInviteGB][Log] Player[UID={Player.UserInfo.uid}, NICKNAME={player_invite_nickname}] " +
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[MessengerService::HandleInviteGB][Log] Player[UID={Player.UserInfo.UID}, NICKNAME={player_invite_nickname}] " +
                     $"convidou o Player[UID={player_invited_uid}] no Server[UID={server_uid}, CHANNEL_ID={channel_id}, ROOM={room_numero}] para Guild Battle.",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -41,7 +41,7 @@ namespace Pangya_MessengerServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[MessengerService::HandleInviteGB][ErrorSystem] " + e.getFullMessageError(),
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerService::HandleInviteGB][ErrorSystem] " + e.getFullMessageError(),
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }

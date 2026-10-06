@@ -28,16 +28,16 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // 1. Validação de bloqueio do jogador
-                if (Player.UserInfo.block_flag.m_flag.char_mastery)
+                if (Player.UserInfo.BlockFlag.Flag.CharacterMastery)
                 {
-                    throw new exception($"[EquipCard] Player UID={Player.UserInfo.uid} bloqueado para maestria.",
+                    throw new exception($"[EquipCard] Player UID={Player.UserInfo.UID} bloqueado para maestria.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 9, 0x790001));
                 }
 
                 CardEquip ce = new CardEquip().ToRead(Packet);
 
                 // 2. Validação do Card no IFF
-                var cardIff = sIff.getInstance().findCard(ce.card_typeid);
+                var cardIff = sIff.Instance.findCard(ce.card_typeid);
                 if (cardIff == null)
                 {
                     throw new exception($"[EquipCard] Card TypeID={ce.card_typeid} não existe no IFF.",
@@ -48,14 +48,14 @@ namespace Pangya_GameServer.Handles
                 var pCi = Player.Inventory.FindCharacterById(ce.char_id);
                 if (pCi == null || pCi._typeid != ce.char_typeid)
                 {
-                    throw new exception($"[EquipCard] Player UID={Player.UserInfo.uid} não possui o Character ID={ce.char_id}.",
+                    throw new exception($"[EquipCard] Player UID={Player.UserInfo.UID} não possui o Character ID={ce.char_id}.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 750, 0x5200751));
                 }
 
                 var pCardInfo = Player.Inventory.FindCardById(ce.card_id);
                 if (pCardInfo == null || pCardInfo._typeid != ce.card_typeid)
                 {
-                    throw new exception($"[EquipCard] Player UID={Player.UserInfo.uid} não possui o Card ID={ce.card_id}.",
+                    throw new exception($"[EquipCard] Player UID={Player.UserInfo.UID} não possui o Card ID={ce.card_id}.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 751, 0x5200752));
                 }
 
@@ -71,7 +71,7 @@ namespace Pangya_GameServer.Handles
                 ValidateSlotRules(ce, pCi);
 
                 // 6. Lógica de Grupos de Cards e Equipamento
-                uint group = sIff.getInstance().getItemSubGroupIdentify22(ce.card_typeid);
+                uint group = sIff.Instance.getItemSubGroupIdentify22(ce.card_typeid);
                 EquipCardToInfo(pCi, ce, group);
 
                 // 7. Consumo do item (Remover do inventário)
@@ -89,7 +89,7 @@ namespace Pangya_GameServer.Handles
                 CardEquipInfoEx cei = CreateCardEquipInfo(ce, cardIff, group);
 
                 Player.Inventory.CardEquipment.Add(cei); 
-                NormalManagerDB.getInstance().add(10, new CmdEquipCard(Player.UserInfo.uid, cei, 0));
+                NormalManagerDB.Instance.add(10, new CmdEquipCard(Player.UserInfo.UID, cei, 0));
                 Player.Inventory.SyncCharacter(pCi.id, pCi); 
 
                 var item = new stItem
@@ -130,19 +130,19 @@ namespace Pangya_GameServer.Handles
             // Mapeamento: 1-4 (Character), 5-8 (Caddie), 9-12 (NPC)
             if (ce.char_card_slot >= 1 && ce.char_card_slot <= 4)
             {
-                if (group != 0) throw new exception("Card não é do tipo Character.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 755, 0x5200756));
+                if (group != 0) throw new exception("Card não é do Type Character.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 755, 0x5200756));
                 if (pCi.Card_Character[slotIndex] != 0) throw new exception("Slot Character já ocupado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 758, 0x5200759));
                 pCi.Card_Character[slotIndex] = ce.card_typeid;
             }
             else if (ce.char_card_slot >= 5 && ce.char_card_slot <= 8)
             {
-                if (group != 1) throw new exception("Card não é do tipo Caddie.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 755, 0x5200756));
+                if (group != 1) throw new exception("Card não é do Type Caddie.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 755, 0x5200756));
                 if (pCi.Card_Caddie[slotIndex] != 0) throw new exception("Slot Caddie já ocupado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 758, 0x5200759));
                 pCi.Card_Caddie[slotIndex] = ce.card_typeid;
             }
             else if (ce.char_card_slot >= 9 && ce.char_card_slot <= 12)
             {
-                if (group != 5) throw new exception("Card não é do tipo NPC.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 755, 0x5200756));
+                if (group != 5) throw new exception("Card não é do Type NPC.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 755, 0x5200756));
                 if (pCi.Card_NPC[slotIndex] != 0) throw new exception("Slot NPC já ocupado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 758, 0x5200759));
                 pCi.Card_NPC[slotIndex] = ce.card_typeid;
             }
@@ -204,7 +204,7 @@ namespace Pangya_GameServer.Handles
 
         private void HandleException(Player session, exception e)
         {
-            _smp.message_pool.getInstance().push(new message($"[EquipCard][ErrorSystem] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[EquipCard][ErrorSystem] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             Packet pErr = new Packet(0x271);
             uint errorCode = (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL)

@@ -18,9 +18,9 @@ public abstract class AppSessionManager<T> : IAppSessionManager where T : class,
     public AppSessionManager(int maxUsers)
     {
         MaxUsers = maxUsers;
-        //   var id = -1;
+        //   var Login = -1;
         //for (int i = 0; i < MaxUsers; i++)//mais rapido.
-        //    _sessions.TryAdd(id, (T)Activator.CreateInstance(typeof(T), null, -1));
+        //    _sessions.TryAdd(Login, (T)Activator.CreateInstance(typeof(T), null, -1));
     }
 
     public IAppSession Add(IAppServer server, Socket socket)
@@ -52,7 +52,7 @@ public abstract class AppSessionManager<T> : IAppSessionManager where T : class,
     public IReadOnlyCollection<IAppSession> GetAll()
         => (IReadOnlyCollection<IAppSession>)_sessions.Values;
 
-    // Remova o <TResult> do nome do método, use o T da classe
+    // Remova o <TResult> do Name do método, use o T da classe
     public List<T> GetAllSessions()
     {
         return _sessions.Values

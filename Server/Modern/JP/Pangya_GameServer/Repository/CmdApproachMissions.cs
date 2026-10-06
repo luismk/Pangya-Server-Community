@@ -44,7 +44,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(
                 m_szConsulta, "");
 
-            checkResponse(r, "nao conseguiu pegar as missions do approach");
+            checkResponse(r, "nao conseguiu pegar as missions do Approach");
 
             return r;
         }

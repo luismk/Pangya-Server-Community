@@ -16,12 +16,12 @@ namespace Pangya_GameServer.Feature.GM
             ushort whisperState = packet.ReadUInt16();
               
             session.m_gi.whisper = (byte)whisperState;
-            session.UserInfo.Member.state_flag.whisper = (byte)whisperState; 
+            session.UserInfo.Member.State.Whisper = (byte)whisperState; 
 
             session.m_gi.channel = session.m_gi.whisper;
 
             // Log de auditoria para o console
-            Console.WriteLine($"[GM-Action] {session.UserInfo.nickname} alterou estado de WHISPER para: {whisperState}");
+            Console.WriteLine($"[GM-Action] {session.UserInfo.NickName} alterou estado de WHISPER para: {whisperState}");
 
             await Task.CompletedTask;
         }

@@ -2,7 +2,7 @@
 using Pangya_GameServer.Feature;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Repository;
 using Pangya_GameServer.Roms.GameBase.Modes;
@@ -27,10 +27,10 @@ namespace Pangya_GameServer.Roms.GameModes
     public class SSC : TourneyBase
     {
         private bool _SSCState;
-        private uint m_coin_SSC;        // Que o master da sala ganha se ficar at� o final
+        private uint m_coin_SSC;        // Que o Master da sala ganha se ficar at� o final
         private uint SPECIAL_SHUFFLE_COURSE_COIN_TYPEID = 0x1A0000F8;
         private uint ART_ROGER_K_STEERING_WHEEL = 0x1A0001BCu;	// de 500 a 501000 pangs no Ultimo Hole do game de 18H
-        public SSC(List<Player> players, RoomInfo roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
+        public SSC(List<Player> players, GameRoomInfoModel roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
         {
             _SSCState = false; 
 
@@ -59,7 +59,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 // Verifica se   o ultimo hole e sortea os pangs do final do SSC
                 // Artefact Pang Drop
-                if (RoomInfo.qntd_hole == Course.findHoleSeq(pgi.hole) && RoomInfo.qntd_hole == 18)
+                if (RoomInfo.HoleCount == Course.findHoleSeq(pgi.hole) && RoomInfo.HoleCount == 18)
                 { // Ultimo Hole, de 18h Game
 
                     DropSystem.stCourseInfo ci = new DropSystem.stCourseInfo();
@@ -69,9 +69,9 @@ namespace Pangya_GameServer.Roms.GameModes
                     ci.char_motion = pgi.char_motion_item;
                     ci.course = (byte)(RoomInfo.GetMap() & 0x7F);
                     ci.hole = pgi.hole;
-                    ci.qntd_hole = RoomInfo.qntd_hole;
+                    ci.qntd_hole = RoomInfo.HoleCount;
 
-                    var art_pang = sDropSystem.getInstance().drawArtefactPang(ci, (uint)Players.Count);
+                    var art_pang = sDropSystem.Instance.drawArtefactPang(ci, (uint)Players.Count);
 
                     if (art_pang._typeid != 0)
                     { // Dropou
@@ -88,7 +88,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                             p.WriteByte(10); // JackPot
 
-                            p.WriteString(_session.UserInfo.nickname);
+                            p.WriteString(_session.UserInfo.NickName);
 
                             p.WriteUInt16(0); // size Msg
 
@@ -101,7 +101,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[SpecialShuffleCourse::RequestInitDrop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[SpecialShuffleCourse::RequestInitDrop][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return new DropItemRet();
@@ -121,14 +121,14 @@ namespace Pangya_GameServer.Roms.GameModes
             // Passive Item exceto Time Booster e Auto Command, que soma o contador por uso, o cliente passa o pacote, dizendo que usou o item
             foreach (var el in ui.v_passive)
             {
-                // Passive Item no SSC só consome os item boost de pang e o Club Mastery Boost,
+                // Passive Item no SSC só consome os item boost de Pang e o Club Mastery Boost,
                 // Consome todos os outros menos os de Experiência
                 if (DefineConstants.passive_item_exp.Any(c => c == el.Value._typeid))
                 {
                     if (DefineConstants.CHECK_PASSIVE_ITEM(el.Value._typeid)
                     && el.Value._typeid != DefineConstants.TIME_BOOSTER_TYPEID/* / *Time Booster * /*/ && el.Value._typeid != DefineConstants.AUTO_COMMAND_TYPEID)
                         el.Value.count++;
-                    else if (sIff.getInstance().getItemGroupIdentify(el.Value._typeid) == IFF_GROUP.BALL /*/ *Ball * /*/ || sIff.getInstance().getItemGroupIdentify(el.Value._typeid) == IFF_GROUP.AUX_PART)
+                    else if (sIff.Instance.getItemGroupIdentify(el.Value._typeid) == IFF_GROUP.BALL /*/ *Ball * /*/ || sIff.Instance.getItemGroupIdentify(el.Value._typeid) == IFF_GROUP.AUX_PART)
                         el.Value.count++;
                 }
             }
@@ -198,14 +198,14 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[SCC::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[SCC::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[SCC::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[SCC::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
 
@@ -266,7 +266,7 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 InitPlayerInfo("finish_tourney",
-                    "tentou terminar o tourney no jogo",
+                    "tentou terminar o Tourney no jogo",
                     session, out PlayerGameInfo pgi);
 
                 if (pgi.flag == PlayerGameInfo.eFLAG_GAME.PLAYING)
@@ -275,7 +275,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Calcula os pangs que o player ganhou
                     CalculePang(session);
 
-                    // Atualizar os pang do player se ele estiver com assist ligado, e for maior que beginner E
+                    // Atualizar os Pang do player se ele estiver com assist ligado, e for maior que beginner E
                     UpdatePlayerAssist(session);
 
                     if (GameInitState == 1 && option == 0)
@@ -346,7 +346,7 @@ namespace Pangya_GameServer.Roms.GameModes
         public void FinishExpGame()
         {
 
-            // Bug Fix, ultimo player do camp sai e ou toma dc e n o fica ningu m na sala e calcula a exp do camp
+            // Bug Fix, ultimo player do camp sai e ou toma dc e n o fica ningu m na sala e calcula a Experience do camp
             if (GetCountPlayersGame() > 0)
             {
 
@@ -360,7 +360,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 {
 
                     // Exp padr�o de hole do Grand Prix
-                    switch (RoomInfo.qntd_hole)
+                    switch (RoomInfo.HoleCount)
                     {
                         case 9:
                             exp = 4;
@@ -399,12 +399,12 @@ namespace Pangya_GameServer.Roms.GameModes
                             }
 
                             // DB call movido para dentro do null-check: se session for null
-                            // (player desconectou), session.UserInfo.uid lança NullReferenceException.
-                            NormalManagerDB.getInstance().add(0, new CmdUpdateWebShopPoint(session.UserInfo.uid, 60), null, null);
+                            // (player desconectou), session.PlayerUserStatistics.UID lança NullReferenceException.
+                            NormalManagerDB.Instance.add(0, new CmdUpdateWebShopPoint(session.UserInfo.UID, 60), null, null);
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message($"[SCC::FinishExpGame][Warning] PLAYER[UID={PlayerOrder[i].uid}] não encontrado na sessão — WebShopPoint não atualizado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[SCC::FinishExpGame][Warning] Normal[UID={PlayerOrder[i].uid}] não encontrado na sessão — WebShopPoint não atualizado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                     }
@@ -433,11 +433,11 @@ namespace Pangya_GameServer.Roms.GameModes
                                 PlayerOrder[i].data.exp = exp;
                             }
 
-                            NormalManagerDB.getInstance().add(0, new CmdUpdateWebShopPoint(session.UserInfo.uid, 60), null, null);
+                            NormalManagerDB.Instance.add(0, new CmdUpdateWebShopPoint(session.UserInfo.UID, 60), null, null);
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message($"[SCC::FinishExpGame][Warning] PLAYER[UID={PlayerOrder[i].uid}] END_GAME não encontrado na sessão — WebShopPoint não atualizado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[SCC::FinishExpGame][Warning] Normal[UID={PlayerOrder[i].uid}] END_GAME não encontrado na sessão — WebShopPoint não atualizado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                 }
@@ -475,7 +475,7 @@ namespace Pangya_GameServer.Roms.GameModes
         public void SendMakeMasterCoin(Player _session)
         {
 
-            if (RoomInfo.master == _session.UserInfo.uid && m_coin_SSC > 0)
+            if (RoomInfo.OwnerUID == _session.UserInfo.UID && m_coin_SSC > 0)
             {
 
                 // Send Coin to Master
@@ -492,12 +492,12 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 if ((rt = ItemManager.addItem(item, _session, 0, 0)) < 0)
                 {
-                    _smp.message_pool.getInstance().push(new message("[SpecialShuffleCourse::requestSendMasterCoiin][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou adicionar SSC coin[TYPEID=" + Convert.ToString(SPECIAL_SHUFFLE_COURSE_COIN_TYPEID) + "] para o master, mas deu erro no ItemManager::addItem. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[SpecialShuffleCourse::requestSendMasterCoiin][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou adicionar SSC coin[TYPEID=" + Convert.ToString(SPECIAL_SHUFFLE_COURSE_COIN_TYPEID) + "] para o Master, mas deu erro no ItemManager::addItem. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     return;
                 }
 
-                // Resposta para enviar SSC coin para o master da sala
+                // Resposta para enviar SSC coin para o Master da sala
                 var p = new Packet(0x198);
 
                 p.WriteUInt32(SPECIAL_SHUFFLE_COURSE_COIN_TYPEID);
@@ -526,15 +526,15 @@ namespace Pangya_GameServer.Roms.GameModes
         public override void RequestDrawTreasureHunterItem(Player _session)
         {
 
-            if (!sTreasureHunterSystem.getInstance().isLoad())
-                sTreasureHunterSystem.getInstance().load();
+            if (!sTreasureHunterSystem.Instance.isLoad())
+                sTreasureHunterSystem.Instance.load();
 
             var pgi = InitPlayerInfo("requestDrawTreasureHunterItem", "tentou sortear os item(ns) do Treasure Hunter do jogo", _session); 
 
-            pgi.thi.v_item = sTreasureHunterSystem.getInstance().drawItem(pgi.thi.treasure_point, (byte)(RoomInfo.GetMap() & 0x7F));
+            pgi.thi.v_item = sTreasureHunterSystem.Instance.drawItem(pgi.thi.treasure_point, (byte)(RoomInfo.GetMap() & 0x7F));
 
             if (pgi.thi.v_item.Count == 0)
-                _smp.message_pool.getInstance().push(deque: new message("[SpecialShuffleCourse::requestDrawTreasureHunterItem][Warning] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou sortear os item(ns) do Treasure Hunter do jogo," + "mas o Treasure Hunter Item nao conseguiu sortear nenhum item", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(deque: new AppMessage("[SpecialShuffleCourse::requestDrawTreasureHunterItem][Warning] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou sortear os item(ns) do Treasure Hunter do jogo," + "mas o Treasure Hunter Item nao conseguiu sortear nenhum item", type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
 
         public void FinishData(Player session)
@@ -547,7 +547,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
             RequestDrawTreasureHunterItem(session);
 
-            RainHoleSeqCount(session); // conta os achievement de chuva em holes consecutivas
+            RainHoleSeqCount(session); // conta os achievement de Rain em holes consecutivas
 
             ScoreSeqCount(session); // conta os achievement de back-to-back(2 ou mais score iguais consecutivos) do player
 
@@ -620,7 +620,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Colocar o finish_game Para 1 quer dizer que ele acabou o camp
                     pgi.finish_game = 1;
 
-                    // Flag do game que terminou
+                    // ServerFlag do game que terminou
                     GameInitState = 2; // ACABOU
 
                 } 

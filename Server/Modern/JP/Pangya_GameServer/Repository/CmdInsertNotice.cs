@@ -38,7 +38,7 @@ namespace Pangya_GameServer.Repository
         {
             if (target_in == 0)
             {
-                target_in = 1; //antes coloca o uid do server, agora coloco o tipo, que é o tipo 1 game server
+                target_in = 1; //antes coloca o UID do server, agora coloco o Type, que é o Type 1 game server
             }
             else if (refresh_time_min_in == 0)
             {

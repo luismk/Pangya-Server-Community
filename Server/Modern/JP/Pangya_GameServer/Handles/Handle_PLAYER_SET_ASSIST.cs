@@ -45,12 +45,12 @@ namespace Pangya_GameServer.Handles
                     p.init_plain(0x26A);
                     p.WriteUInt32(0);
                     p.WriteUInt32(ASSIST_ITEM_TYPEID);
-                    p.WriteUInt32(Player.UserInfo.uid);
+                    p.WriteUInt32(Player.UserInfo.UID);
                     Player.Send(p);
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_SET_ASSIST][ErrorSystem] é hacker de packet: " + Player.UserInfo.uid, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_SET_ASSIST][ErrorSystem] é hacker de packet: " + Player.UserInfo.UID, type_msg.CL_FILE_LOG_AND_CONSOLE));
                     p.init_plain(0x16A);
                     p.WriteUInt32(0);
                     Player.Send(p);
@@ -58,7 +58,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_SET_ASSIST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_SET_ASSIST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 p.init_plain(0x26A);
                 p.WriteUInt32((ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.ROOM) ? ExceptionError.STDA_SYSTEM_ERROR_DECODE(e.getCodeError()) : 0x5200800);
                 Player.Send(p);
@@ -78,14 +78,14 @@ namespace Pangya_GameServer.Handles
                 item.STDA_C_ITEM_QNTD = 1;
                 if ((rt = ItemManager.addItem(item, Player, 0, 0)) < 0)
                 {
-                    throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou ativar o Assist[TYPEID=" + Convert.ToString(ASSIST_ITEM_TYPEID) + "], mas nao conseguiu adicionar o item. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + "] tentou ativar o Assist[TYPEID=" + Convert.ToString(ASSIST_ITEM_TYPEID) + "], mas nao conseguiu adicionar o item. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         1, 0x5200801));
                 }
 
                 Player.UserInfo.AssistFlag = true;
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_SET_ASSIST][Info] PLAYER[UID=" + Player.UserInfo.uid + "] Ligou o Assist Modo", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_SET_ASSIST][Info] Normal[UID=" + Player.UserInfo.UID + "] Ligou o Assist Modo", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                CommandDB.LoadUpdateAssist(Player.UserInfo.uid, Player.UserInfo.AssistFlag);
+                CommandDB.LoadUpdateAssist(Player.UserInfo.UID, Player.UserInfo.AssistFlag);
 
                 return (rt, item);
             }
@@ -111,11 +111,11 @@ namespace Pangya_GameServer.Handles
                 item.STDA_C_ITEM_QNTD = (short)(item.qntd * -1);
                 if (ItemManager.removeItem(item, Player) <= 0)
                 {
-                    throw new exception("[Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou desativar o Assist[TYPEID=" + Convert.ToString(ASSIST_ITEM_TYPEID) + "], mas nao conseguiu remover o item. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
+                    throw new exception("[Error] Normal[UID=" + Player.UserInfo.UID + "] tentou desativar o Assist[TYPEID=" + Convert.ToString(ASSIST_ITEM_TYPEID) + "], mas nao conseguiu remover o item. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.ROOM,
                         2, 0x5200802));
                 }
-                CommandDB.LoadUpdateAssist(Player.UserInfo.uid, Player.UserInfo.AssistFlag);
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_SET_ASSIST][Info] PLAYER[UID=" + Player.UserInfo.uid + "] Desligou o Assist Modo", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                CommandDB.LoadUpdateAssist(Player.UserInfo.UID, Player.UserInfo.AssistFlag);
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_SET_ASSIST][Info] Normal[UID=" + Player.UserInfo.UID + "] Desligou o Assist Modo", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return (rt, item);
             }
             return (-1, null);

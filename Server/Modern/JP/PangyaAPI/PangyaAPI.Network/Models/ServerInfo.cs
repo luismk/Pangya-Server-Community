@@ -1,78 +1,71 @@
-﻿using PangyaAPI.Utilities;
-using System.Text;
+﻿namespace PangyaAPI.Network.Models;
 
-namespace PangyaAPI.Network.Models
+public class ServerInfo
 {
-    public class ServerInfo
+    public string Name { get; set; } = "";
+    public int UID { get; set; } 
+    public int MaxUsers { get; set; } 
+    public int CurrentUsers { get; set; } 
+    public string IpAddress { get; set; } = ""; 
+    public int Port { get; set; } 
+    public int AngelicWingsCount { get; set; } 
+    public short MapEvent { get; set; } 
+    public short AppRate { get; set; } 
+    public short ScratchRate { get; set; } 
+    public short ServerIcon { get; set; }  
+    public ServerType Type { get; set; }
+    public string BuildVersion { get; set; } = "";
+    public string ClientVersion { get; set; } = "";
+    public uint VersionPacket { get; set; }
+    public ServerProperty Property { get; set; } = new();
+    public ServerEventFlag EventFlag { get; set; } = new();
+    public ServerRateInfo Rate { get; set; } = new();
+    public ServerFlag Flag { get; set; } = new();
+
+    public ServerInfo()
     {
-        private byte[] name_bytes; 
-        public string nome {get=> name_bytes.GetString();  set => name_bytes.SetString(value); }  
-        public int uid { get; set; } 
-        public int max_user { get; set; } 
-        public int curr_user { get; set; } 
-        public string ip { get; set; } = ""; 
-        public int port { get; set; } 
-        public int angelic_wings_num { get; set; } 
-        public short event_map { get; set; } 
-        public short app_rate { get; set; } 
-        public short scratch_rate { get; set; } 
-        public short img_no { get; set; }  
-        public sbyte tipo { get; set; }
-        public string version { get; set; }
-        public string version_client { get; set; }
-        public uint packet_version { get; set; } 
-        public Property propriedade { get; set; } 
-        public EventFlag event_flag { get; set; }
-        public RateConfigInfo rate { get; set; }
-        public Flag flag { get; set; }
-
-        public ServerInfo()
-        {
-            propriedade = new Property(); 
-            event_flag = new EventFlag(0);
-            rate = new RateConfigInfo();
-            flag = new Flag();
-            name_bytes = new byte[40];
-        }
-
-        public byte[] ToArray()
-        {
-            using Packet p = new Packet();
-            p.WriteString(nome, 28);
-            p.WriteInt32(983);
-            p.WriteZero(8);
-            p.WriteInt32(uid);
-            p.WriteInt32(max_user);
-            p.WriteInt32(curr_user);
-            p.WriteString(ip, 18);
-            p.WriteInt32(port);
-            p.WriteUInt32(propriedade.ulProperty);
-            p.WriteInt32(angelic_wings_num);
-            p.WriteUInt16(event_flag.usEventFlag);
-            p.WriteInt16(event_map);
-            p.WriteInt16(app_rate);
-            p.WriteInt16(scratch_rate);
-            p.WriteInt16(img_no);
-            return p.GetBytes;
-        }
-
-        public ServerInfo ToRead(Packet p)
-        {
-            nome = p.ReadString(40);
-            uid = p.ReadInt32();
-            max_user = p.ReadInt32();
-            curr_user = p.ReadInt32();
-            ip = p.ReadString(18);
-            port = p.ReadInt32();
-            propriedade.ulProperty = p.ReadUInt32();
-            angelic_wings_num = p.ReadInt32();
-            event_flag.usEventFlag = p.ReadUInt16();
-            event_map = p.ReadInt16();
-            app_rate = p.ReadInt16();
-            scratch_rate = p.ReadInt16();
-            img_no = p.ReadInt16();
-            return this;
-        }
+        Property = new ServerProperty(); 
+        EventFlag = new ServerEventFlag(0);
+        Rate = new ServerRateInfo();
+        Flag = new ServerFlag(); 
     }
 
+    public byte[] ToArray()
+    {
+        using Packet p = new();
+        p.WriteString(Name, 28);
+        p.WriteInt32(983);
+        p.WriteZero(8);
+        p.WriteInt32(UID);
+        p.WriteInt32(MaxUsers);
+        p.WriteInt32(CurrentUsers);
+        p.WriteString(IpAddress, 18);
+        p.WriteInt32(Port);
+        p.WriteUInt32(Property.Value);
+        p.WriteInt32(AngelicWingsCount);
+        p.WriteUInt16(EventFlag.Value);
+        p.WriteInt16(MapEvent);
+        p.WriteInt16(AppRate);
+        p.WriteInt16(ScratchRate);
+        p.WriteInt16(ServerIcon);
+        return p.GetBytes;
+    }
+
+    public ServerInfo ToRead(Packet p)
+    {
+        Name = p.ReadString(40);
+        UID = p.ReadInt32();
+        MaxUsers = p.ReadInt32();
+        CurrentUsers = p.ReadInt32();
+        IpAddress = p.ReadString(18);
+        Port = p.ReadInt32();
+        Property.Value = p.ReadUInt32();
+        AngelicWingsCount = p.ReadInt32();
+        EventFlag.Value = p.ReadUInt16();
+        MapEvent = p.ReadInt16();
+        AppRate = p.ReadInt16();
+        ScratchRate = p.ReadInt16();
+        ServerIcon = p.ReadInt16();
+        return this;
+    }
 }

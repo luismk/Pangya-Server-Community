@@ -105,7 +105,7 @@ namespace Pangya_MessengerServer.Repository
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message("[CmdFriendInfo::lineResult][Error][WARNIG] retornou duplicata de Amigos[UID=" + Convert.ToString(fi.uid) + "] do player[UID=" + Convert.ToString(m_uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[CmdFriendInfo::lineResult][Error][WARNIG] retornou duplicata de Amigos[UID=" + Convert.ToString(fi.uid) + "] do player[UID=" + Convert.ToString(m_uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 

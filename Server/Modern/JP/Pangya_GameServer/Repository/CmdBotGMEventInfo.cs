@@ -95,6 +95,6 @@ namespace Pangya_GameServer.Repository
         private List<stRangeTime> m_time = new List<stRangeTime>();
         public int tipo;
 
-        private string[] m_szConsulta = { "SELECT inicio_time, fim_time, channel_id FROM pangya.pangya_bot_gm_event_time WHERE valid = 1;", "SELECT typeid, qntd, qntd_time, rate FROM pangya.pangya_bot_gm_event_reward WHERE valid = 1" };
+        private string[] m_szConsulta = { "SELECT inicio_time, fim_time, channel_id FROM pangya.pangya_bot_gm_event_time WHERE valid = 1;", "SELECT typeid, qntd, qntd_time, Rate FROM pangya.pangya_bot_gm_event_reward WHERE valid = 1" };
     }
 }

@@ -89,14 +89,14 @@ namespace PangyaAPI.Network.Models
             uint typeId = (_typeid & 0x000000FF);
             uint partNum;
 
-            var angel = Global.gacha_angel_wings.FirstOrDefault(el => sIff.getInstance().getItemCharIdentify(el) == typeId);
-            if (angel != 0 && (partNum = sIff.getInstance().getItemCharPartNumber(angel)) >= 0u && parts_typeid[partNum] == angel)
-                return 1; // 3% icon rosa e drop chance A+ e treasure point A+
+            var angel = Global.gacha_angel_wings.FirstOrDefault(el => sIff.Instance.getItemCharIdentify(el) == typeId);
+            if (angel != 0 && (partNum = sIff.Instance.getItemCharPartNumber(angel)) >= 0u && parts_typeid[partNum] == angel)
+                return 1; // 3% icon rosa e drop chance A+ e Treasure point A+
 
             // Verifica se o item está na lista de Gacha Angel Wings
-            var gachaAngel = Global.gacha_angel_wings.FirstOrDefault(el => sIff.getInstance().getItemCharIdentify(el) == typeId);
-            if (gachaAngel != 0 && (partNum = sIff.getInstance().getItemCharPartNumber(gachaAngel)) >= 0u && parts_typeid[partNum] == gachaAngel)
-                return 2; // Drop chance A+ e treasure point A+
+            var gachaAngel = Global.gacha_angel_wings.FirstOrDefault(el => sIff.Instance.getItemCharIdentify(el) == typeId);
+            if (gachaAngel != 0 && (partNum = sIff.Instance.getItemCharPartNumber(gachaAngel)) >= 0u && parts_typeid[partNum] == gachaAngel)
+                return 2; // Drop chance A+ e Treasure point A+
 
             return 0; // Nenhuma Angel Wings equipada                
         }
@@ -106,7 +106,7 @@ namespace PangyaAPI.Network.Models
             for (var i = 0; i < (parts_typeid.Length); ++i)
             {
                 Part part;
-                if (parts_id[i] != 0 && (part = sIff.getInstance().findPart(parts_typeid[i])) != null)
+                if (parts_id[i] != 0 && (part = sIff.Instance.findPart(parts_typeid[i])) != null)
                 {
                     if (part._CardSlot.CaddieSlot != 0) // Tem um Part que Libera o terceiro Caddie Card Slot
                     {
@@ -123,10 +123,10 @@ namespace PangyaAPI.Network.Models
             if (_part_typeid == 0)
                 return false;
 
-            if (sIff.getInstance().getItemCharIdentify(_part_typeid) != (_typeid & 0x000000FF))
+            if (sIff.Instance.getItemCharIdentify(_part_typeid) != (_typeid & 0x000000FF))
                 return false;
 
-            var part_num = sIff.getInstance().getItemCharPartNumber(_part_typeid);
+            var part_num = sIff.Instance.getItemCharPartNumber(_part_typeid);
 
             if (parts_typeid[part_num] != _part_typeid || parts_id[part_num] != _id)
                 return false;
@@ -139,10 +139,10 @@ namespace PangyaAPI.Network.Models
             if (_part_typeid == 0)
                 return false;
 
-            if (sIff.getInstance().getItemCharIdentify(_part_typeid) != (_typeid & 0x000000FF))
+            if (sIff.Instance.getItemCharIdentify(_part_typeid) != (_typeid & 0x000000FF))
                 return false;
 
-            var part_num = sIff.getInstance().getItemCharPartNumber(_part_typeid);
+            var part_num = sIff.Instance.getItemCharPartNumber(_part_typeid);
 
             if (parts_typeid[part_num] != _part_typeid)
                 return false;
@@ -174,7 +174,7 @@ namespace PangyaAPI.Network.Models
             if (_part == null)
             {
 
-                Singleton<list_fifo_console_asyc<message>>.getInstance().push(new message("[CharacterInfo::unequipPart][Error] IFF::Part* _part is invalid(null).", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                Singleton<list_fifo_console_asyc<AppMessage>>.Instance.push(new AppMessage("[CharacterInfo::unequipPart][Error] IFF::Part* _part is invalid(null).", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -186,7 +186,7 @@ namespace PangyaAPI.Network.Models
 
                     uint def_part = (uint)(((i | (uint)(_typeid << 5)) << 13) | 0x8000400);
 
-                    var part_find = sIff.getInstance().findPart(def_part);
+                    var part_find = sIff.Instance.findPart(def_part);
 
                     parts_typeid[i] = (part_find != null && part_find.ID != 0) ? (uint)def_part : 0;
                     parts_id[i] = 0;
@@ -202,7 +202,7 @@ namespace PangyaAPI.Network.Models
             if (_typeid == 0u)
                 return;
 
-            var part = sIff.getInstance().findPart(_typeid);
+            var part = sIff.Instance.findPart(_typeid);
 
             if (part != null && part.ID != 0)
             {
@@ -211,7 +211,7 @@ namespace PangyaAPI.Network.Models
             else
             {
 
-                Singleton<list_fifo_console_asyc<message>>.getInstance().push(new message("[CharacterInfo::unequipPart][Error][WARNIG] Part[TYPEID=" + Convert.ToString(_typeid) + "], mas ele nao existe no IFF_STRUCT do server, desequipa sem usar a funcao do character. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                Singleton<list_fifo_console_asyc<AppMessage>>.Instance.push(new AppMessage("[CharacterInfo::unequipPart][Error][WARNIG] Part[TYPEID=" + Convert.ToString(_typeid) + "], mas ele nao existe no IFF_STRUCT do server, desequipa sem usar a funcao do character. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Não vai pegar todos os Slots que o Part ocupava para desequipar, desequipa o só onde tem o typeid   
                 for (uint i = 0; i < (parts_typeid.Length); ++i)
@@ -223,7 +223,7 @@ namespace PangyaAPI.Network.Models
 
                         uint def_part = (uint)(((i | (uint)(_typeid << 5)) << 13) | 0x8000400);
 
-                        var part_find = sIff.getInstance().findPart(def_part);
+                        var part_find = sIff.Instance.findPart(def_part);
 
                         parts_typeid[i] = (part_find != null && part_find.ID != 0) ? (uint)def_part : 0;
                         parts_id[i] = 0;
@@ -269,7 +269,7 @@ namespace PangyaAPI.Network.Models
             for (var i = 0; i < 24; ++i)
             {
                 Part part;
-                if (parts_id[i] != 0 && (part = sIff.getInstance().findPart(parts_typeid[i])) != null)
+                if (parts_id[i] != 0 && (part = sIff.Instance.findPart(parts_typeid[i])) != null)
                     value += (sbyte)part.SlotStats.getSlot[(int)__stat];
             }
 
@@ -289,7 +289,7 @@ namespace PangyaAPI.Network.Models
                 // Verifica se o slot de equipamento não está vazio
                 if (parts_id[i] != 0)
                 {
-                    var part = sIff.getInstance().findPart(parts_typeid[i]);
+                    var part = sIff.Instance.findPart(parts_typeid[i]);
                     if (part != null)
                     {
                         short slotAmount = (short)part.SlotStats.getSlot[(ushort)__stat];
@@ -319,7 +319,7 @@ namespace PangyaAPI.Network.Models
 
                 if (auxparts[i] != 0)
                 {
-                    aux_part = sIff.getInstance().findAuxPart(auxparts[i]);
+                    aux_part = sIff.Instance.findAuxPart(auxparts[i]);
                     if (aux_part != null)
                         value += (sbyte)aux_part.slot[(int)__stat];
                 }
@@ -354,7 +354,7 @@ namespace PangyaAPI.Network.Models
                 if (parts_typeid[i] != 0)
                 {
 
-                    iff_SET = sIff.getInstance().findFirstItemInSetEffectTable(parts_typeid[i]);
+                    iff_SET = sIff.Instance.findFirstItemInSetEffectTable(parts_typeid[i]);
 
                     // O Item no Set Effect Table
                     if (iff_SET != null)
@@ -362,7 +362,7 @@ namespace PangyaAPI.Network.Models
                         if (check_id.Count == 0 || !check_id.Contains(iff_SET.Index))
                         {
 
-                            // add id para o check
+                            // add Login para o check
                             check_id.Add(iff_SET.Index);
 
                             // Verifica sem tem todos os itens da tabela de efeito equipados
@@ -373,7 +373,7 @@ namespace PangyaAPI.Network.Models
                                 if (iff_SET.item.ID[j] != 0u)
                                 {
 
-                                    if (sIff.getInstance().getItemGroupIdentify(iff_SET.item.ID[j]) == PangyaAPI.IFF.Flags.IFF_GROUP.PART)
+                                    if (sIff.Instance.getItemGroupIdentify(iff_SET.item.ID[j]) == PangyaAPI.IFF.Flags.IFF_GROUP.PART)
                                     {
 
                                         if (!isPartEquiped(iff_SET.item.ID[j]))
@@ -385,7 +385,7 @@ namespace PangyaAPI.Network.Models
                                         }
 
                                     }
-                                    else if (sIff.getInstance().getItemGroupIdentify(iff_SET.item.ID[j]) == IFF_GROUP.AUX_PART)
+                                    else if (sIff.Instance.getItemGroupIdentify(iff_SET.item.ID[j]) == IFF_GROUP.AUX_PART)
                                     {
 
                                         if (!isAuxPartEquiped(iff_SET.item.ID[j]))
@@ -429,7 +429,7 @@ namespace PangyaAPI.Network.Models
                 if (auxparts[i] != 0)
                 {
 
-                    iff_SET = sIff.getInstance().findFirstItemInSetEffectTable(auxparts[i]);
+                    iff_SET = sIff.Instance.findFirstItemInSetEffectTable(auxparts[i]);
 
                     // O Item no Set Effect Table
                     if (iff_SET != null)
@@ -438,7 +438,7 @@ namespace PangyaAPI.Network.Models
                         if (check_id.Count == 0 || !check_id.Contains(iff_SET.Index))
                         {
 
-                            // add id para o check
+                            // add Login para o check
                             check_id.Add(iff_SET.Index);
 
                             // Verifica sem tem todos os itens da tabela de efeito equipados
@@ -450,7 +450,7 @@ namespace PangyaAPI.Network.Models
                                 if (iff_SET.item.ID[j] != 0u)
                                 {
 
-                                    if (sIff.getInstance().getItemGroupIdentify(iff_SET.item.ID[j]) == IFF_GROUP.PART)
+                                    if (sIff.Instance.getItemGroupIdentify(iff_SET.item.ID[j]) == IFF_GROUP.PART)
                                     {
 
                                         if (!isPartEquiped(iff_SET.item.ID[j]))
@@ -463,7 +463,7 @@ namespace PangyaAPI.Network.Models
                                         }
 
                                     }
-                                    else if (sIff.getInstance().getItemGroupIdentify(iff_SET.item.ID[j]) == IFF_GROUP.AUX_PART)
+                                    else if (sIff.Instance.getItemGroupIdentify(iff_SET.item.ID[j]) == IFF_GROUP.AUX_PART)
                                     {
 
                                         if (!isAuxPartEquiped(iff_SET.item.ID[j]))
@@ -516,7 +516,7 @@ namespace PangyaAPI.Network.Models
                 return -1;
             }
 
-            character = sIff.getInstance().findCharacter(_typeid);
+            character = sIff.Instance.findCharacter(_typeid);
 
             if (character != null)
             {
@@ -549,7 +549,7 @@ namespace PangyaAPI.Network.Models
 
                 if (cardId != 0)
                 {
-                    card = sIff.getInstance().findCard(cardId);
+                    card = sIff.Instance.findCard(cardId);
 
                     if (card != null)
                     {
@@ -577,7 +577,7 @@ namespace PangyaAPI.Network.Models
             for (uint i = 0; i < parts_typeid.Length; ++i)
             {
                 uint part_typeid = (((_typeid << 5 /*CharIdentify*/) | i) << 13 /*PartNum*/) | 0x8000400;
-                var part_find = sIff.getInstance().findPart(part_typeid);
+                var part_find = sIff.Instance.findPart(part_typeid);
                 if (part_find != null && part_find.ID == part_typeid) // <-- aqui estava errado
                     parts_typeid[i] = part_typeid;
             }

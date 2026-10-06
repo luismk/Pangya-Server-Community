@@ -36,7 +36,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta);
 
-            checkResponse(r, "nao conseguiu pegar o papel shop config.");
+            checkResponse(r, "nao conseguiu pegar o papel ShopRoom config.");
 
             return r;
         }

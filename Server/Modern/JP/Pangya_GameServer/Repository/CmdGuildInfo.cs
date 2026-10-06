@@ -43,7 +43,7 @@ namespace Pangya_GameServer.Repository
         protected override Response prepareConsulta()
         {
             var r = procedure("pangya.ProcGetGuildInfo", m_uid.ToString() + ", " + m_option.ToString());
-            checkResponse(r, "nao conseguiu pegar o guild info do player: " + (m_uid));
+            checkResponse(r, "nao conseguiu pegar o Guild info do player: " + (m_uid));
             return r;
         }
 

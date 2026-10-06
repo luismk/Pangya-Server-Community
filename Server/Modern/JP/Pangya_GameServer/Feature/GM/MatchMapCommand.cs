@@ -22,8 +22,8 @@ namespace Pangya_GameServer.Feature.GM
                 var Map = pkt.ReadInt32();
                 var room = session.GetRoom();
                  
-                _smp.message_pool.getInstance().push(new message(
-                    $"[GM-Action] Executor: {session.UserInfo.nickname} (UID: {session.UserInfo.uid}) | Command: MatchCourse | Value: {Map}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[GM-Action] Executor: {session.UserInfo.NickName} (UID: {session.UserInfo.UID}) | Command: MatchCourse | Value: {Map}",
                     type_msg.CL_ONLY_CONSOLE));
 
                 // 3. Validação de Estado
@@ -35,17 +35,17 @@ namespace Pangya_GameServer.Feature.GM
                 }
 
                 // 4. Lógica de Negócio
-                if (Enum.IsDefined(typeof(ROOM_INFO_COURSE), (ROOM_INFO_COURSE)Map))
+                if (Enum.IsDefined(typeof(RoomCourseFlags), (RoomCourseFlags)Map))
                 {
                     room.SetCourse((byte)Map);
                     room.SendHeadRoom();
-                    GameServer.getInstance().sendUpdateRoomInfo(room, 3);
-                    _smp.message_pool.getInstance().push(new message($"[MatchCourseCommand][Sucess] ROOM[ID: {room.GetRoomId()}, UPDATE: {(ROOM_INFO_COURSE)Map}, NICK: {session.UserInfo.nickname}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    GameServer.Instance.sendUpdateRoomInfo(room, 3);
+                    _smp.LogManager.Instance.push(new AppMessage($"[MatchCourseCommand][Sucess] ROOM[ID: {room.GetRoomId()}, UPDATE: {(RoomCourseFlags)Map}, NICK: {session.UserInfo.NickName}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[MatchCourseCommand][Error] {e.Message} | StackTrace: {e.StackTrace}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

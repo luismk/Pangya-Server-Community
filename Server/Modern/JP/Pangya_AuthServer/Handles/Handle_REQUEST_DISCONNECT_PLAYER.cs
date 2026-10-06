@@ -22,18 +22,18 @@ namespace Pangya_AuthServer.Handles
                 serverUid = Packet.ReadUInt32();
 
                 // 2. Busca a sessão do servidor onde o player está logado
-                var targetServer = AuthServer.getInstance().FindPlayer(serverUid);
+                var targetServer = AuthServer.Instance.FindPlayer(serverUid);
 
                 if (targetServer != null)
                 {
-                    Console.WriteLine($"[Kick] Server {Player.UserInfo.uid} solicitou a expulsão do Player {playerUid} no Server {serverUid}");
+                    Console.WriteLine($"[Kick] Server {Player.UserInfo.UID} solicitou a expulsão do Player {playerUid} no Server {serverUid}");
 
                     // 3. Envia o comando de expulsão (OpCode 0x06)
                     using (var p = new Packet(0x06))
                     {
                         p.WriteUInt32(playerUid);
-                        p.WriteUInt32(Player.UserInfo.uid); // UID do servidor que solicitou o kick
-                        p.WriteByte(0);                   // Force Flag (0 = Normal, 1 = Force)
+                        p.WriteUInt32(Player.UserInfo.UID); // UID do servidor que solicitou o kick
+                        p.WriteByte(0);                   // Force ServerFlag (0 = Normal, 1 = Force)
 
                         targetServer.SendAuth(p);
                     }

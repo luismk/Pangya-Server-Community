@@ -29,7 +29,7 @@ namespace Pangya_GameServer.Handles
 
                 if (num_quest <= 0u)
                 {
-                    throw new exception("PLAYER[UID=" + Convert.ToString(Player.UserInfo.uid) + "] tentou desistir da quest, mas o numero de quest para desistir e 0. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
+                    throw new exception("Normal[UID=" + Convert.ToString(Player.UserInfo.UID) + "] tentou desistir da quest, mas o RoomID de quest para desistir e 0. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
                         5010, 0));
                 }
 
@@ -66,7 +66,7 @@ namespace Pangya_GameServer.Handles
                         p.WriteUInt32(0); // type
                         p.WriteInt32(el.Value.value); // Qntd antes
                         p.WriteInt32(0); // Qntd depois
-                        p.WriteUInt32((uint)(el.Value.value * -1)); // add quantos, tipo de add tinha 0(antes) + 3(qntd) = 3(depois)
+                        p.WriteUInt32((uint)(el.Value.value * -1)); // add quantos, Type de add tinha 0(antes) + 3(qntd) = 3(depois)
                         p.WriteZero(25);
                     }
 
@@ -89,7 +89,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_LEAVE_DAILY_QUEST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_LEAVE_DAILY_QUEST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 var v_ai = new List<AchievementInfoEx>();
 

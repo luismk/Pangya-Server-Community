@@ -2,6 +2,7 @@
 using Pangya_GameServer.Feature;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.Models;
 using Pangya_GameServer.Roms;
 using Pangya_GameServer.Session;
@@ -17,12 +18,12 @@ namespace Pangya_GameServer.PacketFunc
     /// <summary>
     /// somente as respostas para o client
     /// </summary>
-    public class Handle_PACKET_RESPONSE
+    public static class Handle_PACKET_RESPONSE
     {
         //////
        static int MAX_BUFFERPacket = 1000;
           
-        public static Packet pacote047(List<RoomInfo> v_element, int option)
+        public static Packet MakeGameRoomList(this List<GameRoomInfoModel> v_element, int option)
         {
 
             Packet p = new Packet();
@@ -37,7 +38,7 @@ namespace Pangya_GameServer.PacketFunc
             return p;
         }
 
-        public static List<Packet> pacote046(List<PlayerLobbyInfo> v_element, int option)
+        public static List<Packet> MakePlayerLobby(this List<PlayerLobbyInfo> v_element, int option)
         {
             var responses = new List<Packet>();
             int elements = v_element.Count;
@@ -161,25 +162,25 @@ namespace Pangya_GameServer.PacketFunc
         }
 
 
-        public static Packet pacote157(MemberInfo _mi, byte season)
+        public static Packet pacote157(PlayerMemberInfo _mi, byte season)
         {
             var p = new Packet(0x157);
 
             p.WriteByte(season);
-            p.WriteUInt32(_mi.uid);
-            p.WriteBytes(_mi.ToArrayEx());
-            p.WriteUInt32(_mi.uid);
-            p.WriteUInt32(_mi.guild_point);
+            p.WriteUInt32(_mi.UID);
+            p.WriteBytes(_mi.ToArray(IncludeRoomID :true));
+            p.WriteUInt32(_mi.UID);
+            p.WriteUInt32(_mi.GuildWinPoints);
             return p;
         }
 
-        public static Packet pacote158(uint _uid, UserInfo _ui, byte season)
+        public static Packet pacote158(uint _uid, PlayerUserStatistics _ui, byte season)
         {
             var p = new Packet(0x158);
 
             p.WriteByte((byte)season);
             p.WriteUInt32(_uid);
-            p.WriteBytes(_ui.ToArray());//new version 
+            p.WriteBytes(_ui.ToArray());//new BuildVersion 
             return p;
         }
 
@@ -352,14 +353,14 @@ namespace Pangya_GameServer.PacketFunc
 
         public static Packet pacote131(int option = 1)
         {
-            if (!sTreasureHunterSystem.getInstance().isLoad())
-                sTreasureHunterSystem.getInstance().load();
+            if (!sTreasureHunterSystem.Instance.isLoad())
+                sTreasureHunterSystem.Instance.load();
 
             using (var p = new Packet(0x131))
             {
                 p.WriteByte(Convert.ToByte(option));
                 p.WriteByte(Convert.ToByte(MS_NUM_MAPS)); 
-            var _TreasureHunterInfo = sTreasureHunterSystem.getInstance().getAllCoursePoint();
+            var _TreasureHunterInfo = sTreasureHunterSystem.Instance.getAllCoursePoint();
 
                 foreach (var _TreasureHunter in _TreasureHunterInfo)
                 {
@@ -552,8 +553,8 @@ namespace Pangya_GameServer.PacketFunc
         /// <summary>
         /// Send Packet for Info Characters(Personagens)
         /// </summary>
-        /// <param name="v_element">object list</param>
-        /// <param name="option">what?</param>
+        /// <param Name="v_element">object list</param>
+        /// <param Name="option">what?</param>
         /// <returns>obj using for write data</returns>
         public static Packet pacote070(CharacterManager v_element, int option = 0)
         {
@@ -576,10 +577,10 @@ namespace Pangya_GameServer.PacketFunc
         }
 
         /// <summary>
-        /// packet 9D use channel list!
+        /// packet 9D use Channel list!
         /// </summary>
-        /// <param name="v_element"></param>
-        /// <param name="build_s">true is server, false is chanell call!</param>
+        /// <param Name="v_element"></param>
+        /// <param Name="build_s">true is server, false is chanell call!</param>
         /// <returns></returns>
         public static Packet pacote04D(List<Channel> v_element, bool build_s = false)
         {
@@ -588,7 +589,7 @@ namespace Pangya_GameServer.PacketFunc
                 using (var p = new Packet())
                 {
                     if (!build_s)
-                        p.init_plain(0x4D); //channel list!         
+                        p.init_plain(0x4D); //Channel list!         
 
                     p.WriteByte(v_element.Count);
                     foreach (var channel in v_element)
@@ -599,12 +600,12 @@ namespace Pangya_GameServer.PacketFunc
             }
             catch (exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                $"[packet_func::pacote04D][ErrorSystem] {ex.getFullMessageError()}",
                type_msg.CL_FILE_LOG_AND_CONSOLE));  
                 using (var p = new Packet())
                 { 
-                        p.init_plain(0x4D); //channel list!         
+                        p.init_plain(0x4D); //Channel list!         
 
                     p.WriteInt16(0); 
                     return p;
@@ -644,7 +645,7 @@ namespace Pangya_GameServer.PacketFunc
         //    {
         //        work_Shop_Event.Calc();
 
-        //        p.init_plain(0x24E); // packet id
+        //        p.init_plain(0x24E); // packet Login
         //        p.WriteInt32(option);                // subcode (fixo)
         //        p.WriteInt32(3000);   // quantos holes são exigidos por fase
         //        p.WriteInt32(0);      // total  de holes jogados
@@ -1252,7 +1253,7 @@ namespace Pangya_GameServer.PacketFunc
                                     if (it.Value == null)
                                     {
 
-                                        _smp.message_pool.getInstance().push(new message("[channel::pacote04B][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem os estados do character na lounge. Criando um novo para ele. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                        _smp.LogManager.Instance.push(new AppMessage("[Channel::pacote04B][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem os estados do character na Lounge. Criando um novo para ele. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                         // Add New State Character Lounge
                                         _session.UserInfo.CharacterLoungeStates.Add(_session.Inventory.UserEquippedItem.CharacterEquiped.id, new StateCharacterLounge());
@@ -1279,7 +1280,7 @@ namespace Pangya_GameServer.PacketFunc
                         }
                         break;
                     default:
-                        throw new exception("Error tipo desconhecido. Em packet_func::pacote04B()", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER,
+                        throw new exception("Error Type desconhecido. Em packet_func::pacote04B()", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER,
                             3, 0));
                 }
             }
@@ -1339,145 +1340,74 @@ namespace Pangya_GameServer.PacketFunc
         }
 
         //tested, melhorar com tempo@@@@ 
-        public static bool pacote048(Packet p, Player _session, List<PlayerRoomInfoEx> PlayerInfo, int option = 0)
+        /// <summary>
+        /// Constrói e envia o pacote de rede 0x48 (gerenciamento de ações e listagem de jogadores na sala) do servidor Pangya.
+        /// </summary>
+        /// <param Name="p">Instância do pacote binário a ser construído.</param>
+        /// <param Name="_session">Sessão atual do jogador que receberá ou disparará a ação.</param>
+        /// <param Name="playerInfoList">Lista contendo as informações dos jogadores presentes na sala.</param>
+        /// <param Name="option">Código de opção/ação combinada (bits de ação e flags de tamanho/formato).</param>
+        /// <returns>Retorna <c>true</c> indicando que o processamento do pacote foi concluído com sucesso.</returns>
+        public static bool MakePlayerRoomInfo(Packet p, Player _session, List<PlayerRoomInfo> playerInfoList, int option = 0)
         {
-            TPlayerRoom_Action opt = (TPlayerRoom_Action)(option & 0xFF);
-            Debug.WriteLine($"pacote048 => enum: {opt}, code: {option & 0xFF}, code2: {option & 0x100}");
+            int actionCode = option & 0xFF;
+            bool isExtendedFormat = (option & 0x100) != 0;
+
+            TPlayerRoom_Action opt = (TPlayerRoom_Action)actionCode;
+            Debug.WriteLine($"MakePlayerRoomInfo => enum: {opt}, code: {actionCode}, extendedFormat: {isExtendedFormat}");
+
             try
             {
-                // Action code 2: Handles explicit session exit broadcast triggers
-                
-                if ((option & 0xFF) == 2)
+                p.init_plain(0x48); 
+                if (actionCode == 2)
                 {
-                    p.init_plain(0x48);
                     p.WriteSByte((sbyte)option);
                     p.WriteInt16(-1);
                     p.WriteInt32(_session.ConnectionID);
-                    return true;
-                }
-                // Action code 7: Handles distinct partitioned loop serialization configurations
-                else if ((option & 0xFF) == 7)
-                {
-                    int elementSize = (option & 0x100) != 0 ? 348 : 861;
-                    int maxPacket = 861;
-                    int total = PlayerInfo.Count;
-                    int por_packet = (maxPacket - 100 > elementSize) ? (maxPacket - 100) / elementSize : 1;
-
-
-                    // Inicializa o pacote único para toda a lista
-                    p.init_plain(0x48);
-                    p.WriteByte((byte)option);
-                    p.WriteInt16(-1);
-
-                    // Escreve a quantidade total de elementos ou o ID da sessão dependendo da opção
-                    if ((option & 0xFF) == 0 || (option & 0xFF) == 5)
-                        p.WriteByte((byte)((total > por_packet) ? por_packet : total));
-                    else if ((option & 0xFF) == 7)
-                        p.WriteSByte((sbyte)total);
-                    else if ((option & 0xFF) == 3)
-                        p.WriteInt32(_session.ConnectionID);
-
-                    // Serializa todos os jogadores da lista sequencialmente no mesmo pacote
-                    foreach (var _sessionRoom in PlayerInfo)
-                    {
-                        if (elementSize == 348)
-                            p.WriteBytes(_sessionRoom.ToArray());
-                        else
-                            p.WriteBytes(_sessionRoom.ToArrayEx());
-                    }
-                    // Marca o fim da lista de jogadores
-                    p.WriteByte(0);
                     _session.Send(p);
                     return true;
                 }
-                else
+                p.WriteByte((byte)option);
+                p.WriteInt16(-1);
+                if (actionCode == 0 || actionCode == 5)
                 {
-                    int elementSize = (option & 0x100) != 0 ? 348 : 861;
-                    int elements = PlayerInfo.Count;
-                    int totalSize = elements * elementSize;
-
-                    try
-                    {
-                        // Serialization under maximum packet boundaries (Single Payload)
-                        if (totalSize < 20 - 100)
-                        {
-                            p.init_plain(0x48);
-                            p.WriteSByte((sbyte)option);
-                            p.WriteInt16(-1);
-
-                            if ((option & 0xFF) == 0 || (option & 0xFF) == 5)
-                                p.WriteByte((byte)elements);
-                            else if ((option & 0xFF) == 3)
-                                p.WriteInt32(_session.ConnectionID);
-
-                            foreach (var _sessionRoom in PlayerInfo)
-                            {
-                                if (elementSize == 348)
-                                    p.WriteBytes(_sessionRoom.ToArray());
-                                else
-                                    p.WriteBytes(_sessionRoom.ToArrayEx());
-                            }
-                            p.WriteByte(0);
-                            return true;
-                        }
-                        // Serialization exceeding boundaries requires sequential Data chunk splitting (Multi Payload)
-                        else
-                        {
-                            elements = PlayerInfo.Count;
-
-                            // Inicializa o pacote único para toda a lista
-                            p.init_plain(0x48);
-                            p.WriteByte((byte)option);
-                            p.WriteInt16(-1);
-
-                            // Escreve a quantidade total de elementos ou o ID da sessão dependendo da opção
-                            if ((option & 0xFF) == 0 || (option & 0xFF) == 5)
-                            {
-                                p.WriteByte((byte)elements);
-                            }
-                            else if ((option & 0xFF) == 3)
-                            {
-                                elementSize = 348;
-                                p.WriteInt32(_session.ConnectionID);
-                            }
-
-                            // Serializa todos os jogadores da lista sequencialmente no mesmo pacote
-                            foreach (var _sessionRoom in PlayerInfo)
-                            {
-                                if (elementSize == 348)
-                                    p.WriteBytes(_sessionRoom.ToArray());
-                                else
-                                    p.WriteBytes(_sessionRoom.ToArrayEx());
-                            }
-
-                            // Marca o fim da lista de jogadores
-                            p.WriteByte(0);
-
-                            _session.Send(p);
-                            // Retorna o pacote único pronto para ser enviado de uma vez só
-                            return true;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                    }
+                    p.WriteByte((byte)playerInfoList.Count);
                 }
+                else if (actionCode == 3)
+                {
+                    p.WriteInt32(_session.ConnectionID);
+                }
+                else if (actionCode == 7)
+                {
+                    p.WriteByte((byte)playerInfoList.Count);
+                }
+                 
+                // Serializa cada jogador da lista sequencialmente
+                foreach (var sessionRoom in playerInfoList)
+                {
+                    p.WriteBytes(sessionRoom.ToArray(!isExtendedFormat && actionCode != 3));
+                }
+
+                // Marca o byte finalizador da lista de jogadores
+                p.WriteByte(0);
+                _session.Send(p);
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[Error] Falha ao processar o pacote 0x48: {ex.Message}");
             }
+
             return true;
         }
 
-
-        public static Packet pacote04A(RoomInfo _ri, short option)
+        public static Packet pacote04A(GameRoomInfoModel _ri, short option)
         {
             var p = new Packet();
             p.init_plain(0x4A);
 
-            p.WriteInt16(_ri.numero);      // pode ser valor constante da sala ou o número, ainda não descobri, sempre passa -1 des vezes que vi
-            // Tem que ser o tipo_show, por que ele é o que o cliente quer,
-            // o tipo(real) só server conhece para poder fazer o jogo direito 
+            p.WriteInt16(_ri.RoomID);      // pode ser valor constante da sala ou o número, ainda não descobri, sempre passa -1 des vezes que vi
+            // Tem que ser o RoomType, por que ele é o que o cliente quer,
+            // o Type(real) só server conhece para poder fazer o jogo direito 
             p.WriteBytes(_ri.ToArrayEx());
             return p;
         }
@@ -1564,7 +1494,7 @@ namespace Pangya_GameServer.PacketFunc
                                 p.WriteUInt32(cii._typeid);
                                 p.WriteInt32(cii.id);
                             }
-                            else // não tem o counter id e nem o typeid
+                            else // não tem o counter Login e nem o typeid
                             {
                                 p.WriteZero(8);
                             }

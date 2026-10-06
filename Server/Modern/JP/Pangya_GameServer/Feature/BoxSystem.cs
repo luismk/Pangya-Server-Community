@@ -97,12 +97,12 @@ namespace Pangya_GameServer.Feature
                 if (el.active == 1)
                 {
 
-                    // Verifica qual o tipo da box, se for 100% raro, ent�o s� coloca os raros se j� pegou todos os raros colocar os Lucky reward
+                    // Verifica qual o Type da box, se for 100% raro, ent�o s� coloca os raros se j� pegou todos os raros colocar os Lucky reward
                     if (_ctx_b.tipo != BOX_TYPE.ALL_RARE_OR_LUCKY_REWARD || el.raridade != (BOX_TYPE_RARETY)BOX_TYPE_RARETY.R_NORMAL)
                     {
 
                         // S� pode add os itens que o player n�o tem ou pode ter duplicada
-                        if (!(!(el.duplicar == 1) && (!sIff.getInstance().IsCanOverlapped(el._typeid) || sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.CAD_ITEM) && _session.Inventory.ownerItem(el._typeid)))
+                        if (!(!(el.duplicar == 1) && (!sIff.Instance.IsCanOverlapped(el._typeid) || sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.CAD_ITEM) && _session.Inventory.ownerItem(el._typeid)))
                         {
                             lottery.Add(el.probabilidade, el);
                         }
@@ -124,7 +124,7 @@ namespace Pangya_GameServer.Feature
                     {
 
                         // S� pode add os itens que o player n�o tem ou pode ter duplicada
-                        if (!(!el.duplicar.IsTrue() && (!sIff.getInstance().IsCanOverlapped(el._typeid) || sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.CAD_ITEM) && _session.Inventory.ownerItem(el._typeid)))
+                        if (!(!el.duplicar.IsTrue() && (!sIff.Instance.IsCanOverlapped(el._typeid) || sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.CAD_ITEM) && _session.Inventory.ownerItem(el._typeid)))
                         {
                             lottery.Add(el.probabilidade, el);
                         }
@@ -171,7 +171,7 @@ namespace Pangya_GameServer.Feature
             // Carrega as box do banco de dados
             CmdBoxInfo cmd_bi = new CmdBoxInfo(); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_bi, null,
                   null);
 
@@ -183,7 +183,7 @@ namespace Pangya_GameServer.Feature
             m_box = cmd_bi.getInfo();
 
             if (m_box.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[BoxSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[BoxSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
 
             // Carregou com sucesso

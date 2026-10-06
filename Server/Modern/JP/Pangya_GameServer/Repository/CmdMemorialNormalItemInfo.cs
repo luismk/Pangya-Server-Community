@@ -28,7 +28,7 @@ namespace Pangya_GameServer.Repository
             try
             {
 
-                csi.flag = -100; // SetItem Flag, SEMPRE TEM QUE SER -100
+                csi.flag = -100; // SetItem ServerFlag, SEMPRE TEM QUE SER -100
                 csi._typeid = (uint)IFNULL<uint>(_result.data[0]);
 
                 ci.tipo = -1; // Normal Item

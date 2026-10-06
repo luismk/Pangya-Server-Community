@@ -2,6 +2,7 @@ using Pangya_GameServer.Engine;
 using Pangya_GameServer.Feature;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.Models;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Repository;
@@ -25,7 +26,7 @@ namespace Pangya_GameServer.Roms.GameModes
         private PangyaSyncTimer _timerAfterToEnter;        // Timer de entrar depois no Tourney
 
         private bool _tourneyState;
-        public Tourney(List<Player> players, RoomInfo roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
+        public Tourney(List<Player> players, GameRoomInfoModel roomInfo, RateValue rateValue) : base(players, roomInfo, rateValue)
         {
             _tourneyState = false;
             _timerAfterToEnter = null;
@@ -44,7 +45,7 @@ namespace Pangya_GameServer.Roms.GameModes
         public override bool RequestFinishLoadHole(Player session, Packet packet)
         { 
             // Esse aqui   para Trocar Info da Sala
-            // para colocar a sala no modo que pode entrar depois de ter come ado
+            // para colocar a sala no HoleMode que pode entrar depois de ter come ado
             bool ret = false;
 
             try
@@ -54,14 +55,14 @@ namespace Pangya_GameServer.Roms.GameModes
                 ret = base.RequestFinishLoadHole(session, packet);
 
                 // Aqui come a o tempo que os outros player pode entrar se a sala n o for private
-                // Come  o o tempo de 5 ou 10min para entra no camp se n o tiver senha
+                // Come  o o tempo de 5 ou 10min para entra no camp se n o tiver Password
                 if (EntraDepoisFlag != 1
-                    && RoomInfo.senha_flag == 1
-                    && ((byte)(RoomInfo.course & ROOM_INFO_COURSE.UNK)) != (byte)ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE)
+                    && RoomInfo.IsPublicRoom == 1
+                    && ((byte)(RoomInfo.CourseIndex & RoomCourseFlags.UNK)) != (byte)RoomTypeFlags.SPECIAL_SHUFFLE_COURSE)
                 {
 
                     // S  libera se for Tourney Normal, se for GM Event N o libera
-                    if (!(RoomInfo.trofel == TROFEL_GM_EVENT_TYPEID && RoomInfo.max_player > 30 && RoomInfo.flag_gm == 1 && RoomInfo.state_flag == 0x100))
+                    if (!(RoomInfo.TrophyID == TROFEL_GM_EVENT_TYPEID && RoomInfo.MaxUsers > 30 && RoomInfo.IsGameMaster == 1 && RoomInfo.SpecialFlag == 0x100))
                     {
                         // Libera Entrar, mesmo depois de ter come ado o Tourney
                         ret = true;
@@ -74,7 +75,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Tourney::requestFinishLoadHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestFinishLoadHole][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -86,7 +87,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
             try
             {
-                UserInfo ui = new UserInfo();
+                PlayerUserStatistics ui = new PlayerUserStatistics();
                 #region Read Packet
                 ui.ToRead(packet);
                 #endregion
@@ -101,14 +102,14 @@ namespace Pangya_GameServer.Roms.GameModes
                 // Verifica se ele acabou todo o Tourney
                 if (pgi.flag != PlayerGameInfo.eFLAG_GAME.FINISH)
                 {
-                    throw new exception("[Tourney::requestUseTicketReport][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou sair do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "] com Ticket Report, mas ele ainda nao terminou o Tourney[FLAG=" + Convert.ToString((ushort)pgi.flag) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
+                    throw new exception("[Tourney::requestUseTicketReport][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou sair do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "] com Ticket Report, mas ele ainda nao terminou o Tourney[FLAG=" + Convert.ToString((ushort)pgi.flag) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
                         403, 0));
                 }
 
                 // Verifica se o Level do player   maior ou igual a Beginner E
-                if (session.UserInfo.level < (byte)enLEVEL.BEGINNER_E)
+                if (session.UserInfo.Level < (byte)enLEVEL.BEGINNER_E)
                 {
-                    throw new exception("[Tourney::requestUseTicketReport][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + ", LEVEL=" + Convert.ToString(session.UserInfo.level) + "] tentou sair do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "] com Ticket Report, mas ele nao tem o level necessario[6=BEGINNER E] para usar o Ticket Report.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
+                    throw new exception("[Tourney::requestUseTicketReport][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + ", LEVEL=" + Convert.ToString(session.UserInfo.Level) + "] tentou sair do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "] com Ticket Report, mas ele nao tem o Level necessario[6=BEGINNER E] para usar o Ticket Report.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
                         405, 0));
                 }
 
@@ -118,7 +119,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 // N o tem o item ou n o tem a quantidade "  a mesma coisa, s  estou fazendo isso pra previnir bugs"
                 if (pWi == null || pWi.STDA_C_ITEM_QNTD < 1)
                 {
-                    throw new exception("[Tourney::requestUseTicketReport][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou sair do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "] com Ticket Report, mas ele nao tem o item[TYPEID=" + Convert.ToString(TICKET_REPORT_TYPEID) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
+                    throw new exception("[Tourney::requestUseTicketReport][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou sair do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "] com Ticket Report, mas ele nao tem o item[TYPEID=" + Convert.ToString(TICKET_REPORT_TYPEID) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
                         400, 0));
                 }
 
@@ -133,21 +134,21 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 if (ItemManager.removeItem(item, session) <= 0)
                 {
-                    throw new exception("[Tourney::requestUseTicketReport][Error] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] tentou sair do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + "] com Ticket Report, mas nao conseguiu deletar um Ticket Report Item do player.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
+                    throw new exception("[Tourney::requestUseTicketReport][Error] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] tentou sair do jogo na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + "] com Ticket Report, mas nao conseguiu deletar um Ticket Report Item do player.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
                         401, 0));
                 }
 
                 var v_item = new List<stItem>() { item };
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[Tourney::requestUseTicketReport][Log] PLAYER[UID=" + Convert.ToString(session.UserInfo.uid) + "] sai do tourney na sala[NUMERO=" + Convert.ToString(RoomInfo.numero) + ", MASTER=" + Convert.ToString(RoomInfo.master) + "] com ticket report.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestUseTicketReport][Log] Normal[UID=" + Convert.ToString(session.UserInfo.UID) + "] sai do Tourney na sala[NUMERO=" + Convert.ToString(RoomInfo.RoomID) + ", MASTER=" + Convert.ToString(RoomInfo.OwnerUID) + "] com ticket report.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
 				// Respota para garantir que excluiu o ticket report mesmo do player 
 				session.Send(Handle_PACKET_RESPONSE.pacote0AA(session, v_item));
 				// Saiu com Ticket Report
 				SetGameFlag(pgi, PlayerGameInfo.eFLAG_GAME.TICKET_REPORT);
 
-                RainHoleSeqCount(session); // conta os achievement de chuva em holes consecutivas
+                RainHoleSeqCount(session); // conta os achievement de Rain em holes consecutivas
 
                 ScoreSeqCount(session); // conta os achievement de back-to-back(2 ou mais score iguais consecutivos) do player
 
@@ -161,7 +162,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Tourney::requestUseTicketReport][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestUseTicketReport][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Reposta de erro aqui, tenho que arranjar um pacote para isso
             }
@@ -175,7 +176,7 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 // S  calcula se n o for short game
-                if (!(RoomInfo.special_flag_mod.short_game))
+                if (!(RoomInfo.SpecialModeRoom.IsShotMode))
                 {
                     CalculeShotToSpinningCube(session, ssd);
                 }
@@ -184,7 +185,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Tourney::requestCalculeShotSpinningCube][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestCalculeShotSpinningCube][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -194,7 +195,7 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 // S  calcula se n o for short game
-                if (!(RoomInfo.special_flag_mod.short_game))
+                if (!(RoomInfo.SpecialModeRoom.IsShotMode))
                 {
                     CalculeShotToCoin(session, ssd);
                 }
@@ -203,7 +204,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Tourney::requestCalculeShotCoin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestCalculeShotCoin][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -306,14 +307,14 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[Tourney::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Tourney::deletePlayer][Warning] player ja foi excluido do game.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Tourney::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Tourney::deletePlayer][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
 
@@ -374,7 +375,7 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 InitPlayerInfo("finish_tourney",
-                    "tentou terminar o tourney no jogo",
+                    "tentou terminar o Tourney no jogo",
                     session, out PlayerGameInfo pgi);
 
                 if (pgi.flag == PlayerGameInfo.eFLAG_GAME.PLAYING)
@@ -383,7 +384,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Calcula os pangs que o player ganhou
                     CalculePang(session);
 
-                    // Atualizar os pang do player se ele estiver com assist ligado, e for maior que beginner E
+                    // Atualizar os Pang do player se ele estiver com assist ligado, e for maior que beginner E
                     UpdatePlayerAssist(session);
 
                     if (GameInitState == 1 && option == 0)
@@ -454,7 +455,7 @@ namespace Pangya_GameServer.Roms.GameModes
         public void FinishExpGame()
         {
 
-            // Bug Fix, ultimo player do camp sai e ou toma dc e n o fica ningu m na sala e calcula a exp do camp
+            // Bug Fix, ultimo player do camp sai e ou toma dc e n o fica ningu m na sala e calcula a Experience do camp
             if (GetCountPlayersGame() > 0)
             {
 
@@ -468,7 +469,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 {
 
                     // Exp padr�o de hole do Grand Prix
-                    switch (RoomInfo.qntd_hole)
+                    switch (RoomInfo.HoleCount)
                     {
                         case 9:
                             exp = 4;
@@ -507,12 +508,12 @@ namespace Pangya_GameServer.Roms.GameModes
                             }
 
                             // DB call movido para dentro do null-check: se session for null
-                            // (player desconectou), session.UserInfo.uid lança NullReferenceException.
-                            NormalManagerDB.getInstance().add(0, new CmdUpdateWebShopPoint(session.UserInfo.uid, 60), null, null);
+                            // (player desconectou), session.PlayerUserStatistics.UID lança NullReferenceException.
+                            NormalManagerDB.Instance.add(0, new CmdUpdateWebShopPoint(session.UserInfo.UID, 60), null, null);
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message($"[Tourney::FinishExpGame][Warning] PLAYER[UID={PlayerOrder[i].uid}] não encontrado na sessão — WebShopPoint não atualizado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[Tourney::FinishExpGame][Warning] Normal[UID={PlayerOrder[i].uid}] não encontrado na sessão — WebShopPoint não atualizado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                     }
@@ -541,11 +542,11 @@ namespace Pangya_GameServer.Roms.GameModes
                                 PlayerOrder[i].data.exp = exp;
                             }
 
-                            NormalManagerDB.getInstance().add(0, new CmdUpdateWebShopPoint(session.UserInfo.uid, 60), null, null);
+                            NormalManagerDB.Instance.add(0, new CmdUpdateWebShopPoint(session.UserInfo.UID, 60), null, null);
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message($"[Tourney::FinishExpGame][Warning] PLAYER[UID={PlayerOrder[i].uid}] END_GAME não encontrado na sessão — WebShopPoint não atualizado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[Tourney::FinishExpGame][Warning] Normal[UID={PlayerOrder[i].uid}] END_GAME não encontrado na sessão — WebShopPoint não atualizado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                 }
@@ -571,8 +572,8 @@ namespace Pangya_GameServer.Roms.GameModes
 
             GiveMedalAndItens();
 
-            // [O pangya original, quando o player sai com ticket report do tourney,
-            // mesmo que ele fique entre os 3 primeiros no short game n o conta o achievement de short game top 3 rank]
+            // [O pangya original, quando o player sai com ticket report do Tourney,
+            // mesmo que ele fique entre os 3 primeiros no short game n o conta o achievement de short game top 3 RankPosition]
 
             // ToList() garante snapshot: FinishData pode disparar callbacks que
             // modificam Players, o que causaria InvalidOperationException no foreach.
@@ -611,7 +612,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 // Active Item que o player ganha
                 for (var i = 0; i < 15u; ++i)
                 {
-                    lot_active_item.Add(200, (sIff.getInstance().ITEM << 26) + i);
+                    lot_active_item.Add(200, (sIff.Instance.ITEM << 26) + i);
                 }
 
                 // Preenche vector, e alimenta o lottery
@@ -631,7 +632,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 if (ctx == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um player para ganha a medalha da sorte", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um player para ganha a medalha da sorte", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 else
                 {
@@ -641,7 +642,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                     if ((ctx_lot = lot_active_item.SpinRoleta()) == null)
                     {
-                        _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um active commun item da medalha da sorte", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um State commun item da medalha da sorte", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else
                     {
@@ -660,7 +661,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 if ((ctx_lot = lot_active_item.SpinRoleta()) == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um active commun item da medalha de speediest", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um State commun item da medalha de speediest", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 else
                 {
@@ -678,7 +679,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 if ((ctx_lot = lot_active_item.SpinRoleta()) == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um active commun item da medalha de best drive", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um State commun item da medalha de best drive", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 else
                 {
@@ -696,7 +697,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 if ((ctx_lot = lot_active_item.SpinRoleta()) == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um active commun item da medalha de best chipin", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um State commun item da medalha de best chipin", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 else
                 {
@@ -714,7 +715,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                 if ((ctx_lot = lot_active_item.SpinRoleta()) == null)
                 {
-                    _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um active commun item da medalha de best long puttin", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um State commun item da medalha de best long puttin", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 else
                 {
@@ -724,7 +725,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 pgi.medal_win.stMedal.best_long_puttin = 1;
 
                 // 6 Medalha Melhor Recupera  o (S  da se for 18h)
-                if (RoomInfo.qntd_hole == 18)
+                if (RoomInfo.HoleCount == 18)
                 {
                     v_all_player.Sort(BestRecoverySort);
 
@@ -734,7 +735,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                     if ((ctx_lot = lot_active_item.SpinRoleta()) == null)
                     {
-                        _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um active commun item da medalha de best recovery", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeMedal][Error] nao conseguiu sortear um State commun item da medalha de best recovery", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                     else
                     {
@@ -763,7 +764,7 @@ namespace Pangya_GameServer.Roms.GameModes
             if (PlayerOrder.Count() != all_player)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeTrofel][Error] nao conseguiu gerar os trofeus por que o vector de player rank order nao bate com o dos players no jogo", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeTrofel][Error] nao conseguiu gerar os trofeus por que o vector de player RankPosition order nao bate com o dos players no jogo", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return;
             }
@@ -774,10 +775,10 @@ namespace Pangya_GameServer.Roms.GameModes
             // Active Cummon Item
             for (i = 0; i < 15u; ++i)
             {
-                lottery.Add(200, (sIff.getInstance().ITEM << 26) + i);
+                lottery.Add(200, (sIff.Instance.ITEM << 26) + i);
             }
 
-            if (RoomInfo.qntd_hole == 18 && all_player >= 10)
+            if (RoomInfo.HoleCount == 18 && all_player >= 10)
             {
                 // --- 18 Holes Tourney ----
                 // 10-14 = 1 bronze
@@ -808,7 +809,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
 
             }
-            else if (RoomInfo.qntd_hole == 9 && all_player >= 15)
+            else if (RoomInfo.HoleCount == 9 && all_player >= 15)
             {
                 // --- 9 Holes Tourney ---
                 // 15-18 = 1 bronze
@@ -857,7 +858,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         if ((ctx = lottery.SpinRoleta()) == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeTrofel][Error] nao conseguiu sortear um active commun item do trofel", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeTrofel][Error] nao conseguiu sortear um State commun item do TrophyID", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                         else
                         {
@@ -866,7 +867,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     }
 
                     // S  da os trofeus se n o for Evento GM
-                    if (!(RoomInfo.trofel == TROFEL_GM_EVENT_TYPEID && RoomInfo.flag_gm == 1 && RoomInfo.max_player > 30 && RoomInfo.state_flag == 0x100))
+                    if (!(RoomInfo.TrophyID == TROFEL_GM_EVENT_TYPEID && RoomInfo.IsGameMaster == 1 && RoomInfo.MaxUsers > 30 && RoomInfo.SpecialFlag == 0x100))
                     {
 
                         switch (countTrofel)
@@ -923,7 +924,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         if ((ctx = lottery.SpinRoleta()) == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[Tourney::requestMakeTrofel][Error] nao conseguiu sortear um active commun item do trofel", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestMakeTrofel][Error] nao conseguiu sortear um State commun item do TrophyID", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                         else
                         {
@@ -932,7 +933,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     }
 
                     // S  da os trofeus se n o for Evento GM
-                    if (!(RoomInfo.trofel == TROFEL_GM_EVENT_TYPEID && RoomInfo.flag_gm == 1 && RoomInfo.max_player > 30 && RoomInfo.state_flag == 0x100))
+                    if (!(RoomInfo.TrophyID == TROFEL_GM_EVENT_TYPEID && RoomInfo.IsGameMaster == 1 && RoomInfo.MaxUsers > 30 && RoomInfo.SpecialFlag == 0x100))
                     {
 
                         switch (countTrofel)
@@ -987,9 +988,9 @@ namespace Pangya_GameServer.Roms.GameModes
         {
 
             // Adiciona o Ticket Report do Tourney
-            CmdInsertTicketReport cmd_itr = new CmdInsertTicketReport(RoomInfo.trofel, 4);
+            CmdInsertTicketReport cmd_itr = new CmdInsertTicketReport(RoomInfo.TrophyID, 4);
 
-            snmdb.NormalManagerDB.getInstance().add(0, cmd_itr, null, null);
+            snmdb.NormalManagerDB.Instance.add(0, cmd_itr, null, null);
 
             // Nota: não verificamos getException() imediatamente pois o DB é assíncrono.
             // A verificação de erro deve ser feita no callback, não aqui.
@@ -1015,7 +1016,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 trd.trofel = el.Value.trofel; // Rank, Ouro, Prata e Bronze
                 trd.finish_time = el.Value.time_finish;
 
-                snmdb.NormalManagerDB.getInstance().add(1, new CmdInsertTicketReportData(TicketReport.id, trd), Tourney.OnDatabaseResponse, this);
+                snmdb.NormalManagerDB.Instance.add(1, new CmdInsertTicketReportData(TicketReport.id, trd), Tourney.OnDatabaseResponse, this);
 
                 TicketReport.v_dados.Add(trd);
             }
@@ -1055,7 +1056,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         // Envia para os players online
                         //if (sgs::gs != null) {
-                        if ((session = GameServer.getInstance().FindPlayer(el.Value.uid)) != null)
+                        if ((session = GameServer.Instance.FindPlayer(el.Value.uid)) != null)
                         {
 
                             // Add Ticket Report Item
@@ -1064,7 +1065,7 @@ namespace Pangya_GameServer.Roms.GameModes
                             if ((rt = ItemManager.addItem(item,
                                 session, 0, 0)) < 0)
                             {
-                                throw new exception("[Tourney::requestSendTicketReport][Error] PLAYER[UID=" + Convert.ToString(el.Value.uid) + "], nao conseguiu adicionar o Ticket Report Item[TYPEID=" + Convert.ToString(item._typeid) + "] para o player.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
+                                throw new exception("[Tourney::requestSendTicketReport][Error] Normal[UID=" + Convert.ToString(el.Value.uid) + "], nao conseguiu adicionar o Ticket Report Item[TYPEID=" + Convert.ToString(item._typeid) + "] para o player.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.TOURNEY,
                                     1, 0));
                             }
 
@@ -1072,7 +1073,7 @@ namespace Pangya_GameServer.Roms.GameModes
                             p.init_plain(0x11C);
                             p.WriteByte(1); // OK 
                             session.Send(p);
-                            // Update UserInfo, TrofelInfo e MapStatistics
+                            // Update PlayerUserStatistics, TrofelInfo e MapStatistics
                             SendUpdateInfoAndMapStatistics(session, 0);
 
                             if (rt != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH)
@@ -1092,7 +1093,7 @@ namespace Pangya_GameServer.Roms.GameModes
                             if ((rt = ItemManager.addItem(item,
                                 el.Value.uid, 0, 0)) < 0)
                             {
-                                _smp.message_pool.getInstance().push(new message("[Tourney::requestSendTicketReport][Error] PLAYER[UID=" + Convert.ToString(el.Value.uid) + "] nao conseguiu adicionar o Ticket Report item[TYPEID=" + Convert.ToString(item._typeid) + "] para o player", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestSendTicketReport][Error] Normal[UID=" + Convert.ToString(el.Value.uid) + "] nao conseguiu adicionar o Ticket Report item[TYPEID=" + Convert.ToString(item._typeid) + "] para o player", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             }
 
                         }
@@ -1152,7 +1153,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                     if (player == null)
                     {
-                        _smp.message_pool.getInstance().push(new message("[Tourney::requestGiveMedalAndItens][Error] player_info[OID=" + Convert.ToString(Medals[i].oid) + "] nao tem nos player_all que ficaram no camp ou saiu com ticket report.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestGiveMedalAndItens][Error] player_info[OID=" + Convert.ToString(Medals[i].oid) + "] nao tem nos player_all que ficaram no camp ou saiu com ticket report.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         continue;
                     }
 
@@ -1181,7 +1182,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 {
 
                     // Player Online
-                    if ((session = GameServer.getInstance().FindPlayer(el.Key.uid)) != null)
+                    if ((session = GameServer.Instance.FindPlayer(el.Key.uid)) != null)
                     {
 
                         var rai = ItemManager.addItem(el.Value,
@@ -1189,7 +1190,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         if (rai.fails.Count() > 0 && rai.type != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH)
                         {
-                            _smp.message_pool.getInstance().push(new message("[Tourney::requestGiveMedalAndItens][Error] PLAYER[UID=" + Convert.ToString(el.Key.uid) + "] nao conseguiu adicionar os itens que ele ganhou com medalhas e trofeus.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestGiveMedalAndItens][Error] Normal[UID=" + Convert.ToString(el.Key.uid) + "] nao conseguiu adicionar os itens que ele ganhou com medalhas e trofeus.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                         // Resposta Add Item para o player
@@ -1207,20 +1208,20 @@ namespace Pangya_GameServer.Roms.GameModes
 
                         if (rai.fails.Count() > 0 && rai.type != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH)
                         {
-                            _smp.message_pool.getInstance().push(new message("[Tourney::requestGiveMedalAndItens][Error] PLAYER[UID=" + Convert.ToString(el.Key.uid) + "] nao conseguiu adicionar os itens que ele ganhou com medalhas e trofeus.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Tourney::requestGiveMedalAndItens][Error] Normal[UID=" + Convert.ToString(el.Key.uid) + "] nao conseguiu adicionar os itens que ele ganhou com medalhas e trofeus.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
                 }
 
                 // Trofeus
-                if (RoomInfo.trofel != 0 && el.Key.trofel != 0)
+                if (RoomInfo.TrophyID != 0 && el.Key.trofel != 0)
                 {
 
                     // Player Online
-                    if ((session = GameServer.getInstance().FindPlayer(el.Key.uid)) != null)
+                    if ((session = GameServer.Instance.FindPlayer(el.Key.uid)) != null)
                     {
 
-                        session.Inventory.updateTrofelInfo(RoomInfo.trofel, el.Key.trofel);
+                        session.Inventory.updateTrofelInfo(RoomInfo.TrophyID, el.Key.trofel);
 
                         // Update Tofel do player no jogo
                         SendUpdateInfoAndMapStatistics(session, 0);
@@ -1228,7 +1229,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     }
                     else // Player Offline
                     {
-                        InventoryInfo.updateTrofelInfo(el.Key.uid, RoomInfo.trofel, el.Key.trofel);
+                        InventoryInfo.updateTrofelInfo(el.Key.uid, RoomInfo.TrophyID, el.Key.trofel);
                     }
                 }
 
@@ -1237,7 +1238,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 {
 
                     // Player Online
-                    if ((session = GameServer.getInstance().FindPlayer(el.Key.uid)) != null)
+                    if ((session = GameServer.Instance.FindPlayer(el.Key.uid)) != null)
                     {
 
                         // Update Medal do player
@@ -1250,7 +1251,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     else
                     { // Player Offline
 
-                        // Update Medal do player - find the Player key from PlayerInfo dictionary
+                        // Update Medal do player - find the Player GameKey from PlayerInfo dictionary
                         var playerKey = PlayerInfo.Keys.FirstOrDefault(p => PlayerInfo[p].uid == el.Key.uid);
                         if (playerKey != null && PlayerInfo.TryGetValue(playerKey, out var playerGameInfo))
                         {
@@ -1270,13 +1271,13 @@ namespace Pangya_GameServer.Roms.GameModes
 
             RequestSaveDrop(session);
 
-            // Tourney GM n o tem treasure Hunter Item
-            if (!(RoomInfo.trofel == TROFEL_GM_EVENT_TYPEID && RoomInfo.max_player > 30 && RoomInfo.flag_gm == 1 && RoomInfo.state_flag == 0x100))
+            // Tourney GM n o tem Treasure Hunter Item
+            if (!(RoomInfo.TrophyID == TROFEL_GM_EVENT_TYPEID && RoomInfo.MaxUsers > 30 && RoomInfo.IsGameMaster == 1 && RoomInfo.SpecialFlag == 0x100))
             {
                 RequestDrawTreasureHunterItem(session);
             }
 
-            RainHoleSeqCount(session); // conta os achievement de chuva em holes consecutivas
+            RainHoleSeqCount(session); // conta os achievement de Rain em holes consecutivas
 
             ScoreSeqCount(session); // conta os achievement de back-to-back(2 ou mais score iguais consecutivos) do player
 
@@ -1308,7 +1309,7 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 // Verifica se o player terminou jogo, fez o ultimo hole
-                if (Course.findHoleSeq(pgi.hole) == RoomInfo.qntd_hole)
+                if (Course.findHoleSeq(pgi.hole) == RoomInfo.HoleCount)
                 {
 
                     // Resposta para o player que terminou o ultimo hole do Game 
@@ -1317,20 +1318,20 @@ namespace Pangya_GameServer.Roms.GameModes
                     if (pgi.shot_sync.state_shot.display.clear_bonus)
                     {
 
-                        if (!MapSystem.getInstance().isLoad())
+                        if (!MapSystem.Instance.isLoad())
                         {
-                            MapSystem.getInstance().load();
+                            MapSystem.Instance.load();
                         }
 
-                        var map = MapSystem.getInstance().getMap((byte)(RoomInfo.course & ROOM_INFO_COURSE.UNK));
+                        var map = MapSystem.Instance.getMap((byte)(RoomInfo.CourseIndex & RoomCourseFlags.UNK));
 
                         if (map == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[TourneyBase::checkEndShotOfHole][Error][Warning] tentou pegar o Map dados estaticos do course[COURSE=" + Convert.ToString(RoomInfo.GetMap()) + "], mas nao conseguiu encontra na classe do Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[TourneyBase::checkEndShotOfHole][Error][Warning] tentou pegar o Map dados estaticos do CourseIndex[COURSE=" + Convert.ToString(RoomInfo.GetMap()) + "], mas nao conseguiu encontra na classe do Server.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                         else
                         {
-                            pgi.data.bonus_pang += MapSystem.getInstance().calculeClear30s(map, RoomInfo.qntd_hole);
+                            pgi.data.bonus_pang += MapSystem.Instance.calculeClear30s(map, RoomInfo.HoleCount);
                         }
                     }
                 }
@@ -1371,13 +1372,13 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Salve o record se o camp acabou e o player n o terminou todos os holes tbm tem que salvar o record [OK][Feito]
                     RequestSaveRecordCourse(session,
                         0,
-                        (RoomInfo.qntd_hole == 18 && (Course.findHoleSeq(pgi.hole) == 18 || pgi.flag == PlayerGameInfo.eFLAG_GAME.END_GAME)) ? 1 : 0);
+                        (RoomInfo.HoleCount == 18 && (Course.findHoleSeq(pgi.hole) == 18 || pgi.flag == PlayerGameInfo.eFLAG_GAME.END_GAME)) ? 1 : 0);
 
                     RequestSaveInfo(session, 0);
 
                     // D  Exp para o Caddie E Mascot Tamb m
                     if (pgi.data.exp > 0)
-                    { // s  add exp se for maior que 0
+                    { // s  add Experience se for maior que 0
 
                         // Add Exp para o player
                         session.addExp(pgi.data.exp, false);
@@ -1429,7 +1430,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Colocar o finish_game Para 1 quer dizer que ele acabou o camp
                     pgi.finish_game = 1;
 
-                    // Flag do game que terminou
+                    // ServerFlag do game que terminou
                     GameInitState = 2; // ACABOU
 
                 }
@@ -1446,10 +1447,10 @@ namespace Pangya_GameServer.Roms.GameModes
 
                     RequestDrawTreasureHunterItem(session);
 
-                    // Aqui que vem esse aqui, o Save record course e o save info
+                    // Aqui que vem esse aqui, o Save record CourseIndex e o save info
                     RequestSaveRecordCourse(session,
                         0,
-                        (RoomInfo.qntd_hole == 18 && Course.findHoleSeq(pgi.hole) == 18) ? 1 : 0);
+                        (RoomInfo.HoleCount == 18 && Course.findHoleSeq(pgi.hole) == 18) ? 1 : 0);
 
                     RequestSaveInfo(session, 0);
 
@@ -1467,7 +1468,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Resposta terminou game - Drop Itens
                     SendDropItem(session);
 
-                    // Pacote dizendo para sair da sala e voltar para a Lobby normal por que Ticket report s  pode user em Tourney 
+                    // Pacote dizendo para sair da sala e voltar para a Lobby Normal por que Ticket report s  pode user em Tourney 
                     session.Send(Handle_PACKET_RESPONSE.pacote04C(-1)); 
 
                     // Resposta Envia os itens ganhos no Treasure Hunter
@@ -1537,12 +1538,12 @@ namespace Pangya_GameServer.Roms.GameModes
         {
             uint milliseconds = 0;
 
-            if (RoomInfo.qntd_hole == 18)
+            if (RoomInfo.HoleCount == 18)
                 milliseconds = 10 * 60000; // 10min
-            else if (RoomInfo.qntd_hole == 9)
+            else if (RoomInfo.HoleCount == 9)
                 milliseconds = 5 * 60000; // 5min 
 
-            _timerAfterToEnter = GameServer.getInstance().MakeTimer(milliseconds, () => action());
+            _timerAfterToEnter = GameServer.Instance.MakeTimer(milliseconds, () => action());
         }
 
         public override void RequestEndAfterEnter()
@@ -1569,12 +1570,12 @@ namespace Pangya_GameServer.Roms.GameModes
             {
 
                 if (_timerAfterToEnter != null)
-                    GameServer.getInstance().DeleteTimer(_timerAfterToEnter);
+                    GameServer.Instance.DeleteTimer(_timerAfterToEnter);
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Tourney::clear_time_after_enter][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Tourney::clear_time_after_enter][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             _timerAfterToEnter = null;

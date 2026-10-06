@@ -92,7 +92,7 @@ namespace Pangya_GameServer.Repository
                 m_szConsulta[(int)m_type],
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_tsi._typeid) + ", " + Convert.ToString(m_tsi.qntd));
 
-            checkResponse(r, "nao conseguiu Adicionar Trofel Especial(" + (m_type == eTYPE.GRAND_PRIX ? " Grand Prix" : "") + ")[TYPEID=" + Convert.ToString(m_tsi._typeid) + ", QNTD=" + Convert.ToString(m_tsi.qntd) + "] para o PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu Adicionar Trofel Especial(" + (m_type == eTYPE.GRAND_PRIX ? " Grand Prix" : "") + ")[TYPEID=" + Convert.ToString(m_tsi._typeid) + ", QNTD=" + Convert.ToString(m_tsi.qntd) + "] para o Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

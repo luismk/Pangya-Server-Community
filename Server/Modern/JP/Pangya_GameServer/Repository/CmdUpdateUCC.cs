@@ -110,7 +110,7 @@ namespace Pangya_GameServer.Repository
             + ", " + makeText(((m_type == T_UPDATE.TEMPORARY) ? "T" : "Y"))
             + ", " + Convert.ToString((int)m_type));
 
-            checkResponse(r, "nao conseguiu salvar o UCC[TYPEID=" + Convert.ToString(m_wi._typeid) + ", ID=" + Convert.ToString(m_wi.id) + ", UCCIDX=" + m_wi.ucc.idx + ", NAME=" + m_wi.ucc.name + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu salvar o UCC[TYPEID=" + Convert.ToString(m_wi._typeid) + ", ID=" + Convert.ToString(m_wi.id) + ", UCCIDX=" + m_wi.ucc.idx + ", NAME=" + m_wi.ucc.name + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

@@ -134,7 +134,7 @@ namespace Pangya_GameServer.Models
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[SyncShotGrandZodiac:setState][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[SyncShotGrandZodiac:setState][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -152,7 +152,7 @@ namespace Pangya_GameServer.Models
             {
                 ret = false;
 
-                _smp.message_pool.getInstance().push(new message("[SyncShotGrandZodiac::checkAllState][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[SyncShotGrandZodiac::checkAllState][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -168,7 +168,7 @@ namespace Pangya_GameServer.Models
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[SyncShotGrandZodiac::clearAllState][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[SyncShotGrandZodiac::clearAllState][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -193,7 +193,7 @@ namespace Pangya_GameServer.Models
             {
 
                 ret = false;
-                _smp.message_pool.getInstance().push(new message("[SyncShotGrandZodiac::setStateAndCheckAllAndClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[SyncShotGrandZodiac::setStateAndCheckAllAndClear][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return ret;
@@ -359,6 +359,6 @@ namespace Pangya_GameServer.Models
         public TimeSpan m_start { get; set; } = new TimeSpan();
         public TimeSpan m_end { get; set; } = new TimeSpan();
         public eTYPE_MAKE_ROOM m_type { get; set; } 
-        public bool m_sended_message { get; set; } // Flag que guarda se o intervalo j  enviou a mensagem 
+        public bool m_sended_message { get; set; } // ServerFlag que guarda se o intervalo j  enviou a mensagem 
     }
 }

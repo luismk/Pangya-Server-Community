@@ -19,14 +19,14 @@ namespace Pangya_GameServer.Handles
 
                 if (r == null)
                 {
-                    throw new exception("[Error] PLAYER [UID=" + Player.UserInfo.uid + "] Channel[ID=" +  Player.GetChannel()?.getId() + "] tentou ativar Replay no jogo na sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas ele nao esta em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x6001001));
+                    throw new exception("[Error] Normal [UID=" + Player.UserInfo.UID + "] Channel[ID=" +  Player.GetChannel()?.getId() + "] tentou ativar Replay no jogo na sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas ele nao esta em nenhuma sala. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x6001001));
                 }
 
                r.RequestActiveReplay(Player, Packet);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_ACTIVE_REPLAY][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_ACTIVE_REPLAY][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
     }

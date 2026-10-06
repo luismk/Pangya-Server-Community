@@ -95,7 +95,7 @@ namespace Pangya_GameServer.Repository
                     break;
 
                 case TYPE.CHECK:
-                    response = consulta("SELECT 1 FROM pangya.pangya_daily_quest_player WHERE uid = " + Convert.ToString(m_uid));
+                    response = consulta("SELECT 1 FROM pangya.pangya_daily_quest_player WHERE UID = " + Convert.ToString(m_uid));
 
                     checkResponse(response, $"Não conseguiu verificar o daily quest info do player: {m_uid}");
                     break;

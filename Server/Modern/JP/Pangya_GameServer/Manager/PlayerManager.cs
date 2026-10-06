@@ -39,7 +39,7 @@ namespace Pangya_GameServer
         {
             return GetAllSessions()
                 .OfType<Player>()
-                .FirstOrDefault(p => p.UserInfo?.id == nickname);
+                .FirstOrDefault(p => p.UserInfo?.Login == nickname);
         }
 
         public bool IsAlreadyLoggedIn(uint uid)
@@ -93,7 +93,7 @@ namespace Pangya_GameServer
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[PlayerManager::CheckPlayersItens][ErrorSystem] " + e.ToString(), 0));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerManager::CheckPlayersItens][ErrorSystem] " + e.ToString(), 0));
             }
         }
 
@@ -121,23 +121,23 @@ namespace Pangya_GameServer
                     {
                         foreach (var it in expiredItems)
                         {
-                            _smp.message_pool.getInstance().push(new message(
-                                $"[Buff::Expired] PLAYER[{_session.Inventory.uid}] Buff TypeID: {it._typeid} expirou.",
+                            _smp.LogManager.Instance.push(new AppMessage(
+                                $"[Buff::Expired] Normal[{_session.Inventory.uid}] Buff TypeID: {it._typeid} expirou.",
                                 type_msg.CL_ONLY_FILE_LOG));
                         }
 
                         // 2. Remove todos de uma vez (Predicado deve ser idêntico ao do Where)
                         _session.Inventory.ItemBuffs.RemoveAll(it => UtilTime.GetLocalTimeDiffDESC(it.end_date) > 0);
 
-                        // Dica: Se o buff alterar Pang ou Exp rate, você pode disparar 
+                        // Dica: Se o buff alterar Pang ou Exp Rate, você pode disparar 
                         // um recálculo de buffs da sessão aqui após o lock.
                     }
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
-                    $"[CheckItemBuff][Error] PLAYER[{_session.Inventory.uid}] Erro: {e.Message}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[CheckItemBuff][Error] Normal[{_session.Inventory.uid}] Erro: {e.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
@@ -158,16 +158,16 @@ namespace Pangya_GameServer
 
                     if (removedCount > 0)
                     {
-                        _smp.message_pool.getInstance().push(new message(
-                            $"[CheckCardSpecial][Log] PLAYER[UID={_session.Inventory.uid}] {removedCount} Card(s) Especial(ais) expirado(s) e removido(s).",
+                        _smp.LogManager.Instance.push(new AppMessage(
+                            $"[CheckCardSpecial][Log] Normal[UID={_session.Inventory.uid}] {removedCount} Card(s) Especial(ais) expirado(s) e removido(s).",
                             type_msg.CL_ONLY_FILE_LOG));
                     }
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
-                    $"[CheckCardSpecial][Error] PLAYER[UID={_session.Inventory.uid}] Erro: {e.Message}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[CheckCardSpecial][Error] Normal[UID={_session.Inventory.uid}] Erro: {e.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
@@ -237,13 +237,13 @@ namespace Pangya_GameServer
 
                 foreach (var cad in caddiesToUpdate)
                 {
-                    NormalManagerDB.getInstance().add(1,
+                    NormalManagerDB.Instance.add(1,
                         new CmdUpdateCaddieInfo(_session.Inventory.uid, cad), SQLDBResponse, null);
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[CheckCaddie][Error] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[CheckCaddie][Error] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -262,7 +262,7 @@ namespace Pangya_GameServer
                 {
                     foreach (var el in _session.Inventory.Mascots.Values)
                     {
-                        // Mascot por Tempo (tipo 1) e Expirado
+                        // Mascot por Tempo (Type 1) e Expirado
                         if (el.tipo == 1 && UtilTime.IsExpired(el.data))
                         {
                             lock (_session.Inventory.UpdateItems)
@@ -273,8 +273,8 @@ namespace Pangya_GameServer
                                     _session.Inventory.UpdateItems.Add(el.id, new UpdateItem(UpdateItem.UI_TYPE.MASCOT, el._typeid, el.id));
 
                                     // Log de Expiração
-                                    _smp.message_pool.getInstance().push(new message(
-                                        $"[PlayerManager::CheckMascot][Log] PLAYER[UID={_session.Inventory.uid}] Mascote[TYPEID={el._typeid}, ID={el.id}] expirou em {el.data}.",
+                                    _smp.LogManager.Instance.push(new AppMessage(
+                                        $"[PlayerManager::CheckMascot][Log] Normal[UID={_session.Inventory.uid}] Mascote[TYPEID={el._typeid}, ID={el.id}] expirou em {el.data}.",
                                         type_msg.CL_ONLY_FILE_LOG));
 
                                     // 3. Verifica se o Mascot está equipado e desequipa na memória
@@ -285,8 +285,8 @@ namespace Pangya_GameServer
                                         _session.Inventory.UserEquipment.mascot_id = 0;
                                         mascotChanged = true;
 
-                                        _smp.message_pool.getInstance().push(new message(
-                                            $"[PlayerManager::CheckMascot][Log] PLAYER[UID={_session.Inventory.uid}] Desequipando Mascote expirado [ID={el.id}].",
+                                        _smp.LogManager.Instance.push(new AppMessage(
+                                            $"[PlayerManager::CheckMascot][Log] Normal[UID={_session.Inventory.uid}] Desequipando Mascote expirado [ID={el.id}].",
                                             type_msg.CL_ONLY_FILE_LOG));
                                     }
                                 }
@@ -304,7 +304,7 @@ namespace Pangya_GameServer
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[CheckMascot][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[CheckMascot][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -343,12 +343,12 @@ namespace Pangya_GameServer
                                         // --- LÓGICA DE DESEQUIPAR ---
 
                                         // 1. PART (Roupas/Acessórios)
-                                        if (sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.PART && _session.Inventory.isPartEquiped(el._typeid, el.id))
+                                        if (sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.PART && _session.Inventory.isPartEquiped(el._typeid, el.id))
                                         {
-                                            var ci = _session.Inventory.FindCharacterByTypeid((uint)((Convert.ToUInt32(sIff.getInstance().CHARACTER << 26)) | sIff.getInstance().getItemCharIdentify(el._typeid)));// Sugestão de método mais direto
+                                            var ci = _session.Inventory.FindCharacterByTypeid((uint)((Convert.ToUInt32(sIff.Instance.CHARACTER << 26)) | sIff.Instance.getItemCharIdentify(el._typeid)));// Sugestão de método mais direto
                                             if (ci != null)
                                             {
-                                                var part = sIff.getInstance().findPart(el._typeid);
+                                                var part = sIff.Instance.findPart(el._typeid);
                                                 if (part != null) ci.unequipPart(part);
                                                 else ManualUnequip(ci, el); // Fallback manual se não achar no IFF
 
@@ -357,14 +357,14 @@ namespace Pangya_GameServer
                                         }
 
                                         // 2. CLUBSET (Tacos)
-                                        if (sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.CLUBSET &&
+                                        if (sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.CLUBSET &&
                                            (_session.Inventory.UserEquippedItem.Club_WI?.id == el.id || _session.Inventory.UserEquipment.clubset_id == el.id))
                                         {
                                             EquipDefaultClubSet(_session);
                                         }
 
                                         // 3. BALL (Comet)
-                                        if (sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.BALL &&
+                                        if (sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.BALL &&
                                            (_session.Inventory.UserEquippedItem.Ball_WI?.id == el.id || _session.Inventory.UserEquipment.ball_typeid == el._typeid))
                                         {
                                             EquipDefaultBall(_session);
@@ -374,9 +374,9 @@ namespace Pangya_GameServer
                                         HandleSkinExpiration(_session, el);
 
                                         // 5. PREMIUM TICKET
-                                        if (sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.ITEM && sPremiumSystem.getInstance().isPremium(el._typeid))
+                                        if (sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.ITEM && sPremiumSystem.Instance.isPremium(el._typeid))
                                         {
-                                            sPremiumSystem.getInstance().removePremiumUser(_session);
+                                            sPremiumSystem.Instance.removePremiumUser(_session);
                                         }
                                     }
                                 }
@@ -387,19 +387,19 @@ namespace Pangya_GameServer
 
                 foreach (var ci in charactersToUpdate)
                 {
-                    NormalManagerDB.getInstance().add(2, new CmdUpdateCharacterAllPartEquiped(_session.Inventory.uid, ci), SQLDBResponse, null);
+                    NormalManagerDB.Instance.add(2, new CmdUpdateCharacterAllPartEquiped(_session.Inventory.uid, ci), SQLDBResponse, null);
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[CheckWarehouse][Error] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[CheckWarehouse][Error] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
         // Métodos auxiliares para manter o código limpo (Clean Code)
         private static void LogExpiringItem(Player _session, WarehouseItem el)
         {
-            _smp.message_pool.getInstance().push(new message($"[Warehouse::Expired] PLAYER[UID={_session.Inventory.uid}] Item[TYPEID={el._typeid}] expirou.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[Warehouse::Expired] Normal[UID={_session.Inventory.uid}] Item[TYPEID={el._typeid}] expirou.", type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
 
         private static void ManualUnequip(CharacterInfo ci, WarehouseItem el)
@@ -424,7 +424,7 @@ namespace Pangya_GameServer
                 _session.Inventory.UserEquipment.clubset_id = it.id;
                 _session.Inventory.UserEquippedItem.ClubEquiped.setValues(it.id, it._typeid, it.c);
 
-                var cs = sIff.getInstance().findClubSet(it._typeid);
+                var cs = sIff.Instance.findClubSet(it._typeid);
                 if (cs != null)
                 {
                     for (var i = 0; i < 5; ++i)
@@ -445,7 +445,7 @@ namespace Pangya_GameServer
 
         private static void HandleSkinExpiration(Player _session, WarehouseItem el)
         {
-            if (sIff.getInstance().getItemGroupIdentify(el._typeid) == IFF_GROUP.SKIN)
+            if (sIff.Instance.getItemGroupIdentify(el._typeid) == IFF_GROUP.SKIN)
             {
                 for (var i = 0; i < _session.Inventory.UserEquipment.skin_typeid.Length; ++i)
                 {
@@ -466,14 +466,14 @@ namespace Pangya_GameServer
             if (_arg == null)
             {
                 // Static Functions of Class
-                _smp.message_pool.getInstance().push(new message("[PlayerManager::SQLDBResponse]WARNING] _arg is null", 0));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerManager::SQLDBResponse]WARNING] _arg is null", 0));
                 return;
             }
 
-            // Por Hora só sai, depois faço outro tipo de tratamento se precisar
+            // Por Hora só sai, depois faço outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[PlayerManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), 0));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), 0));
                 return;
             }
 

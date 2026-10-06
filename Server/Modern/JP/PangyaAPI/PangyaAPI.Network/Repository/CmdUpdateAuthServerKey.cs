@@ -26,7 +26,7 @@ namespace PangyaAPI.Network.Repository
         protected override Response prepareConsulta()
         {
             if (m_ask.server_uid == 0u)
-                throw new Exception("[CmdUpdateAuthServerKey::prepareConsulta][Error] AuthServerKey m_ask.server_uid is invalid(zero).");
+                throw new Exception("[CmdUpdateAuthServerKey::prepareConsulta][Error] AuthServerKey m_ask.ServerIndex is invalid(zero).");
 
             string key = "null";
             if (!string.IsNullOrEmpty(m_ask.key))

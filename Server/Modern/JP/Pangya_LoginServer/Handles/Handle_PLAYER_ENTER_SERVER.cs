@@ -1,11 +1,5 @@
 ﻿using Pangya_LoginServer.DataBase;
-
 using Pangya_LoginServer.Server;
-using Pangya_LoginServer.Session;
-using PangyaAPI.Network;
-using PangyaAPI.Network.Core;
-using PangyaAPI.Utilities.Log;
-
 namespace Pangya_LoginServer.Handles
 {
     public class Handle_PLAYER_ENTER_SERVER : HandleBase<Player, Packet_EXAMPLE>
@@ -18,20 +12,20 @@ namespace Pangya_LoginServer.Handles
 
                 if (server_uid == 0)
                 {
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[Handle_PLAYER_ENTER_SERVER][Log] UID inválido de {Player.UserInfo.id}", type_msg.CL_ONLY_CONSOLE));
-                    LoginServer.getInstance().Disconnect(Player);
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[Handle_PLAYER_ENTER_SERVER][Log] UID inválido de {Player.UserInfo.Login}", type_msg.CL_ONLY_CONSOLE));
+                    LoginServer.Instance.Disconnect(Player);
                     return;
                 }
 
                 // 2. Busca lista de servidores (Idealmente em cache para não pesar o DB)
                 var servers = CommandDB.GetGame();
-                var selectedServer = servers.FirstOrDefault(c => c.uid == server_uid);
+                var selectedServer = servers.FirstOrDefault(c => c.UID == server_uid);
 
                 if (selectedServer != null)
                 {
                     // 3. Registra e pega a chave 
-                    string authKey = CommandDB.RegisterAndGetAuthKey(Player.UserInfo.uid, server_uid);
+                    string authKey = CommandDB.RegisterAndGetAuthKey(Player.UserInfo.UID, server_uid);
 
                     if (string.IsNullOrEmpty(authKey))
                         throw new Exception("Falha ao gerar AuthKey no Banco de Dados.");
@@ -41,21 +35,21 @@ namespace Pangya_LoginServer.Handles
                     //enviar um aviso ao server que ele vai entrar..
 
 
-                    _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_ENTER_SERVER][Log] PLAYER[UID: {Player.UserInfo.uid}, ID: {Player.UserInfo.id}, SRV: {selectedServer.nome}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_ENTER_SERVER][Log] PLAYER[UID: {Player.UserInfo.UID}, ID: {Player.UserInfo.Login}, SRV: {selectedServer.Name}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message(
+                    _smp.LogManager.Instance.push(new AppMessage(
                         $"[Handle_PLAYER_ENTER_SERVER][Log] Servidor {server_uid} offline ou inexistente.", type_msg.CL_ONLY_CONSOLE));
 
                     // Opcional: Enviar erro antes de desconectar
                     // Player.Send(LoginPackets.pacoteError(0x0E));
-                    LoginServer.getInstance().Disconnect(Player);
+                    LoginServer.Instance.Disconnect(Player);
                 }
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[SelectServer Error] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }

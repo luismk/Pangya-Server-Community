@@ -75,20 +75,20 @@ namespace Pangya_GameServer.Repository
 
                         v_mi.Add(mi.id, mi);
 
-                        _smp.message_pool.getInstance().push(new message("[CmdMascotInfoInfo::lineResult][Warning] PLAYER[UID=" + (m_uid) + "] adicionou MascotInfo[TYPEID="
-                                 + (mi._typeid) + ", ID=" + (mi.id) + "], com mesmo id e typeid diferente de outro MascotInfoEx que tem no multimap", 0));
+                        _smp.LogManager.Instance.push(new AppMessage("[CmdMascotInfoInfo::lineResult][Warning] Normal[UID=" + (m_uid) + "] adicionou MascotInfo[TYPEID="
+                                 + (mi._typeid) + ", ID=" + (mi.id) + "], com mesmo Login e typeid diferente de outro MascotInfoEx que tem no multimap", 0));
                     }
                     else
                     {
                         // Tem um MascotInfoEx com o mesmo ID e TYPEID (DUPLICATA)
-                        _smp.message_pool.getInstance().push(new message("[CmdMascotInfoInfo::lineResult][Warning] PLAYER[UID=" + (m_uid) + "] tentou adicionar no multimap um MascotInfo[TYPEID="
+                        _smp.LogManager.Instance.push(new AppMessage("[CmdMascotInfoInfo::lineResult][Warning] Normal[UID=" + (m_uid) + "] tentou adicionar no multimap um MascotInfo[TYPEID="
                                  + (it.First().Value._typeid) + ", ID=" + (it.First().Value.id) + "] com o mesmo ID e TYPEID, DUPLICATA", 0));
 
                     }
                 }
                 else
                     // Tem um MascotInfoEx com o mesmo ID e TYPEID (DUPLICATA)
-                    _smp.message_pool.getInstance().push(new message("[CmdMascotInfoInfo::lineResult][Warning] PLAYER[UID=" + (m_uid) + "] tentou adicionar no multimap um MascotInfo[TYPEID="
+                    _smp.LogManager.Instance.push(new AppMessage("[CmdMascotInfoInfo::lineResult][Warning] Normal[UID=" + (m_uid) + "] tentou adicionar no multimap um MascotInfo[TYPEID="
                              + (it.First().Value._typeid) + ", ID=" + (it.First().Value.id) + "] com o mesmo ID e TYPEID, DUPLICATA", 0));
 
             }

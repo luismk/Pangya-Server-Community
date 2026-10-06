@@ -41,7 +41,7 @@ namespace PangyaAPI.Network.Service
                         }
                         catch (Exception ex)
                         {
-                            _smp.message_pool.getInstance().push(new message($"[AcceptLoop::StartAsync][Error] Exception[Message: {ex.Message}, StackTrace: {ex.StackTrace}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[AcceptLoop::StartAsync][Error] Exception[Message: {ex.Message}, StackTrace: {ex.StackTrace}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                         finally
                         {
@@ -60,12 +60,12 @@ namespace PangyaAPI.Network.Service
                 }
                 catch (OperationCanceledException e)
                 {
-                    _smp.message_pool.getInstance().push(new message($"[AcceptLoop::StartAsync][Error] OperationCanceledException[Message: {e.Message}, StackTrace: {e.StackTrace}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[AcceptLoop::StartAsync][Error] OperationCanceledException[Message: {e.Message}, StackTrace: {e.StackTrace}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     break;
                 }
                 catch (Exception ex)
                 {
-                    _smp.message_pool.getInstance().push(new message($"[AcceptLoop::StartAsync][Error] Exception[Message: {ex.Message}, StackTrace: {ex.StackTrace}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[AcceptLoop::StartAsync][Error] Exception[Message: {ex.Message}, StackTrace: {ex.StackTrace}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }

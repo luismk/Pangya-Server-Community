@@ -84,13 +84,13 @@ namespace Pangya_GameServer.Repository
 
         private void CheckAchievementRetorno(AchievementInfoEx ai)
         {
-            var achievement = sIff.getInstance().findAchievement(ai._typeid);
+            var achievement = sIff.Instance.findAchievement(ai._typeid);
 
-            if (sIff.getInstance().getItemGroupIdentify(ai._typeid) != IFF_GROUP.QUEST_ITEM && achievement != null)
+            if (sIff.Instance.getItemGroupIdentify(ai._typeid) != IFF_GROUP.QUEST_ITEM && achievement != null)
             {
                 ai.quest_base_typeid = achievement.TypeID_Quest_Index;
             }
-            else if (sIff.getInstance().getItemGroupIdentify(ai._typeid) == IFF_GROUP.ACHIEVEMENT)
+            else if (sIff.Instance.getItemGroupIdentify(ai._typeid) == IFF_GROUP.ACHIEVEMENT)
                 Console.WriteLine($"[CmdAchievementInfo::LineResult][Warning] Achievement[TypeId={ai._typeid}] not found in .iff file for player: {m_uid}");
         }
 

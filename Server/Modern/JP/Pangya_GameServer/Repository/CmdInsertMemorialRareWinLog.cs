@@ -85,7 +85,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_coin_typeid) + ", " + Convert.ToString(m_ci._typeid) + ", " + Convert.ToString(m_ci.qntd) + ", " + Convert.ToString(m_ci.tipo) + ", " + Convert.ToString(m_ci.probabilidade));
 
-            checkResponse(r, "nao conseguiu inserir um Memorial Shop[COIN=" + Convert.ToString(m_coin_typeid) + "] Rare Win[TYPEID=" + Convert.ToString(m_ci._typeid) + ", QNTD=" + Convert.ToString(m_ci.qntd) + ", RARIDADE=" + Convert.ToString(m_ci.tipo) + "] Log para o PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu inserir um Memorial Shop[COIN=" + Convert.ToString(m_coin_typeid) + "] Rare Win[TYPEID=" + Convert.ToString(m_ci._typeid) + ", QNTD=" + Convert.ToString(m_ci.qntd) + ", RARIDADE=" + Convert.ToString(m_ci.tipo) + "] Log para o Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

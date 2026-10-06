@@ -2,6 +2,7 @@
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Handles;
 using Pangya_GameServer.Manager;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.Models;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Repository;
@@ -28,7 +29,7 @@ namespace Pangya_GameServer.Channels
         public sbyte getId() => m_ci.id;
         public string getName() => m_ci.name;
         public RoomManager getRoomsInfo() => m_rm;
-        public Property getProperty() => Type;
+        public ServerProperty getProperty() => Type;
         #endregion
 
         #region GET SESSION/LIST SESSION 
@@ -63,9 +64,9 @@ namespace Pangya_GameServer.Channels
 
         #region ADD/REMOVE/UPDATE/MAKE SESSION/SEND
 
-        public void SendListUpdateRooms(RoomInfo r)
+        public void SendListUpdateRooms(GameRoomInfoModel r)
         {
-            SendBroadcast(Handle_PACKET_RESPONSE.pacote047([r], 3));
+            SendBroadcast(Handle_PACKET_RESPONSE.MakeGameRoomList([r], 3));
         }
 
 
@@ -75,32 +76,32 @@ namespace Pangya_GameServer.Channels
             {
                 PlayerLobbyInfo pci = new()
                 {
-                    uid = _session.UserInfo.uid,
-                    oid = _session.ConnectionID,
-                    sala_numero = _session.UserInfo.Member.sala_numero,
-                    level = (byte)_session.UserInfo.Member.level,
-                    capability = _session.UserInfo.UserCapabilities,
-                    nickname = _session.UserInfo.nickname,
-                    sDisplayID = "@NT_" + _session.UserInfo.nickname,
-                    title = _session.Inventory.UserEquipment.m_title,
-                    ladder_point = 1000,
-                    guild_index_mark = _session.UserInfo.Guild.index_mark_emblem,
-                    guild_uid = _session.UserInfo.Guild.uid,
-                    guild_mark_img = _session.UserInfo.Guild.mark_emblem,
-                    flag_visible_gm = Convert.ToInt16(_session.UserInfo.Member.state_flag.visible)
+                    UID = _session.UserInfo.UID,
+                    OID = _session.ConnectionID,
+                    RoomID = _session.UserInfo.Member.RoomID,
+                    GameLevel = (byte)_session.UserInfo.Member.GameLevel,
+                    Capability = _session.UserInfo.UserCapabilities,
+                    NickName = _session.UserInfo.NickName,
+                    DisplayID = "@NT_" + _session.UserInfo.NickName,
+                    TitleSkin = _session.Inventory.UserEquipment.m_title,
+                    LadderPoints = 1000,
+                    GuildMarkIndex = _session.UserInfo.Guild.index_mark_emblem,
+                    GuildIndex = _session.UserInfo.Guild.uid,
+                    GuildMarkImage = _session.UserInfo.Guild.mark_emblem,
+                    IsGMVisible = Convert.ToInt16(_session.UserInfo.Member.State.Visible)
                 };
 
                 // Lógica de Quit Rate / Ícones
-                if (_session.UserInfo.Member.level >= 6 && _session.UserInfo.Statistics.jogado >= 50)
+                if (_session.UserInfo.Member.GameLevel >= 6 && _session.UserInfo.Statistics.jogado >= 50)
                 {
                     float rate = _session.UserInfo.Statistics.getQuitRate();
-                    if (rate < GOOD_PLAYER_ICON) pci.state_flag.azinha = 0;
-                    else if (rate >= QUITER_ICON_1 && rate < QUITER_ICON_2) pci.state_flag.quiter_1 = 1;
-                    else if (rate >= QUITER_ICON_2) pci.state_flag.quiter_2 = 1;
+                    if (rate < GOOD_PLAYER_ICON) pci.State.NoQuiterWings = 0;
+                    else if (rate >= QUITER_ICON_1 && rate < QUITER_ICON_2) pci.State.QuiterLow = 1;
+                    else if (rate >= QUITER_ICON_2) pci.State.QuiterHight = 1;
                 }
 
-                pci.state_flag.sexo = _session.UserInfo.Member.sexo;
-                pci.guild_uid = _session.UserInfo.Guild.uid;
+                pci.State.Gender = _session.UserInfo.Member.Gender;
+                pci.GuildIndex = _session.UserInfo.Guild.uid;
 
                 // Adiciona ou Atualiza no dicionário
                 if (!Players_Info.ContainsKey(_session))
@@ -121,38 +122,38 @@ namespace Pangya_GameServer.Channels
                 return;//so retorna mesmo
 
             // Player Canal Info Update
-            pci.nickname = _session.UserInfo.nickname;
-            pci.uid = _session.UserInfo.uid;
-            pci.oid = _session.ConnectionID;
-            pci.sala_numero = _session.UserInfo.Member.sala_numero;
-            pci.level =  _session.UserInfo.Member.level;
-            pci.ladder_point = 1000;
-            pci.flag_visible_gm = _session.UserInfo.Member.state_flag.visible;
-            pci.capability = _session.UserInfo.UserCapabilities;
-            pci.title = _session.Inventory.UserEquipment.m_title;
-            pci.guild_index_mark = _session.UserInfo.Guild.index_mark_emblem;
-            pci.guild_uid = _session.UserInfo.Guild.uid;
-            pci.guild_mark_img = _session.UserInfo.Guild.mark_emblem;
-            // Só faz calculo de Quita rate depois que o player
-            // estiver no level Beginner E e jogado 50 games
-            if (_session.UserInfo.Member.level >= 6 && _session.UserInfo.Statistics.jogado >= 50)
+            pci.NickName = _session.UserInfo.NickName;
+            pci.UID = _session.UserInfo.UID;
+            pci.OID = _session.ConnectionID;
+            pci.RoomID = _session.UserInfo.Member.RoomID;
+            pci.GameLevel =  _session.UserInfo.Member.GameLevel;
+            pci.LadderPoints = 1000;
+            pci.IsGMVisible = _session.UserInfo.Member.State.Visible;
+            pci.Capability = _session.UserInfo.UserCapabilities;
+            pci.TitleSkin = _session.Inventory.UserEquipment.m_title;
+            pci.GuildMarkIndex = _session.UserInfo.Guild.index_mark_emblem;
+            pci.GuildIndex = _session.UserInfo.Guild.uid;
+            pci.GuildMarkImage = _session.UserInfo.Guild.mark_emblem;
+            // Só faz calculo de Quita Rate depois que o player
+            // estiver no Level Beginner E e jogado 50 games
+            if (_session.UserInfo.Member.GameLevel >= 6 && _session.UserInfo.Statistics.jogado >= 50)
             {
                 float rate = _session.UserInfo.Statistics.getQuitRate();
 
                 if (rate < GOOD_PLAYER_ICON)
-                    pci.state_flag.azinha = 1;
+                    pci.State.NoQuiterWings = 1;
                 else if (rate >= QUITER_ICON_1 && rate < QUITER_ICON_2)
-                    pci.state_flag.quiter_1 = 1;
+                    pci.State.QuiterLow = 1;
                 else if (rate >= QUITER_ICON_2)
-                    pci.state_flag.quiter_2 = 1;
+                    pci.State.QuiterHight = 1;
             }
 
             if (_session.Inventory.UserEquippedItem.CharacterEquiped != null && _session.UserInfo.Statistics.getQuitRate() < GOOD_PLAYER_ICON)
-                pci.state_flag.icon_angel = 0;
+                pci.State.AngelWings = 0;
             else
-                pci.state_flag.icon_angel = 0;
+                pci.State.AngelWings = 0;
 
-            pci.state_flag.sexo = _session.UserInfo.Member.sexo;
+            pci.State.Gender = _session.UserInfo.Member.Gender;
 
             _session.SetChannel(this);//Update Location.
 
@@ -173,29 +174,29 @@ namespace Pangya_GameServer.Channels
                 Sessions.Add(_session);
                 m_ci.curr_user++;
 
-                // Channel id e localização inicial
+                // Channel Login e localização inicial
                 _session.UserInfo.Channel = m_ci.id;
                 _session.UserInfo.Place = 0; // 0 = Lobby/Channel
 
                 // Lógica de Condição (Quit Rate / Angel Icon)
-                if (_session.UserInfo.Member.level >= 6 && _session.UserInfo.Statistics.jogado >= 50)
+                if (_session.UserInfo.Member.GameLevel >= 6 && _session.UserInfo.Statistics.jogado >= 50)
                 {
                     float rate = _session.UserInfo.Statistics.getQuitRate();
-                    if (rate < GOOD_PLAYER_ICON) _session.UserInfo.Member.state_flag.azinha = 1;
-                    else if (rate >= QUITER_ICON_1 && rate < QUITER_ICON_2) _session.UserInfo.Member.state_flag.quiter_1 = 1;
-                    else if (rate >= QUITER_ICON_2) _session.UserInfo.Member.state_flag.quiter_2 = 1;
+                    if (rate < GOOD_PLAYER_ICON) _session.UserInfo.Member.State.Wings = 1;
+                    else if (rate >= QUITER_ICON_1 && rate < QUITER_ICON_2) _session.UserInfo.Member.State.Quit10Porcent = 1;
+                    else if (rate >= QUITER_ICON_2) _session.UserInfo.Member.State.Quit20Porcent = 1;
                 }
 
                 if (_session.Inventory.UserEquippedItem.CharacterEquiped != null && _session.UserInfo.Statistics.getQuitRate() < GOOD_PLAYER_ICON)
                 {
-                    _session.UserInfo.Member.state_flag.icon_angel = _session.Inventory.UserEquippedItem.CharacterEquiped.AngelEquiped();
+                    _session.UserInfo.Member.State.AngelWings = _session.Inventory.UserEquippedItem.CharacterEquiped.AngelEquiped();
                 }
                 else
                 {
-                    _session.UserInfo.Member.state_flag.icon_angel = 0;
+                    _session.UserInfo.Member.State.AngelWings = 0;
                 }
 
-                _session.UserInfo.Member.sexo = (byte)(_session.UserInfo.Member.state_flag.sexo);
+                _session.UserInfo.Member.Gender = (byte)(_session.UserInfo.Member.State.Gender);
 
                 // Gera o objeto PlayerLobbyInfo que a Lobby.cs vai usar
                 makePlayerInfo(_session);
@@ -225,7 +226,7 @@ namespace Pangya_GameServer.Channels
             lock (m_cs)
             {
                 // Remove do dicionário de visualização da Lobby
-                if (Players_Info.Any(c=> _session.UserInfo.uid == c.Value.uid))
+                if (Players_Info.Any(c=> _session.UserInfo.UID == c.Value.UID))
                 {
                     Players_Info.Remove(_session);
                 }
@@ -316,7 +317,7 @@ namespace Pangya_GameServer.Channels
 
         #region FIND PLAYER/ROOM
 
-        public void CheckRoom(Player _session, RoomInfo _ri)
+        public void CheckRoom(Player _session, GameRoomInfoModel _ri)
         {
             Lobby._FilterHacker.HandleRoom(_session, _ri, getInfo());
         }
@@ -333,7 +334,7 @@ namespace Pangya_GameServer.Channels
         {
             lock (m_cs)
             {
-                return Sessions.FirstOrDefault(c => c != null && c.UserInfo.uid == _uid);
+                return Sessions.FirstOrDefault(c => c != null && c.UserInfo.UID == _uid);
             }
         }
 
@@ -341,7 +342,7 @@ namespace Pangya_GameServer.Channels
         {
             lock (m_cs)
             {
-                return Sessions.FirstOrDefault(c => c != null && c.UserInfo.nickname == _nickname);
+                return Sessions.FirstOrDefault(c => c != null && c.UserInfo.NickName == _nickname);
             }
         }
 
@@ -364,7 +365,7 @@ namespace Pangya_GameServer.Channels
                 stopInviteTime();
 
             if (TimeInvite == null)//na primeira vez...
-                TimeInvite = GameServer.getInstance().MakeTimer(10 * 1000, () => checkInviteTime(), new List<long>(), PangyaSyncTimer.TIMER_TYPE.NORMAL);
+                TimeInvite = GameServer.Instance.MakeTimer(10 * 1000, () => checkInviteTime(), new List<long>(), PangyaSyncTimer.TIMER_TYPE.NORMAL);
         }
 
         public void stopInviteTime()
@@ -374,11 +375,11 @@ namespace Pangya_GameServer.Channels
             {
 
                 if (TimeInvite != null)
-                    GameServer.getInstance().DeleteTimer(TimeInvite);
+                    GameServer.Instance.DeleteTimer(TimeInvite);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Channel::stopInviteTime][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Channel::stopInviteTime][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             TimeInvite = null;
@@ -399,8 +400,8 @@ namespace Pangya_GameServer.Channels
                     var cii = sInvites[i];
                     if (SendTimeOutInvite(cii))
                     {
-                        _smp.message_pool.getInstance().push(
-                          new message($"[Channel::checkInviteTime][Warning] Remove UID={cii.invited_uid}",
+                        _smp.LogManager.Instance.push(
+                          new AppMessage($"[Channel::checkInviteTime][Warning] Remove UID={cii.invited_uid}",
                           type_msg.CL_FILE_LOG_AND_CONSOLE));
 
 
@@ -417,7 +418,7 @@ namespace Pangya_GameServer.Channels
             {
                 throw new exception("[Channel::deleteInviteTimeRequest][Error] Channel[ID=" + ((ushort)m_ci.id) +
                     "] tentou deletar Invite Time Request[INVITE=" + _ici.invite_uid + ", INVITED=" + _ici.invited_uid +
-                    "] para sala[NUMERO=" + _ici.room_number + "], mas o numero da sala é invalido. Hacker ou Bug",
+                    "] para sala[NUMERO=" + _ici.room_number + "], mas o RoomID da sala é invalido. Hacker ou Bug",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3011, 0));
             }
 
@@ -425,7 +426,7 @@ namespace Pangya_GameServer.Channels
             {
                 throw new exception("[Channel::deleteInviteTimeRequest][Error] Channel[ID=" + ((ushort)m_ci.id) +
                     "] tentou deletar Invite Time Request[INVITE=" + _ici.invite_uid + ", INVITED=" + _ici.invited_uid +
-                    "] para sala[NUMERO=" + _ici.room_number + "], mas quem convidou o uid is invalid(zero)",
+                    "] para sala[NUMERO=" + _ici.room_number + "], mas quem convidou o UID is invalid(zero)",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3011, 1));
             }
 
@@ -433,7 +434,7 @@ namespace Pangya_GameServer.Channels
             {
                 throw new exception("[Channel::deleteInviteTimeRequest][Error] Channel[ID=" + ((ushort)m_ci.id) +
                     "] tentou deletar Invite Time Request[INVITE=" + _ici.invite_uid + ", INVITED=" + _ici.invited_uid +
-                    "] para sala[NUMERO=" + _ici.room_number + "], mas o convidado uid is invalid(zero)",
+                    "] para sala[NUMERO=" + _ici.room_number + "], mas o Invite UID is invalid(zero)",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3011, 2));
             }
 
@@ -452,7 +453,7 @@ namespace Pangya_GameServer.Channels
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             "[Channel::deleteInviteTimeRequest][Sucess] Channel[ID=" + ((ushort)m_ci.id) +
                             "] tentou deletar Invite Time Request[INVITE=" + _ici.invite_uid + ", INVITED=" + _ici.invited_uid +
                             "] para sala[NUMERO=" + _ici.room_number + "], mas ele nao existe mais no List do canal.",
@@ -462,7 +463,7 @@ namespace Pangya_GameServer.Channels
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Channel::deleteInviteTimeRequest][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Channel::deleteInviteTimeRequest][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -479,7 +480,7 @@ namespace Pangya_GameServer.Channels
 
             try
             {
-                // 2. Busca o player convidado no canal
+                // 2. Busca o player Invite no canal
                 var s = FindSessionByUID((int)_ici.invited_uid);
 
                 if (s == null)
@@ -489,7 +490,7 @@ namespace Pangya_GameServer.Channels
                 }
                 else
                 {
-                    // Player encontrado, remove a flag de convidado dele na sala
+                    // Player encontrado, remove a ServerFlag de Invite dele na sala
                     r.DeleteInvited(s);
 
                     // Opcional: Enviar pacote de "Invite Timeout" para o player 's' se necessário
@@ -500,7 +501,7 @@ namespace Pangya_GameServer.Channels
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Channel::send_time_out_invite][Error] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Channel::send_time_out_invite][Error] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return true; // Indica que o processamento terminou e o item pode sair da lista
@@ -515,11 +516,11 @@ namespace Pangya_GameServer.Channels
                     // Itera de trás para frente para remover itens com segurança
                     for (int i = sInvites.Count - 1; i >= 0; i--)
                     {
-                        if (sInvites[i].invited_uid == _session.UserInfo.uid)
+                        if (sInvites[i].invited_uid == _session.UserInfo.UID)
                         {
                             var r = FindRoom(sInvites[i].room_number);
 
-                            // Se a sala ainda existe, remove a flag de convidado dela
+                            // Se a sala ainda existe, remove a ServerFlag de Invite dela
                             if (r != null && r.IsInvited(_session))
                             {
                                 r.DeleteInvited(_session);
@@ -534,7 +535,7 @@ namespace Pangya_GameServer.Channels
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Channel::deleteInviteTimeRequestByInvited][Error] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Channel::deleteInviteTimeRequestByInvited][Error] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -543,19 +544,19 @@ namespace Pangya_GameServer.Channels
 
             if (_ici.room_number < 0)
             {
-                throw new exception("[Channel::addInviteTimeRequest][Error] Channel[ID=" + ((ushort)m_ci.id) + "] tentou adicionar Invite Time Request[INVITE=" + (_ici.invite_uid) + ", INVITED=" + (_ici.invited_uid) + "] para sala[NUMERO=" + (_ici.room_number) + "], mas o numero da sala é invalido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                throw new exception("[Channel::addInviteTimeRequest][Error] Channel[ID=" + ((ushort)m_ci.id) + "] tentou adicionar Invite Time Request[INVITE=" + (_ici.invite_uid) + ", INVITED=" + (_ici.invited_uid) + "] para sala[NUMERO=" + (_ici.room_number) + "], mas o RoomID da sala é invalido. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                     3010, 0));
             }
 
             if (_ici.invite_uid == 0u)
             {
-                throw new exception("[Channel::addInviteTimeRequest][Error] Channel[ID=" + ((ushort)m_ci.id) + "] tentou adicionar Invite Time Request[INVITE=" + (_ici.invite_uid) + ", INVITED=" + (_ici.invited_uid) + "] para sala[NUMERO=" + (_ici.room_number) + "], mas quem convidou o uid is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                throw new exception("[Channel::addInviteTimeRequest][Error] Channel[ID=" + ((ushort)m_ci.id) + "] tentou adicionar Invite Time Request[INVITE=" + (_ici.invite_uid) + ", INVITED=" + (_ici.invited_uid) + "] para sala[NUMERO=" + (_ici.room_number) + "], mas quem convidou o UID is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                     3010, 1));
             }
 
             if (_ici.invited_uid == 0u)
             {
-                throw new exception("[Channel::addInviteTimeRequest][Error] Channel[ID=" + ((ushort)m_ci.id) + "] tentou adicionar Invite Time Request[INVITE=" + (_ici.invite_uid) + ", INVITED=" + (_ici.invited_uid) + "] para sala[NUMERO=" + (_ici.room_number) + "], mas o convidado uid is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                throw new exception("[Channel::addInviteTimeRequest][Error] Channel[ID=" + ((ushort)m_ci.id) + "] tentou adicionar Invite Time Request[INVITE=" + (_ici.invite_uid) + ", INVITED=" + (_ici.invited_uid) + "] para sala[NUMERO=" + (_ici.room_number) + "], mas o Invite UID is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                     3010, 2));
             }
             sInvites.Add(_ici);
@@ -563,11 +564,11 @@ namespace Pangya_GameServer.Channels
         #endregion
 
         #region SEND PACKET ROOM/ PACKET LOBBY 
-        public void SendUpdateRoomInfo(RoomInfo _ri, int _option)
+        public void SendUpdateRoomInfo(GameRoomInfoModel _ri, int _option)
         {
-            if (_ri != null && _ri.GetTipo() != ROOM_INFO_TYPE.PRACTICE && _ri.GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+            if (_ri != null && _ri.GetRoomType() != RoomTypeFlags.PRACTICE && _ri.GetRoomType() != RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
             {
-                SendBroadcast(Handle_PACKET_RESPONSE.pacote047(new List<RoomInfo>() { _ri }, _option), 0);
+                SendBroadcast(Handle_PACKET_RESPONSE.MakeGameRoomList(new List<GameRoomInfoModel>() { _ri }, _option), 0);
             }
         }
 
@@ -575,9 +576,9 @@ namespace Pangya_GameServer.Channels
         public void SendUpdateRoomInfo(short roomID, int _option)
         {
             var _ri = FindRoom(roomID)?.GetInfo();
-            if (_ri != null && _ri.GetTipo() != ROOM_INFO_TYPE.PRACTICE && _ri.GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+            if (_ri != null && _ri.GetRoomType() != RoomTypeFlags.PRACTICE && _ri.GetRoomType() != RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
             {
-                SendBroadcast(Handle_PACKET_RESPONSE.pacote047(new List<RoomInfo>() { _ri }, _option), 0);
+                SendBroadcast(Handle_PACKET_RESPONSE.MakeGameRoomList(new List<GameRoomInfoModel>() { _ri }, _option), 0);
             }
         }
 
@@ -585,7 +586,7 @@ namespace Pangya_GameServer.Channels
         {
             PlayerLobbyInfo pci = GetPlayerInfo(_session);
 
-            SendBroadcast(Handle_PACKET_RESPONSE.pacote046(new List<PlayerLobbyInfo>() { (pci == null) ? new PlayerLobbyInfo() : pci }, _option));
+            SendBroadcast(Handle_PACKET_RESPONSE.MakePlayerLobby(new List<PlayerLobbyInfo>() { (pci == null) ? new PlayerLobbyInfo() : pci }, _option));
         }
 
 
@@ -602,27 +603,27 @@ namespace Pangya_GameServer.Channels
 
                 if (_session.UserInfo.Channel != -1)
                 {
-                    throw new exception("[Channel::enterChannel][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] ja esta conectado em outro canal.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Channel::enterChannel][Error] Normal [UID=" + (_session.UserInfo.UID) + "] ja esta conectado em outro canal.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         2, 2));
                 }
 
                 AddSession(_session);
 
-                _smp.message_pool.getInstance().push(new message($"[Channel::EnterChannel][Sucess] CHANNEL[ID: {m_ci.id}, Users: {m_ci.curr_user}/{m_ci.max_user}, Rooms: {m_rm.getRoomsInfo().Count}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Channel::EnterChannel][Sucess] CHANNEL[ID: {m_ci.id}, Users: {m_ci.curr_user}/{m_ci.max_user}, Rooms: {m_rm.getRoomsInfo().Count}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                _session.Send(Handle_PACKET_RESPONSE.pacote095(0x102));//update channel
+                _session.Send(Handle_PACKET_RESPONSE.pacote095(0x102));//update Channel
 
-                _session.Send(Handle_PACKET_RESPONSE.pacote04E(1));//enter channel 
+                _session.Send(Handle_PACKET_RESPONSE.pacote04E(1));//enter Channel 
 
                 // Verifica se o tempo do ticket premium user acabou e manda a mensagem para o player, e exclui o ticket do player no SERVER, DB e GAME
-                sPremiumSystem.getInstance().CheckEndTimeTicket(_session);
+                sPremiumSystem.Instance.CheckEndTimeTicket(_session);
                 return true;
             }
             catch (exception e)
             {
                 RemoveSession(_session);
 
-                _smp.message_pool.getInstance().push(new message("[Channel::EnterChannel][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Channel::EnterChannel][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return false;
 
@@ -648,15 +649,15 @@ namespace Pangya_GameServer.Channels
                 if (_session.GetRoom() != null)
                     Lobby.LeaveRoom(_session, 0);
 
-                _smp.message_pool.getInstance().push(new message($"[Channel::LeaveChannel][Warning] CHANNEL[ID: {m_ci.id}, Users: {m_ci.curr_user}/{m_ci.max_user}, Rooms: {m_rm.getRoomsInfo().Count()}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Channel::LeaveChannel][Warning] CHANNEL[ID: {m_ci.id}, Users: {m_ci.curr_user}/{m_ci.max_user}, Rooms: {m_rm.getRoomsInfo().Count()}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
                 RemoveSession(_session);
 
-                _smp.message_pool.getInstance().push(new message("[Channel::LeaveChannel][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Channel::LeaveChannel][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                if (!ExceptionError.STDA_ERROR_CHECK_SOURCE_AND_ERROR_TYPE(e.getCodeError(), // Diferente do error do channel
+                if (!ExceptionError.STDA_ERROR_CHECK_SOURCE_AND_ERROR_TYPE(e.getCodeError(), // Diferente do error do Channel
                     STDA_ERROR_TYPE.CHANNEL, 1))
                 {
                     throw;
@@ -668,37 +669,37 @@ namespace Pangya_GameServer.Channels
         public bool CheckEnterChannel(Player _session)
         {
             // Não é GM verifica se o player pode entrar nesse canal
-            if (!_session.UserInfo.UserCapabilities.game_master)
+            if (!_session.UserInfo.UserCapabilities.IsGameMaster)
             {
 
-                if (_session.UserInfo.Member.level < m_ci.min_level_allow || _session.UserInfo.Member.level > m_ci.max_level_allow)
-                    throw new exception("[Channel::CheckEnterChannel][Error] PLAYER [UID=" + (_session.UserInfo.uid) + ", LEVEL=" + (_session.UserInfo.Member.level)
-                        + "] nao tem o level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
+                if (_session.UserInfo.Member.GameLevel < m_ci.min_level_allow || _session.UserInfo.Member.GameLevel > m_ci.max_level_allow)
+                    throw new exception("[Channel::CheckEnterChannel][Error] Normal [UID=" + (_session.UserInfo.UID) + ", LEVEL=" + (_session.UserInfo.Member.GameLevel)
+                        + "] nao tem o Level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
                         + ", MAX=" + m_ci.max_level_allow + "].");
 
-                if (m_ci.type.only_rookie && _session.UserInfo.Member.level > (short)enLEVEL.ROOKIE_A)
-                    throw new exception("[Channel::CheckEnterChannel][Error] PLAYER [UID=" + (_session.UserInfo.uid) + ", LEVEL=" + (_session.UserInfo.Member.level)
-                        + "] nao tem o level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
+                if (m_ci.type.only_rookie && _session.UserInfo.Member.GameLevel > (short)enLEVEL.ROOKIE_A)
+                    throw new exception("[Channel::CheckEnterChannel][Error] Normal [UID=" + (_session.UserInfo.UID) + ", LEVEL=" + (_session.UserInfo.Member.GameLevel)
+                        + "] nao tem o Level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
                         + ", MAX=" + m_ci.max_level_allow + "] com a type So Rookie.");
 
-                if (m_ci.type.LowLevel && _session.UserInfo.Member.level > (short)enLEVEL.JUNIOR_A)
-                    throw new exception("[Channel::CheckEnterChannel][Error] PLAYER [UID=" + (_session.UserInfo.uid) + ", LEVEL=" + (_session.UserInfo.Member.level)
-                        + "] nao tem o level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
+                if (m_ci.type.LowLevel && _session.UserInfo.Member.GameLevel > (short)enLEVEL.JUNIOR_A)
+                    throw new exception("[Channel::CheckEnterChannel][Error] Normal [UID=" + (_session.UserInfo.UID) + ", LEVEL=" + (_session.UserInfo.Member.GameLevel)
+                        + "] nao tem o Level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
                         + ", MAX=" + m_ci.max_level_allow + "] com a type Junior A pra baixo.");
 
-                if (m_ci.type.HighLevel && _session.UserInfo.Member.level < (short)enLEVEL.JUNIOR_E)
-                    throw new exception("[Channel::CheckEnterChannel][Error] PLAYER [UID=" + (_session.UserInfo.uid) + ", LEVEL=" + (_session.UserInfo.Member.level)
-                        + "] nao tem o level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
+                if (m_ci.type.HighLevel && _session.UserInfo.Member.GameLevel < (short)enLEVEL.JUNIOR_E)
+                    throw new exception("[Channel::CheckEnterChannel][Error] Normal [UID=" + (_session.UserInfo.UID) + ", LEVEL=" + (_session.UserInfo.Member.GameLevel)
+                        + "] nao tem o Level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
                         + ", MAX=" + m_ci.max_level_allow + "] com a type Junior E pra cima.");
 
-                if (m_ci.type.senior && (_session.UserInfo.Member.level < (short)enLEVEL.JUNIOR_E || _session.UserInfo.Member.level > (short)enLEVEL.SENIOR_A))
-                    throw new exception("[Channel::CheckEnterChannel][Error] PLAYER [UID=" + (_session.UserInfo.uid) + ", LEVEL=" + (_session.UserInfo.Member.level)
-                        + "] nao tem o level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
+                if (m_ci.type.senior && (_session.UserInfo.Member.GameLevel < (short)enLEVEL.JUNIOR_E || _session.UserInfo.Member.GameLevel > (short)enLEVEL.SENIOR_A))
+                    throw new exception("[Channel::CheckEnterChannel][Error] Normal [UID=" + (_session.UserInfo.UID) + ", LEVEL=" + (_session.UserInfo.Member.GameLevel)
+                        + "] nao tem o Level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
                         + ", MAX=" + m_ci.max_level_allow + "] com a type junior E a Senior A.");
 
-                if (m_ci.type.beginner && (_session.UserInfo.Member.level < (short)enLEVEL.BEGINNER_E || _session.UserInfo.Member.level > (short)enLEVEL.JUNIOR_A))
-                    throw new exception("[Channel::CheckEnterChannel][Error] PLAYER [UID=" + (_session.UserInfo.uid) + ", LEVEL=" + (_session.UserInfo.Member.level)
-                        + "] nao tem o level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
+                if (m_ci.type.beginner && (_session.UserInfo.Member.GameLevel < (short)enLEVEL.BEGINNER_E || _session.UserInfo.Member.GameLevel > (short)enLEVEL.JUNIOR_A))
+                    throw new exception("[Channel::CheckEnterChannel][Error] Normal [UID=" + (_session.UserInfo.UID) + ", LEVEL=" + (_session.UserInfo.Member.GameLevel)
+                        + "] nao tem o Level necessario para entrar no canal[ID=" + (m_ci.id) + ", MIN=" + m_ci.min_level_allow
                         + ", MAX=" + m_ci.max_level_allow + "] com a type Beginner E a Junior A.");
                 return true;
             }
@@ -729,12 +730,12 @@ namespace Pangya_GameServer.Channels
             return FindRoom(id) != null;
         }
 
-        public Room? MakeRoom(RoomInfo ri, Player _session)
+        public Room? MakeRoom(GameRoomInfoModel ri, Player _session)
         {
             return m_rm.MakeRoom(this, ri, _session);
         }
 
-        public RoomGrandPrix? MakeRoomGrandPrix(RoomInfo _ri, Player _session, GrandPrixData _gp, int _option = 0)
+        public RoomGrandPrix? MakeRoomGrandPrix(GameRoomInfoModel _ri, Player _session, GrandPrixData _gp, int _option = 0)
         {
             return m_rm.MakeRoomGrandPrix(this, _ri, _session, _gp, _option);
         } 
@@ -774,7 +775,7 @@ namespace Pangya_GameServer.Channels
                         foreach (var invite_item in all_invite.ToList())
                         {
                             // Busca no Singleton global do GameServer (sgs)
-                            Player s = GameServer.getInstance().FindPlayer(invite_item.invited_uid);
+                            Player s = GameServer.Instance.FindPlayer(invite_item.invited_uid);
                             var ici = (s == null) ? r.DeleteInvited(invite_item.invited_uid) : r.DeleteInvited(s);
 
                             if (ici.room_number >= 0 && ici.invited_uid > 0 && ici.invite_uid > 0) DeleteInviteTimeRequest(ici);
@@ -783,7 +784,7 @@ namespace Pangya_GameServer.Channels
                 }
                 catch (Exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[Channel::leaveRoom][Error] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Channel::leaveRoom][Error] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 // 3. Atualiza o estado do player no Canal/Lobby
@@ -814,7 +815,7 @@ namespace Pangya_GameServer.Channels
                         }
                         catch (exception e)
                         {
-                            _smp.message_pool.getInstance().push(new message("[channel::LeaveRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[Channel::LeaveRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             throw;
                         }
@@ -823,14 +824,14 @@ namespace Pangya_GameServer.Channels
                 else
                 {
                     // Destruição física da sala
-                    RoomInfo ri = r.GetInfo();
+                    GameRoomInfoModel ri = r.GetInfo();
                     r.SetDestroying();
                     m_rm.DestroyRoom(r);
                     
                     SendUpdatePlayerInfo(_session, 3);
-                    SendUpdateRoomInfo(ri, 2); // Avisa o Lobby que a sala sumiu (tipo 2)
+                    SendUpdateRoomInfo(ri, 2); // Avisa o Lobby que a sala sumiu (Type 2)
                     //manda a lista de novo.
-                    _session.Send(Handle_PACKET_RESPONSE.pacote047(m_rm.getRoomsInfo(), 0)); 
+                    _session.Send(Handle_PACKET_RESPONSE.MakeGameRoomList(m_rm.getRoomsInfo(), 0)); 
                     state = LEAVE_ROOM_STATE.ROOM_DESTROYED;
                 }
 
@@ -838,7 +839,7 @@ namespace Pangya_GameServer.Channels
                     state = LEAVE_ROOM_STATE.SEND_UPDATE_CLIENT;
             }
             else if (_option == 1)
-                _smp.message_pool.getInstance().push(new message($"[channel::LeaveRoom][Warning] PLAYER[UID:{_session.UserInfo}] Try Exit to Room[RID: {_session.UserInfo.Member.sala_numero}], NOT EXIST. Hacker ou Bug", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Channel::LeaveRoom][Warning] Normal[UID:{_session.UserInfo}] Try Exit to Room[RID: {_session.UserInfo.Member.RoomID}], NOT EXIST. Hacker ou Bug", type_msg.CL_ONLY_CONSOLE));
              
             return state;
         }
@@ -868,7 +869,7 @@ namespace Pangya_GameServer.Channels
 
                 p.WriteUInt32(0u); // OK
 
-                p.WriteInt16(-1); // Flag
+                p.WriteInt16(-1); // ServerFlag
 
                 _session.Send(p);
             }
@@ -909,7 +910,7 @@ namespace Pangya_GameServer.Channels
                 {
                     r = _session.GetRoom();
 
-                    if (_session.UserInfo.Member.capability.game_master)      //comandos [player gm/adm]
+                    if (_session.UserInfo.Member.Capability.IsGameMaster)      //comandos [player gm/adm]
                     {
                         if (r != null) //comandos em sala
                         { 
@@ -918,7 +919,7 @@ namespace Pangya_GameServer.Channels
                                 string msg = "notice";
                                 msg = msg = string.Join(separator: " ", _command.ToArray());
 
-                                NormalManagerDB.getInstance().add(0, new CmdInsertNotice(msg, 1, 1), null, null);
+                                NormalManagerDB.Instance.add(0, new CmdInsertNotice(msg, 1, 1), null, null);
 
                                 // Send Message
                                 p.init_plain(0x40); // Msg to Chat of player
@@ -935,7 +936,7 @@ namespace Pangya_GameServer.Channels
 
                             if (cmd == ("@bot") && r.GetNumPlayers() == 1 && !r.GameRun())
                             {
-                                if (!r.IsWithBot() && !r.IsRoomGM() && r.GetTipo() == ROOM_INFO_TYPE.STROKE || r.GetTipo() == ROOM_INFO_TYPE.TOURNEY || r.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE)
+                                if (!r.IsWithBot() && !r.IsRoomGM() && r.GetTipo() == RoomTypeFlags.STROKE || r.GetTipo() == RoomTypeFlags.TOURNEY || r.GetTipo() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE)
                                 {
 
                                     try
@@ -964,7 +965,7 @@ namespace Pangya_GameServer.Channels
                                 }
                                 return false;
                             }
-                            if (cmd == ("@play") && r.GetNumPlayers() > 1 && !(r.CurrentGame != null) && (r.GetTipo() == ROOM_INFO_TYPE.STROKE || r.GetTipo() == ROOM_INFO_TYPE.MATCH || r.GetTipo() == ROOM_INFO_TYPE.TOURNEY || r.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE))
+                            if (cmd == ("@play") && r.GetNumPlayers() > 1 && !(r.CurrentGame != null) && (r.GetTipo() == RoomTypeFlags.STROKE || r.GetTipo() == RoomTypeFlags.MATCH || r.GetTipo() == RoomTypeFlags.TOURNEY || r.GetTipo() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE))
                             {
                                 r.SetAllReady();//inicia tudo mundo aqui
                                                 // Send Message
@@ -979,7 +980,7 @@ namespace Pangya_GameServer.Channels
 
                                 return true;
                             }
-                            if (cmd == ("@big_char") && r.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+                            if (cmd == ("@big_char") && r.GetTipo() == RoomTypeFlags.LOUNGE)
                             {
                                 var it = _session.UserInfo.FindStateCharacterLounger(_session.Inventory.UserEquippedItem.CharacterEquiped.id);
                                 if (it != null)
@@ -1004,7 +1005,7 @@ namespace Pangya_GameServer.Channels
 
                                 }
                             }
-                            if (cmd == ("@speed_char") && r.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+                            if (cmd == ("@speed_char") && r.GetTipo() == RoomTypeFlags.LOUNGE)
                             {
                                 var it = _session.UserInfo.FindStateCharacterLounger(_session.Inventory.UserEquippedItem.CharacterEquiped.id);
                                 if (it != null)
@@ -1029,7 +1030,7 @@ namespace Pangya_GameServer.Channels
 
                                 }
                             }
-                            if (cmd == ("@un_char") && r.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+                            if (cmd == ("@un_char") && r.GetTipo() == RoomTypeFlags.LOUNGE)
                             {
                                 var it = _session.UserInfo.FindStateCharacterLounger(_session.Inventory.UserEquippedItem.CharacterEquiped.id);
                                 if (it != null)
@@ -1054,7 +1055,7 @@ namespace Pangya_GameServer.Channels
 
                                 }
                             }
-                            if (cmd == ("@cam_char") && r.GetTipo() == ROOM_INFO_TYPE.LOUNGE)
+                            if (cmd == ("@cam_char") && r.GetTipo() == RoomTypeFlags.LOUNGE)
                             {
                                 var it = _session.UserInfo.FindStateCharacterLounger(_session.Inventory.UserEquippedItem.CharacterEquiped.id);
                                 if (it != null)
@@ -1078,7 +1079,7 @@ namespace Pangya_GameServer.Channels
 
                                 }
                             }
-                            if (cmd == ("@wind") && (r.GetTipo() == ROOM_INFO_TYPE.GRAND_PRIX || r.GetTipo() == ROOM_INFO_TYPE.MATCH || r.GetTipo() == ROOM_INFO_TYPE.STROKE || r.GetTipo() == ROOM_INFO_TYPE.TOURNEY || r.GetTipo() == ROOM_INFO_TYPE.LOUNGE) || r.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE || r.GetTipo() == ROOM_INFO_TYPE.PRACTICE || r.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+                            if (cmd == ("@wind") && (r.GetTipo() == RoomTypeFlags.GRAND_PRIX || r.GetTipo() == RoomTypeFlags.MATCH || r.GetTipo() == RoomTypeFlags.STROKE || r.GetTipo() == RoomTypeFlags.TOURNEY || r.GetTipo() == RoomTypeFlags.LOUNGE) || r.GetTipo() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE || r.GetTipo() == RoomTypeFlags.PRACTICE || r.GetTipo() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
                             {
                                 if (_command.Count < 2)
                                     return false; // não tem argumentos suficientes
@@ -1102,7 +1103,7 @@ namespace Pangya_GameServer.Channels
                                 _session.SendChatNotice("\\c0xff00ff00\\c Change Wind by GM.");
                                 return true;
                             }
-                            if (cmd == ("@weather") && (r.GetTipo() == ROOM_INFO_TYPE.MATCH || r.GetTipo() == ROOM_INFO_TYPE.STROKE || r.GetTipo() == ROOM_INFO_TYPE.TOURNEY || r.GetTipo() == ROOM_INFO_TYPE.LOUNGE) || r.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE || r.GetTipo() == ROOM_INFO_TYPE.PRACTICE || r.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE)
+                            if (cmd == ("@weather") && (r.GetTipo() == RoomTypeFlags.MATCH || r.GetTipo() == RoomTypeFlags.STROKE || r.GetTipo() == RoomTypeFlags.TOURNEY || r.GetTipo() == RoomTypeFlags.LOUNGE) || r.GetTipo() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE || r.GetTipo() == RoomTypeFlags.PRACTICE || r.GetTipo() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE)
                             {
                                 ushort m_weather_lounge = 0;
 
@@ -1162,17 +1163,17 @@ namespace Pangya_GameServer.Channels
                                 item_qntd = uint.Parse(_command.Dequeue());
 
                                 if (item_typeid == 0)
-                                    throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
+                                    throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
                                         + (item_qntd) + "], mas item is invalid. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 3, 0x5700100));
 
                                 if (item_qntd > 20000u)
-                                    throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
+                                    throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
                                         + (item_qntd) + "], mas a quantidade passa de 20mil. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 4, 0x5700100));
 
-                                var @base = sIff.getInstance().findCommomItem(item_typeid);
+                                var @base = sIff.Instance.findCommomItem(item_typeid);
 
                                 if (@base == null)
-                                    throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
+                                    throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
                                         + (item_qntd) + "], mas o item nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 6, 0));
 
                                 stItem item = new stItem();
@@ -1194,12 +1195,12 @@ namespace Pangya_GameServer.Channels
                                         ItemManager.initItemFromBuyItem(el.UserInfo, item, bi, false, 0, 0, 1);
 
                                         if (item._typeid == 0)
-                                            throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
+                                            throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
                                                 + (item_qntd) + "], mas nao conseguiu inicializar o item. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 5, 0));
 
-                                        if (MailManager.SendMessageWithItem(0, el.UserInfo.uid, msg, item) <= 0)
-                                            throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para o PLAYER [UID="
-                                                + (el.UserInfo.uid) + "] o Item[TYPEID=" + (item_typeid) + ", QNTD="
+                                        if (MailManager.SendMessageWithItem(0, el.UserInfo.UID, msg, item) <= 0)
+                                            throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para o Normal [UID="
+                                                + (el.UserInfo.UID) + "] o Item[TYPEID=" + (item_typeid) + ", QNTD="
                                                 + (item_qntd) + "], mas nao conseguiu colocar o item no mail box dele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 7, 0));
                                     }
                                 }
@@ -1224,7 +1225,7 @@ namespace Pangya_GameServer.Channels
                                 string msg = "notice";
                                 msg = string.Join(separator: " ", _command.ToArray());
 
-                                NormalManagerDB.getInstance().add(0, new CmdInsertNotice(msg, 1, 1), null, null);
+                                NormalManagerDB.Instance.add(0, new CmdInsertNotice(msg, 1, 1), null, null);
 
                                 // Send Message
                                 p.init_plain(0x40); // Msg to Chat of player
@@ -1247,17 +1248,17 @@ namespace Pangya_GameServer.Channels
                                 item_qntd = uint.Parse(_command.Dequeue());
 
                                 if (item_typeid == 0)
-                                    throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
+                                    throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
                                         + (item_qntd) + "], mas item is invalid. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 3, 0x5700100));
 
                                 if (item_qntd > 20000u)
-                                    throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
+                                    throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
                                         + (item_qntd) + "], mas a quantidade passa de 20mil. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 4, 0x5700100));
 
-                                var @base = sIff.getInstance().findCommomItem(item_typeid);
+                                var @base = sIff.Instance.findCommomItem(item_typeid);
 
                                 if (@base == null)
-                                    throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
+                                    throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
                                         + (item_qntd) + "], mas o item nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 6, 0));
 
                                 stItem item = new stItem();
@@ -1279,12 +1280,12 @@ namespace Pangya_GameServer.Channels
                                         ItemManager.initItemFromBuyItem(el.UserInfo, item, bi, false, 0, 0, 1);
 
                                         if (item._typeid == 0)
-                                            throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
+                                            throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para todos o Item[TYPEID=" + (item_typeid) + "QNTD = "
                                                 + (item_qntd) + "], mas nao conseguiu inicializar o item. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 5, 0));
 
-                                        if (MailManager.SendMessageWithItem(0, el.UserInfo.uid, msg, item) <= 0)
-                                            throw new exception("[Channel::CommandByChat][Error] PLAYER [UID=" + (_session.UserInfo.uid) + "] tentou enviar presente para o PLAYER [UID="
-                                                + (el.UserInfo.uid) + "] o Item[TYPEID=" + (item_typeid) + ", QNTD="
+                                        if (MailManager.SendMessageWithItem(0, el.UserInfo.UID, msg, item) <= 0)
+                                            throw new exception("[Channel::CommandByChat][Error] Normal [UID=" + (_session.UserInfo.UID) + "] tentou enviar presente para o Normal [UID="
+                                                + (el.UserInfo.UID) + "] o Item[TYPEID=" + (item_typeid) + ", QNTD="
                                                 + (item_qntd) + "], mas nao conseguiu colocar o item no mail box dele. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 7, 0));
                                     }
                                 }
@@ -1308,13 +1309,13 @@ namespace Pangya_GameServer.Channels
                             }
                         }
                     }
-                    else   //comandos [player normal]
+                    else   //comandos [player Normal]
                     {
                         if (r != null)
                         {
-                            if (cmd == ("@bot") && (r.GetTipo() != ROOM_INFO_TYPE.PRACTICE || r.GetTipo() != ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE) && r.GetNumPlayers() == 1 && !r.GameRun())
+                            if (cmd == ("@bot") && (r.GetTipo() != RoomTypeFlags.PRACTICE || r.GetTipo() != RoomTypeFlags.GRAND_ZODIAC_PRACTICE) && r.GetNumPlayers() == 1 && !r.GameRun())
                             {
-                                if (!r.IsWithBot() && r.GetTipo() == ROOM_INFO_TYPE.STROKE || r.GetTipo() == ROOM_INFO_TYPE.TOURNEY || r.GetTipo() == ROOM_INFO_TYPE.SPECIAL_SHUFFLE_COURSE)
+                                if (!r.IsWithBot() && r.GetTipo() == RoomTypeFlags.STROKE || r.GetTipo() == RoomTypeFlags.TOURNEY || r.GetTipo() == RoomTypeFlags.SPECIAL_SHUFFLE_COURSE)
                                 {
 
                                     try
@@ -1343,7 +1344,7 @@ namespace Pangya_GameServer.Channels
                                 }
                                 return false;
                             }
-                            if (cmd == ("@wind") && (r.GetTipo() == ROOM_INFO_TYPE.PRACTICE || r.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE))
+                            if (cmd == ("@wind") && (r.GetTipo() == RoomTypeFlags.PRACTICE || r.GetTipo() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE))
                             {
                                 if (_command.Count < 2)
                                     return false; // não tem argumentos suficientes
@@ -1366,7 +1367,7 @@ namespace Pangya_GameServer.Channels
 
                                 return true;
                             }
-                            if (cmd == ("@weather") && (r.GetTipo() == ROOM_INFO_TYPE.PRACTICE || r.GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_PRACTICE))
+                            if (cmd == ("@weather") && (r.GetTipo() == RoomTypeFlags.PRACTICE || r.GetTipo() == RoomTypeFlags.GRAND_ZODIAC_PRACTICE))
                             {
                                 ushort m_weather_lounge = 0;
 

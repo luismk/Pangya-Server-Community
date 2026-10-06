@@ -28,16 +28,16 @@ namespace Pangya_MessengerServer.Handles
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MESSAGE_SERVER, 5401, 0));
 
                 // 1. Localiza os membros da guilda que estão online no Messenger
-                var v_cm = MessengerServer.getInstance().FindAllGuildMember(club_id);
+                var v_cm = MessengerServer.Instance.FindAllGuildMember(club_id);
 
                 // 2. Localiza o alvo (Pode ser a própria Player ou outro UID)
-                var targetPlayer =  MessengerServer.getInstance().FindPlayer(member_uid);
+                var targetPlayer =  MessengerServer.Instance.FindPlayer(member_uid);
                 PlayerInfo pi = null;
 
                 if (targetPlayer != null)
                 {
                     // Alvo Online: Reseta a guilda na memória
-                    targetPlayer.UserInfo.guild_uid = 0;
+                    targetPlayer.UserInfo.GuildIndex = 0;
                     targetPlayer.UserInfo.m_friend_manager.init(targetPlayer.UserInfo);
                     pi = targetPlayer.UserInfo;
                 }
@@ -45,7 +45,7 @@ namespace Pangya_MessengerServer.Handles
                 {
                     // Alvo Offline: Busca no DB para processar o broadcast corretamente
                     var cmd_pi = new CmdPlayerInfo(member_uid);
-                    NormalManagerDB.getInstance().add(0, cmd_pi, null, null);
+                    NormalManagerDB.Instance.add(0, cmd_pi, null, null);
 
                     if (cmd_pi.getException().getCodeError() != 0)
                         throw cmd_pi.getException();
@@ -63,22 +63,22 @@ namespace Pangya_MessengerServer.Handles
                         member.UserInfo.m_friend_manager.init(member.UserInfo);
 
                         // Envia o pacote de atualização de lista (0x30 -> 0x102)
-                        MessengerServer.getInstance().SendUpdatedFriendList(member);
+                        MessengerServer.Instance.SendUpdatedFriendList(member);
                     }
 
                     // 4. Broadcast de saída/kick (0x3C)
                     using (var p = new Packet((ushort)0x3C))
                     {
-                        p.WriteUInt32(pi.uid);
-                        MessengerServer.getInstance().FriendBroadcast(v_cm, targetPlayer, p);
+                        p.WriteUInt32(pi.UID);
+                        MessengerServer.Instance.FriendBroadcast(v_cm, targetPlayer, p);
                     }
                 }
 
-                _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_KICK_TO_GUILD] Player[{pi.uid}] removido da Guild[{club_id}].", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_KICK_TO_GUILD] Player[{pi.UID}] removido da Guild[{club_id}].", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_KICK_TO_GUILD][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_KICK_TO_GUILD][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;

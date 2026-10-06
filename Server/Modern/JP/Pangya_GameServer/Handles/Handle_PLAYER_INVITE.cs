@@ -29,23 +29,23 @@ namespace Pangya_GameServer.Handles
                 string nickname = Packet.ReadString();
                 uint uid = Packet.ReadUInt32();
 
-                var s = GameServer.getInstance().FindSessionByNickname(nickname);
+                var s = GameServer.Instance.FindSessionByNickname(nickname);
 
-                if (s == null || s.UserInfo.uid != uid)
+                if (s == null || s.UserInfo.UID != uid)
                 {
-                    throw new exception("[Lobby.Room::RequestInvite][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou convidar o PLAYER [UID=" + (uid) + ", NICKNAME=" + nickname + "] para Sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas o Player nao esta nesse canal. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby.Room::RequestInvite][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou convidar o Normal [UID=" + (uid) + ", NICKNAME=" + nickname + "] para Sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas o Player nao esta nesse canal. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         3000, 23));
                 }
 
-                if (s.UserInfo.Member.sala_numero != -1)
+                if (s.UserInfo.Member.RoomID != -1)
                 {
-                    throw new exception("[Lobby.Room::RequestInvite][Warning] PLAYER [UID=" + Player.UserInfo.uid + "] tentou convidar o PLAYER [UID=" + (uid) + ", NICKNAME=" + nickname + "] para Sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas o Player ja esta em outra sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby.Room::RequestInvite][Warning] Normal [UID=" + Player.UserInfo.UID + "] tentou convidar o Normal [UID=" + (uid) + ", NICKNAME=" + nickname + "] para Sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas o Player ja esta em outra sala.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         3002, 23));
                 }
 
                 if (s.UserInfo.Place != 0)
                 {
-                    throw new exception("[Lobby.Room::RequestInvite][Warning] PLAYER [UID=" + Player.UserInfo.uid + "] tentou convidar o PLAYER [UID=" + (uid) + ", NICKNAME=" + nickname + "] para Sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas o Player nao pode ser convidado no momento.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby.Room::RequestInvite][Warning] Normal [UID=" + Player.UserInfo.UID + "] tentou convidar o Normal [UID=" + (uid) + ", NICKNAME=" + nickname + "] para Sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas o Player nao pode ser Invite no momento.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         3002, 23));
                 }
 
@@ -53,11 +53,11 @@ namespace Pangya_GameServer.Handles
 
                 if (r == null)
                 {
-                    throw new exception("[Lobby.Room::RequestInvite][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou convidar o PLAYER [UID=" + (uid) + ", NICKNAME=" + nickname + "] para Sala[NUMERO=" + (Player.UserInfo.Member.sala_numero) + "], mas ele nao esta em nenhuma sala para poder convidar. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby.Room::RequestInvite][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou convidar o Normal [UID=" + (uid) + ", NICKNAME=" + nickname + "] para Sala[NUMERO=" + (Player.UserInfo.Member.RoomID) + "], mas ele nao esta em nenhuma sala para poder convidar. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         3001, 23));
                 }
 
-                var ici = r.AddInvited(Player.UserInfo.uid, s);
+                var ici = r.AddInvited(Player.UserInfo.UID, s);
 
                 m_ci.AddInviteTimeRequest(ici);
                 m_ci.Lobby.SendUpdateRoomInfo(r.GetInfo(), 3);
@@ -65,30 +65,30 @@ namespace Pangya_GameServer.Handles
                 // Resposta Invite Player
                 p.init_plain(0x12F);
                 p.WriteUInt16(0); // Ok
-                p.WriteUInt32(GameServer.getInstance().getUID());
+                p.WriteUInt32(GameServer.Instance.getUID());
                 p.WriteByte(m_ci.getId());
                 p.WriteInt16(r.GetRoomId());
-                p.WriteUInt32(Player.UserInfo.uid);
-                p.WriteString(Player.UserInfo.nickname);
-                p.WriteUInt32(s.UserInfo.uid);
+                p.WriteUInt32(Player.UserInfo.UID);
+                p.WriteString(Player.UserInfo.NickName);
+                p.WriteUInt32(s.UserInfo.UID);
 
                 Player.Send(p);
 
-                // Envia o Convite para o Player
+                // Envia o Invite para o Player
                 p.init_plain(0x83);
                 p.WriteUInt16(0); // OK
-                p.WriteUInt32(GameServer.getInstance().getUID());
+                p.WriteUInt32(GameServer.Instance.getUID());
                 p.WriteByte(m_ci.getId());
                 p.WriteInt16(r.GetRoomId());
-                p.WriteUInt32(Player.UserInfo.uid);
-                p.WriteString(Player.UserInfo.nickname);
-                p.WriteUInt32(s.UserInfo.uid);
+                p.WriteUInt32(Player.UserInfo.UID);
+                p.WriteString(Player.UserInfo.NickName);
+                p.WriteUInt32(s.UserInfo.UID);
 
                 s.Send(p);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby.Room::RequestInvite][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby.Room::RequestInvite][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Resposta Error
                 p.init_plain(0x12F);

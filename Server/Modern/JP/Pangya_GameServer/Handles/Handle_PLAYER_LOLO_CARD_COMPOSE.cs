@@ -30,9 +30,9 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // 1. Verificação de Bloqueio de Feature
-                if (Player.UserInfo.block_flag.m_flag.lolo_copound_card)
+                if (Player.UserInfo.BlockFlag.Flag.LoloCopoundCard)
                 {
-                    throw new exception("[Handle_PLAYER_LOLO_CARD_COMPOSE][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou fundir card, mas está bloqueado.",
+                    throw new exception("[Handle_PLAYER_LOLO_CARD_COMPOSE][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou fundir card, mas está bloqueado.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 7, 0x790001));
                 }
 
@@ -48,7 +48,7 @@ namespace Pangya_GameServer.Handles
                 for (int i = 0; i < lcc._typeid.Length; i++)
                 {
                     uint current_typeid = lcc._typeid[i];
-                    var card_iff = sIff.getInstance().findCard(current_typeid);
+                    var card_iff = sIff.Instance.findCard(current_typeid);
 
                     if (card_iff == null)
                     {
@@ -59,7 +59,7 @@ namespace Pangya_GameServer.Handles
                     // Proibe fusão de cartas SECRET
                     if (card_iff.Rarity == (byte)CARD_TYPE.T_SECRET)
                     {
-                        throw new exception("[Handle] Não é permitido fundir cartas do tipo SECRET.",
+                        throw new exception("[Handle] Não é permitido fundir cartas do Type SECRET.",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 151, 0x5400152));
                     }
 
@@ -74,7 +74,7 @@ namespace Pangya_GameServer.Handles
                     // Anti-Exploit: Verifica se o item está à venda no Personal Shop
                     if (r != null && r.CheckPersonalShopItem(Player, pCi.id))
                     {
-                        throw new exception($"[Handle] Card [ID={pCi.id}] está à venda no shop pessoal.",
+                        throw new exception($"[Handle] Card [ID={pCi.id}] está à venda no ShopRoom pessoal.",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1010, 0x5201010));
                     }
 
@@ -113,7 +113,7 @@ namespace Pangya_GameServer.Handles
                 }
 
                 // 4. Sorteio da Nova Carta (Gacha)
-                var new_card = sCardSystem.getInstance().drawsLoloCardCompose(lcc);
+                var new_card = sCardSystem.Instance.drawsLoloCardCompose(lcc);
                 if (new_card == null || new_card._typeid == 0)
                 {
                     throw new exception("[Handle] Falha no sorteio da carta (sCardSystem).",
@@ -189,7 +189,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_LOLO_CARD_COMPOSE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_LOLO_CARD_COMPOSE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x22A);
                 uint errorCode = (ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL)

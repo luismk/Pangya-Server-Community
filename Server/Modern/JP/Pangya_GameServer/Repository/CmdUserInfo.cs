@@ -6,7 +6,7 @@ namespace Pangya_GameServer.Repository
     public class CmdUserInfo : Pangya_DB
     {
         readonly uint m_uid = uint.MaxValue;
-        UserInfo m_ui = new UserInfo();
+        PlayerUserStatistics m_ui = new PlayerUserStatistics();
         public CmdUserInfo(uint _uid)
         {
             m_uid = _uid;
@@ -91,7 +91,7 @@ namespace Pangya_GameServer.Repository
             checkResponse(r, "nao conseguiu pegar o member info do player: " + (m_uid));
             return r;
         }
-        public UserInfo getInfo()
+        public PlayerUserStatistics getInfo()
         {
             return m_ui;
         }

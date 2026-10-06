@@ -15,20 +15,20 @@ namespace PangyaAPI.Utilities.Log
         CL_ONLY_CONSOLE_DEBUG
     }
 
-    public class message : IDisposable
+    public class AppMessage : IDisposable
     {
         private string m_message;
         private ConsoleColor m_console_color;
         private int m_tipo;
         private bool disposedValue;
 
-        public message()
+        public AppMessage()
         {
             m_message = string.Empty;
             m_tipo = 0;
         }
 
-        public message(string s, int _tipo = 0)
+        public AppMessage(string s, int _tipo = 0)
         {
             m_message = s;
             m_tipo = _tipo;
@@ -37,7 +37,7 @@ namespace PangyaAPI.Utilities.Log
             m_console_color = ConsoleColor.Gray;//padrao
         }
 
-        public message(string s, type_msg _tipo = type_msg.CL_ONLY_CONSOLE)
+        public AppMessage(string s, type_msg _tipo = type_msg.CL_ONLY_CONSOLE)
         {
             m_message = s;
             m_tipo = (int)_tipo;
@@ -46,7 +46,7 @@ namespace PangyaAPI.Utilities.Log
             m_console_color = ConsoleColor.Gray;//padrao
         }
 
-        public message(string s, type_msg _tipo = type_msg.CL_ONLY_CONSOLE, ConsoleColor consoleColor = ConsoleColor.Gray)
+        public AppMessage(string s, type_msg _tipo = type_msg.CL_ONLY_CONSOLE, ConsoleColor consoleColor = ConsoleColor.Gray)
         {
             m_message = s;
             m_tipo = (int)_tipo;

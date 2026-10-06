@@ -33,7 +33,7 @@ namespace Pangya_GameServer.Handles
 
                 if (num_quest <= 0u)
                 {
-                    throw new exception("numero de quest para pegar recompensa e 0", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
+                    throw new exception("RoomID de quest para pegar recompensa e 0", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST,
                         5005, 0));
                 }
 
@@ -54,7 +54,7 @@ namespace Pangya_GameServer.Handles
                 {
 
                     // Item Reward, d� para o Player
-                    if ((qi = sIff.getInstance().findQuestItem(el._typeid)) != null)
+                    if ((qi = sIff.Instance.findQuestItem(el._typeid)) != null)
                     {
                         for (var i = 0; i < (qi.reward._typeid.Length); ++i)
                         {
@@ -74,7 +74,7 @@ namespace Pangya_GameServer.Handles
                                 var rt = RetAddItem.INIT_VALUE; 
                                 if ((rt = ItemManager.addItem(item,  Player, 0, 0)) < 0)
                                 {
-                                    throw new exception("[DailyQuestManager::requestTakeRewardQuest][Error] PLAYER[UID=" + Convert.ToString(Player.UserInfo.uid) + "] tentou pegar a recompensa da Quest[TYPEID=" + Convert.ToString(el._typeid) + ", ID=" + Convert.ToString(el.id) + "], mas nao conseguiu adicionar o Item[TYPEID=" + Convert.ToString(item._typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST, 1500, 0));
+                                    throw new exception("[DailyQuestManager::requestTakeRewardQuest][Error] Normal[UID=" + Convert.ToString(Player.UserInfo.UID) + "] tentou pegar a recompensa da Quest[TYPEID=" + Convert.ToString(el._typeid) + ", ID=" + Convert.ToString(el.id) + "], mas nao conseguiu adicionar o Item[TYPEID=" + Convert.ToString(item._typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.MGR_DAILY_QUEST, 1500, 0));
                                 }
 
                                 if (rt != RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH)
@@ -117,7 +117,7 @@ namespace Pangya_GameServer.Handles
                     }
                 }
 
-                _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_TAKE_REWARD_DAILY_QUEST][Sucess] PLAYER[UID: {Player.UserInfo.uid}] Pegou recompensa da Daily Quest com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_TAKE_REWARD_DAILY_QUEST][Sucess] Normal[UID: {Player.UserInfo.UID}] Pegou recompensa da Daily Quest com sucesso.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
 
                 // UPDATE ON GAME
@@ -128,7 +128,7 @@ namespace Pangya_GameServer.Handles
                 {
                     p.WriteByte(el.type);
                     p.WriteUInt32(el._typeid);
-                    p.WriteInt32(el.id); // id do item no banco de dados
+                    p.WriteInt32(el.id); // Login do item no banco de dados
                     p.WriteUInt32(el.flag_time); // type
                     p.WriteBytes(el.stat.ToArray());
                     p.WriteInt32((el.STDA_C_ITEM_TIME > 0) ? el.STDA_C_ITEM_TIME : el.STDA_C_ITEM_QNTD);
@@ -151,7 +151,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_TAKE_REWARD_DAILY_QUEST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_TAKE_REWARD_DAILY_QUEST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 Player.Send(Handle_PACKET_RESPONSE.pacote227(new List<AchievementInfoEx>(), 1));
                  

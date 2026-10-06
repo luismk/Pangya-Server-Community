@@ -58,7 +58,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_type_update == T_UPDATE_PANG.INCREASE)
             {
-                // Resultado: UPDATE pangya.user_info SET pang = pang + 1000 WHERE UID = 9
+                // Resultado: UPDATE pangya.user_info SET Pang = Pang + 1000 WHERE UID = 9
                 m_consulta = $"{m_szConsulta[0]} + {m_pang} {m_szConsulta[1]} {m_uid}";
             }
             else
@@ -66,16 +66,16 @@ namespace Pangya_GameServer.Repository
                 m_consulta = $@"
             DECLARE @atual BIGINT;
             DECLARE @reducao BIGINT = {m_pang};
-            SELECT @atual = pang FROM pangya.user_info WHERE UID = {m_uid};
+            SELECT @atual = Pang FROM pangya.user_info WHERE UID = {m_uid};
             
             UPDATE pangya.user_info 
-            SET pang = CASE WHEN (@atual - @reducao) < 0 THEN 0 ELSE (@atual - @reducao) END 
+            SET Pang = CASE WHEN (@atual - @reducao) < 0 THEN 0 ELSE (@atual - @reducao) END 
             WHERE UID = {m_uid}";
             }
 
             var r = _update(m_consulta);
 
-            checkResponse(r, "Não conseguiu atualizar o pang do player: " + m_uid);
+            checkResponse(r, "Não conseguiu atualizar o Pang do player: " + m_uid);
 
             return r;
         }
@@ -83,6 +83,6 @@ namespace Pangya_GameServer.Repository
         private ulong m_pang = new ulong();
         private T_UPDATE_PANG m_type_update;
 
-        private string[] m_szConsulta = { "UPDATE pangya.user_info SET pang = pang ", " WHERE UID = " };
+        private string[] m_szConsulta = { "UPDATE pangya.user_info SET Pang = Pang ", " WHERE UID = " };
     }
 }

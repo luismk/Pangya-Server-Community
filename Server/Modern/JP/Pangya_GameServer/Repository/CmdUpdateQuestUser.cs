@@ -57,8 +57,8 @@ namespace Pangya_GameServer.Repository
             if (m_qsi.clear_date_unix != 0) 
             clear_dt = makeText(formatDateLocal(m_qsi.clear_date_unix));
 
-            //nome era date, nao 'name'
-            //var query = $"{m_qsi.counter_item_id}, {makeEscapeKeyword("date")} = {clear_dt} WHERE UID = {m_uid} AND id = {m_qsi.id};";
+            //Name era date, nao 'Name'
+            //var query = $"{m_qsi.counter_item_id}, {makeEscapeKeyword("date")} = {clear_dt} WHERE UID = {m_uid} AND Login = {m_qsi.Login};";
 
             var query = m_uid + ", " + m_qsi.id + ", " + m_qsi.counter_item_id + ", " + clear_dt;
             var r = procedure("pangya.ProcUpdateQuestUser", query);  

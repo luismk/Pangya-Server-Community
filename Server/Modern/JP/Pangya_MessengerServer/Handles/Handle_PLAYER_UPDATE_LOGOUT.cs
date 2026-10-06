@@ -17,16 +17,16 @@ namespace Pangya_MessengerServer.Handles
                 // pois a 'Player' já identifica quem está saindo.
 
                 // 1. Notifica todos os amigos e membros da guilda que este player ficou offline
-                MessengerServer.getInstance().SendUpdatePlayerLogoutToFriends(Player);
+                MessengerServer.Instance.SendUpdatePlayerLogoutToFriends(Player);
 
                 // Log opcional para monitorar o tráfego de saída
-                _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_LOGOUT] Player[{Player.UserInfo.uid}] deslogou do Messenger.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_LOGOUT] Player[{Player.UserInfo.UID}] deslogou do Messenger.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                MessengerServer.getInstance().Disconnect(Player);
+                MessengerServer.Instance.Disconnect(Player);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_LOGOUT][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_LOGOUT][Error] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;

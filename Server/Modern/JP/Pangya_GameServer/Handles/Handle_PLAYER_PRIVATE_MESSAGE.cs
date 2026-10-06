@@ -25,7 +25,7 @@ namespace Pangya_GameServer.Handles
                  
 
                 // 3. Busca do Destinatário
-                var targetPlayer =  GameServer.getInstance().FindSessionByNickname(targetNickname);
+                var targetPlayer =  GameServer.Instance.FindSessionByNickname(targetNickname);
 
                 // Verificações de disponibilidade (Offline, Whisper Off, Away)
                 if (targetPlayer == null || !targetPlayer.Connected || targetPlayer.UserInfo.WhisperState != 1)
@@ -36,28 +36,28 @@ namespace Pangya_GameServer.Handles
                  
                 NotifyGMsOfPrivateMessage(Player, targetPlayer, messageContent);
 
-                _smp.message_pool.getInstance().push(new message(
-                    $"[PM][Log] {Player.UserInfo.nickname} -> {targetPlayer.UserInfo.nickname}: {messageContent}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[PM][Log] {Player.UserInfo.NickName} -> {targetPlayer.UserInfo.NickName}: {messageContent}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE)); 
 
                 // Resposta para quem ENVIOU (Confirmação na aba de Whisper)
                 var pFrom = new Packet(0x84);
                 pFrom.WriteByte(0); // Tipo 0: Enviado por mim
-                pFrom.WriteString(targetPlayer.UserInfo.nickname);
+                pFrom.WriteString(targetPlayer.UserInfo.NickName);
                 pFrom.WriteString(messageContent);
                 Player.Send(pFrom);
 
                 // Envio para quem RECEBEU
                 var pTo = new Packet(0x84);
                 pTo.WriteByte(1); // Tipo 1: Recebido de alguém
-                pTo.WriteString(Player.UserInfo.nickname);
+                pTo.WriteString(Player.UserInfo.NickName);
                 pTo.WriteString(messageContent);
                 targetPlayer.Send(pTo);
                  
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[PM][ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -77,15 +77,15 @@ namespace Pangya_GameServer.Handles
 
         private void NotifyGMsOfPrivateMessage(Player sender, Player receiver, string msg)
         {
-            var gms = GameServer.getInstance().FindAllGM();
+            var gms = GameServer.Instance.FindAllGM();
             if (gms == null || !gms.Any()) return;
 
-            string spyMsg = $"\\5{sender.UserInfo.nickname}>{receiver.UserInfo.nickname}: '{msg}'";
+            string spyMsg = $"\\5{sender.UserInfo.NickName}>{receiver.UserInfo.NickName}: '{msg}'";
 
             foreach (var gm in gms)
             {
-                // Verifica se o GM está com o modo espião/whisper ativo e não é um dos envolvidos
-                if (gm.UserInfo.uid != sender.UserInfo.uid && gm.UserInfo.uid != receiver.UserInfo.uid)
+                // Verifica se o GM está com o HoleMode espião/Whisper ativo e não é um dos envolvidos
+                if (gm.UserInfo.UID != sender.UserInfo.UID && gm.UserInfo.UID != receiver.UserInfo.UID)
                 {
                     var p = new Packet(0x40);
                     p.WriteByte(0); // Chat Normal

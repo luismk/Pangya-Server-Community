@@ -41,7 +41,7 @@ namespace Pangya_GameServer.Handles
 
                 if (card_typeid == 0)
                 {
-                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (card_typeid) + "], mas o typeid é invalid.(zero). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (card_typeid) + "], mas o typeid é invalid.(zero). Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         350, 0x5500351));
                 }
 
@@ -49,34 +49,34 @@ namespace Pangya_GameServer.Handles
 
                 if (pCi == null)
                 {
-                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (card_typeid) + "], mas ele nao tem o card. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (card_typeid) + "], mas ele nao tem o card. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         351, 0x5500352));
                 }
 
                 if (pCi.qntd < 1)
                 {
-                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (card_typeid) + "], nao tem quantidade suficiante[value=" + (pCi.qntd) + ", request=1] de card. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (card_typeid) + "], nao tem quantidade suficiante[value=" + (pCi.qntd) + ", request=1] de card. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         357, 0x5500358));
                 }
 
-                var card = sIff.getInstance().findCard(pCi._typeid);
+                var card = sIff.Instance.findCard(pCi._typeid);
 
                 if (card == null || card.ID != pCi._typeid)
                 {
-                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (card_typeid) + "], mas o card nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (card_typeid) + "], mas o card nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         352, 0x5500353));
                 }
 
-                if (sIff.getInstance().getItemSubGroupIdentify22(card.ID) != (uint)CARD_SUB_TYPE.T_SPECIAL)
+                if (sIff.Instance.getItemSubGroupIdentify22(card.ID) != (uint)CARD_SUB_TYPE.T_SPECIAL)
                 {
-                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (card_typeid) + "], tentou usar um card que nao é espacial. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (card_typeid) + "], tentou usar um card que nao é espacial. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         353, 0x5500354));
                 }
 
                  
                 if (r != null && r.CheckPersonalShopItem(Player, pCi.id))
                 {
-                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas o card esta sendo vendido no Personal shop dele. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas o card esta sendo vendido no Personal ShopRoom dele. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         1010, 0x5201010));
                 }
 
@@ -95,7 +95,7 @@ namespace Pangya_GameServer.Handles
                 cei.parts_typeid = 0;
                 cei.parts_id = 0;
                 cei.use_yn = 1;
-                cei.tipo = sIff.getInstance().getItemSubGroupIdentify22(pCi._typeid);
+                cei.tipo = sIff.Instance.getItemSubGroupIdentify22(pCi._typeid);
                 cei.slot = 0;
 
                 switch (card.Effect)
@@ -104,13 +104,13 @@ namespace Pangya_GameServer.Handles
                         {
                             if ((int)card.EffectValue <= 0)
                             {
-                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas a quantidade do efeito[TYPE=" + (card.Effect) + ", QNTD=" + (card.EffectValue) + "] é invalida. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas a quantidade do efeito[TYPE=" + (card.Effect) + ", QNTD=" + (card.EffectValue) + "] é invalida. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     356, 0x5500357));
                             }
 
                             if (ItemManager.removeItem(item, Player) <= 0)
                             {
-                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao conseguiu deletar o card. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao conseguiu deletar o card. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     355, 0x5500356));
                             }
 
@@ -121,13 +121,13 @@ namespace Pangya_GameServer.Handles
                         {
                             if (card.EffectValue <= 0)
                             {
-                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas a quantidade do efeito[TYPE=" + (card.Effect) + ", QNTD=" + (card.EffectValue) + "] é invalida. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas a quantidade do efeito[TYPE=" + (card.Effect) + ", QNTD=" + (card.EffectValue) + "] é invalida. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     356, 0x5500357));
                             }
 
                             if (ItemManager.removeItem(item, Player) <= 0)
                             {
-                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao conseguiu deletar o card. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao conseguiu deletar o card. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     355, 0x5500356));
                             }
 
@@ -138,13 +138,13 @@ namespace Pangya_GameServer.Handles
                         {
                             if (card.EffectValue <= 0)
                             {
-                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas a quantidade do efeito[TYPE=" + (card.Effect) + ", QNTD=" + (card.EffectValue) + "] é invalida. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas a quantidade do efeito[TYPE=" + (card.Effect) + ", QNTD=" + (card.EffectValue) + "] é invalida. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     356, 0x5500357));
                             }
 
                             if (ItemManager.removeItem(item, Player) <= 0)
                             {
-                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao conseguiu deletar o card. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao conseguiu deletar o card. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     355, 0x5500356));
                             }
 
@@ -181,20 +181,20 @@ namespace Pangya_GameServer.Handles
                     case 28: // Increase Power Gague for Pangya shot
                     case 29: // Ice Inferno %
                     case 30: // Wiz City %
-                    case 31: // Se chover, persistir no próximo hole a chuva
+                    case 31: // Se chover, persistir no próximo hole a Rain
                     case 32: // Efeito de Flor do esquecimento(Mullegen Rose) infinito por tempo(alguns minutos)
                     case 33: // Uknown
                     case 34: // ClubSet Mastery %
                         {
                             if (ItemManager.removeItem(item, Player) <= 0)
                             {
-                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao conseguiu deletar o card. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                                throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + "], mas nao conseguiu deletar o card. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                     355, 0x5500356));
                             }
 
                             var pCei = Player.Inventory.FindCardEquipedByTypeid(cei._typeid,
                                 0, 0,
-                                (int)sIff.getInstance().getItemSubGroupIdentify22(cei._typeid),
+                                (int)sIff.Instance.getItemSubGroupIdentify22(cei._typeid),
                                 card.Effect);
 
                             if (pCei != null)
@@ -205,7 +205,7 @@ namespace Pangya_GameServer.Handles
                                     pCei._typeid = cei._typeid;
                                     pCei.efeito = card.Effect;
                                     pCei.efeito_qntd = card.EffectValue;
-                                    pCei.tipo = sIff.getInstance().getItemSubGroupIdentify22(cei._typeid);
+                                    pCei.tipo = sIff.Instance.getItemSubGroupIdentify22(cei._typeid);
                                     pCei.use_date = new SystemTime(DateTime.Now);
                                     pCei.end_date = UtilTime.UnixToSystemTime(UtilTime.SystemTimeToUnix(pCei.use_date) + (card.EffectTime * 60));
                                 }
@@ -217,7 +217,7 @@ namespace Pangya_GameServer.Handles
                                     pCei.end_date = UtilTime.UnixToSystemTime(new_end_date + (card.EffectTime * 60));
                                 }
 
-                                NormalManagerDB.getInstance().add(17, new CmdUpdateCardSpecialTime(Player.UserInfo.uid, pCei));
+                                NormalManagerDB.Instance.add(17, new CmdUpdateCardSpecialTime(Player.UserInfo.UID, pCei));
 
                                 cei = pCei;
                             }
@@ -226,9 +226,9 @@ namespace Pangya_GameServer.Handles
                                 cei.use_date = new SystemTime(DateTime.Now);
                                 cei.end_date = (UtilTime.UnixToSystemTime(UtilTime.SystemTimeToUnix(cei.use_date) + (card.EffectTime * 60)));
 
-                                CmdEquipCard cmd_ec = new CmdEquipCard(Player.UserInfo.uid, cei, card.EffectTime);
+                                CmdEquipCard cmd_ec = new CmdEquipCard(Player.UserInfo.UID, cei, card.EffectTime);
 
-                                NormalManagerDB.getInstance().add(10,
+                                NormalManagerDB.Instance.add(10,
                                     cmd_ec, null, null);
 
                                 if (cmd_ec.getException().getCodeError() != 0)
@@ -243,7 +243,7 @@ namespace Pangya_GameServer.Handles
                             break;
                         }
                     default:
-                        throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] PLAYER [UID=" + Player.UserInfo.uid + "] tentou usar card special[TYPEID=" + (cei._typeid) + ", ID=" + (cei.id) + "], mas card efeito[TYPE=" + (card.Effect) + ", QNTD=" + (card.EffectValue) + ", TEMPO=" + (card.EffectTime) + "min] no IFF_STRUCT do Server é desconhecido. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] Normal [UID=" + Player.UserInfo.UID + "] tentou usar card Special[TYPEID=" + (cei._typeid) + ", ID=" + (cei.id) + "], mas card efeito[TYPE=" + (card.Effect) + ", QNTD=" + (card.EffectValue) + ", TEMPO=" + (card.EffectTime) + "min] no IFF_STRUCT do Server é desconhecido. Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             354, 0x5500355));
                 }
 
@@ -254,7 +254,7 @@ namespace Pangya_GameServer.Handles
                 p.WriteUInt32(cei.parts_typeid);
                 p.WriteUInt32(cei.parts_id);
                 p.WriteUInt32(cei.slot);
-                p.WriteUInt32(1);       // Acho que seja o active date, como estava no meu antigo
+                p.WriteUInt32(1);       // Acho que seja o State date, como estava no meu antigo
                 p.WriteTime(cei.use_date);
                 p.WriteTime(cei.end_date);
                 p.WriteUInt16(0);		// Não sei o que é ainda
@@ -265,7 +265,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_USE_CARD_SPECIAL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x160);
                 p.WriteUInt32((ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL) ? ExceptionError.STDA_SYSTEM_ERROR_DECODE(e.getCodeError()) : 0x5500350);

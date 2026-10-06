@@ -35,7 +35,7 @@ namespace Pangya_GameServer.Feature
                     // Carrega a lista de eventos
                     CmdLoginRewardInfo cmd_lri = new CmdLoginRewardInfo(); // Waiter
 
-                    snmdb.NormalManagerDB.getInstance().add(0, cmd_lri, null, null);
+                    snmdb.NormalManagerDB.Instance.add(0, cmd_lri, null, null);
 
                     if (cmd_lri.getException().getCodeError() != 0)
                         throw cmd_lri.getException();
@@ -50,19 +50,19 @@ namespace Pangya_GameServer.Feature
                             el_e.is_end = true;
 
                             // Atualiza aqui no banco de dados o evento
-                            snmdb.NormalManagerDB.getInstance().add(1, new CmdUpdateLoginReward(el_e.id, el_e.is_end), SQLDBResponse, this);
+                            snmdb.NormalManagerDB.Instance.add(1, new CmdUpdateLoginReward(el_e.id, el_e.is_end), SQLDBResponse, this);
                         }
                     }
 
                     if (m_events.Count == 0)
-                        _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::initialize][Log] Login Reward System not loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::initialize][Log] Login Reward System not loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // Carregado com sucesso
                     m_load = true;
                 }
                 catch (Exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::initialize][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::initialize][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                     throw; // Relança para o server tomar as providências
                 }
             }
@@ -83,7 +83,7 @@ namespace Pangya_GameServer.Feature
                 }
                 catch (Exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::clear][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::clear][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -106,7 +106,7 @@ namespace Pangya_GameServer.Feature
                 }
                 catch (Exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::isLoad][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::isLoad][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return false;
                 }
             }
@@ -123,7 +123,7 @@ namespace Pangya_GameServer.Feature
                 try
                 {
                     // Carrega lista de player do evento
-                    CmdLoginRewardPlayerInfo cmd_lrpi = new CmdLoginRewardPlayerInfo(_session.UserInfo.uid); // Waiter
+                    CmdLoginRewardPlayerInfo cmd_lrpi = new CmdLoginRewardPlayerInfo(_session.UserInfo.UID); // Waiter
 
                     // Check All Event Enabled
                     for (int i = 0; i < m_events.Count; i++)
@@ -137,17 +137,17 @@ namespace Pangya_GameServer.Feature
                         if (!el_e.end_date.IsEmpty && UtilTime.GetLocalTimeDiff(el_e.end_date) > 0)
                         {
                             el_e.is_end = true;
-                            snmdb.NormalManagerDB.getInstance().add(1, new CmdUpdateLoginReward(el_e.id, el_e.is_end), SQLDBResponse, this);
+                            snmdb.NormalManagerDB.Instance.add(1, new CmdUpdateLoginReward(el_e.id, el_e.is_end), SQLDBResponse, this);
                             continue;
                         }
 
                         // Pega info do player no banco de dados
                         cmd_lrpi.setId(el_e.id);
-                        snmdb.NormalManagerDB.getInstance().add(0, cmd_lrpi, null, null);
+                        snmdb.NormalManagerDB.Instance.add(0, cmd_lrpi, null, null);
 
                         if (cmd_lrpi.getException().getCodeError() != 0)
                         {
-                            _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::checkRewardLoginAndSend][Error][WARNING] " + cmd_lrpi.getException().Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::checkRewardLoginAndSend][Error][WARNING] " + cmd_lrpi.getException().Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                             continue;
                         }
 
@@ -155,7 +155,7 @@ namespace Pangya_GameServer.Feature
 
                         if (p.id == 0 && p.uid == 0) // Não tem, cria um novo
                         {
-                            p = new stPlayerState { id = 0, uid = _session.UserInfo.uid, count_days = 1, count_seq = 0 };
+                            p = new stPlayerState { id = 0, uid = _session.UserInfo.UID, count_days = 1, count_seq = 0 };
 
                             if (p.update_date.IsEmpty)
                                 p.update_date = new SystemTime(DateTime.Now);
@@ -163,11 +163,11 @@ namespace Pangya_GameServer.Feature
                             // Add o player ao banco de dados aqui
                             CmdAddLoginRewardPlayer cmd_alrp = new CmdAddLoginRewardPlayer(el_e.id, p);
 
-                            snmdb.NormalManagerDB.getInstance().add(0, cmd_alrp, null, null);
+                            snmdb.NormalManagerDB.Instance.add(0, cmd_alrp, null, null);
 
                             if (cmd_alrp.getException().getCodeError() != 0 || !cmd_alrp.isGood())
                             {
-                                _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::checkRewardLoginAndSend][Error] falha ao adicionar Player[UID=" + _session.UserInfo.uid + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::checkRewardLoginAndSend][Error] falha ao adicionar Player[UID=" + _session.UserInfo.UID + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 continue;
                             }
 
@@ -184,7 +184,7 @@ namespace Pangya_GameServer.Feature
                             p.count_days++; // Update count
                             p.update_date = new SystemTime(DateTime.Now);
 
-                            snmdb.NormalManagerDB.getInstance().add(2, new CmdUpdateLoginRewardPlayer(p), SQLDBResponse, this);
+                            snmdb.NormalManagerDB.Instance.add(2, new CmdUpdateLoginRewardPlayer(p), SQLDBResponse, this);
                         }
 
                         // Verifica quantas vezes tem que logar para receber o prêmio
@@ -205,8 +205,8 @@ namespace Pangya_GameServer.Feature
                             p.count_days = 0;
                         }
 
-                        // Atualiza aqui o state do player no banco de dados
-                        snmdb.NormalManagerDB.getInstance().add(2, new CmdUpdateLoginRewardPlayer(p), SQLDBResponse, this);
+                        // Atualiza aqui o StateRoom do player no banco de dados
+                        snmdb.NormalManagerDB.Instance.add(2, new CmdUpdateLoginRewardPlayer(p), SQLDBResponse, this);
 
                         // Send Gift
                         SendGiftToPlayer(_session, el_e);
@@ -214,7 +214,7 @@ namespace Pangya_GameServer.Feature
                 }
                 catch (Exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::checkRewardLoginAndSend][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::checkRewardLoginAndSend][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -233,13 +233,13 @@ namespace Pangya_GameServer.Feature
                         if (!el_e.end_date.IsEmpty && UtilTime.GetLocalTimeDiff(el_e.end_date) > 0)
                         {
                             el_e.is_end = true;
-                            snmdb.NormalManagerDB.getInstance().add(1, new CmdUpdateLoginReward(el_e.id, el_e.is_end), SQLDBResponse, this);
+                            snmdb.NormalManagerDB.Instance.add(1, new CmdUpdateLoginReward(el_e.id, el_e.is_end), SQLDBResponse, this);
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::updateLoginReward][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::updateLoginReward][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -262,19 +262,19 @@ namespace Pangya_GameServer.Feature
                 ItemManager.initItemFromBuyItem(_session.UserInfo, item, bi, false, 0, 0, 1);
 
                 if (item._typeid == 0)
-                    _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::sendGiftToPlayer][Error] Bug inicializar item", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::sendGiftToPlayer][Error] Bug inicializar item", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                var baseItem = sIff.getInstance().findCommomItem(_lr.item_reward._typeid);
+                var baseItem = sIff.Instance.findCommomItem(_lr.item_reward._typeid);
                 string itemName = baseItem != null ? baseItem.Name : "";
 
                 string msg = "Login Reward System - \"" + _lr.getName() + "\": item[ " + itemName + " ]";
 
-                if (MailManager.SendMessageWithItem(0, _session.UserInfo.uid, msg, item) <= 0)
-                    _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::sendGiftToPlayer][Error] Bug MailBox", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                if (MailManager.SendMessageWithItem(0, _session.UserInfo.UID, msg, item) <= 0)
+                    _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::sendGiftToPlayer][Error] Bug MailBox", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[LoginRewardSystem::sendGiftToPlayer][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[LoginRewardSystem::sendGiftToPlayer][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 

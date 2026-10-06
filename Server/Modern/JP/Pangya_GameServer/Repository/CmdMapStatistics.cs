@@ -80,7 +80,7 @@ namespace Pangya_GameServer.Repository
                 ? 9 + (uint)m_modo
                 : (m_modo == TYPE_MODO.M_NORMAL ? (uint)m_season : (uint)m_season * 10 + (uint)m_modo);
 
-            // 2. Pick the procedure name
+            // 2. Pick the procedure Name
             string procName = (m_type == TYPE.NORMAL)
                 ? "pangya.ProcGetMapStatistics"
                 : "pangya.ProcGetMapStatisticsAssist";

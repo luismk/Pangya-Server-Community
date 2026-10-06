@@ -67,7 +67,7 @@ namespace Pangya_GameServer.Handles
             {
                 type = (SYNC_ITEM_FLAGS)Packet.ReadByte(); 
 
-                _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_SYNC_ITEM_MY_ROOM][Warning] PLAYER[UID: {Player.UserInfo.uid}, REQ: {type}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_SYNC_ITEM_MY_ROOM][Warning] Normal[UID: {Player.UserInfo.UID}, REQ: {type}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 switch (type)
                 {
@@ -111,7 +111,7 @@ namespace Pangya_GameServer.Handles
                         break;
 
                     default:
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[MyRoom] Tipo de update não implementado: {type} ({type})",
                             type_msg.CL_ONLY_CONSOLE));
                         error = 1;
@@ -125,8 +125,8 @@ namespace Pangya_GameServer.Handles
             {
                 Player.Send(Handle_PACKET_RESPONSE.pacote06B(Player.Inventory, (byte)type, 1));
 
-                _smp.message_pool.getInstance().push(
-                    new message(
+                _smp.LogManager.Instance.push(
+                    new AppMessage(
                         "[Handle_PLAYER_CHANGE_PLAYER_ITEM_MY_ROOM][ErrorSystem] " +
                         e.getFullMessageError(),
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
@@ -150,7 +150,7 @@ namespace Pangya_GameServer.Handles
             Player.CheckCharacterEquipedPart(ci);
             Player.CheckCharacterEquipedAuxPart(ci);
 
-            NormalManagerDB.getInstance().add(0, new CmdUpdateCharacterAllPartEquiped(Player.Inventory.uid, ci));
+            NormalManagerDB.Instance.add(0, new CmdUpdateCharacterAllPartEquiped(Player.Inventory.uid, ci));
 
             return error;
         }
@@ -167,7 +167,7 @@ namespace Pangya_GameServer.Handles
             //é diferente do outro
             Player.Inventory.SyncCharacter(charId);
 
-            NormalManagerDB.getInstance().add(0, new CmdUpdateCharacterEquiped(Player.Inventory.uid, charId));
+            NormalManagerDB.Instance.add(0, new CmdUpdateCharacterEquiped(Player.Inventory.uid, charId));
 
             return error;
         }
@@ -195,7 +195,7 @@ namespace Pangya_GameServer.Handles
                 Player.Inventory.UserEquipment.caddie_id = 0;
             }
 
-            NormalManagerDB.getInstance().add(0, new CmdUpdateCaddieEquiped(Player.Inventory.uid, itemId));
+            NormalManagerDB.Instance.add(0, new CmdUpdateCaddieEquiped(Player.Inventory.uid, itemId));
 
             return error;
         }
@@ -221,7 +221,7 @@ namespace Pangya_GameServer.Handles
                 Player.Inventory.UserEquipment.ball_typeid = 0;
             }
 
-            NormalManagerDB.getInstance().add(0, new CmdUpdateBallEquiped(Player.Inventory.uid, (uint)ballTypeId));
+            NormalManagerDB.Instance.add(0, new CmdUpdateBallEquiped(Player.Inventory.uid, (uint)ballTypeId));
 
             // CLUBSET
             int clubId = packet.ReadInt32();
@@ -236,7 +236,7 @@ namespace Pangya_GameServer.Handles
             if (Player.CheckClubSetEquiped(Player.Inventory.UserEquipment))
                 clubId = Player.Inventory.UserEquipment.clubset_id;
 
-            NormalManagerDB.getInstance().add(
+            NormalManagerDB.Instance.add(
                  0,
                  new CmdUpdateClubsetEquiped(Player.Inventory.uid, clubId));
 
@@ -255,7 +255,7 @@ namespace Pangya_GameServer.Handles
             if (Player.Inventory.CheckItemEquiped(ue.item_slot)) //verificacao....
                 Player.Inventory.UserEquipment.item_slot = ue.item_slot;
 
-            NormalManagerDB.getInstance().add(25, new CmdUpdateItemSlot(Player.Inventory.uid, ue.item_slot));
+            NormalManagerDB.Instance.add(25, new CmdUpdateItemSlot(Player.Inventory.uid, ue.item_slot));
 
             return error;
         }
@@ -284,7 +284,7 @@ namespace Pangya_GameServer.Handles
                 Player.Inventory.UserEquipment.skin_typeid[i] = skin._typeid;
             }
 
-            NormalManagerDB.getInstance().add(0, new CmdUpdateSkinEquiped(Player.Inventory.uid, Player.Inventory.UserEquipment));
+            NormalManagerDB.Instance.add(0, new CmdUpdateSkinEquiped(Player.Inventory.uid, Player.Inventory.UserEquipment));
 
             return error;
         }
@@ -308,7 +308,7 @@ namespace Pangya_GameServer.Handles
                 Player.Inventory.UserEquipment.mascot_id = 0;
             }
 
-            NormalManagerDB.getInstance().add(0, new CmdUpdateMascotEquiped(Player.Inventory.uid, id));
+            NormalManagerDB.Instance.add(0, new CmdUpdateMascotEquiped(Player.Inventory.uid, id));
 
             return error;
         }
@@ -347,7 +347,7 @@ namespace Pangya_GameServer.Handles
                 var pWi = Player.Inventory.FindWarehouseItemById(cutinId);
 
                 if (pWi == null ||
-                    sIff.getInstance().getItemGroupIdentify(pWi._typeid) != IFF_GROUP.SKIN)
+                    sIff.Instance.getItemGroupIdentify(pWi._typeid) != IFF_GROUP.SKIN)
                     return 3; // Item Type Wrong
 
                 ci.cut_in[i] = (uint)cutinId;
@@ -359,7 +359,7 @@ namespace Pangya_GameServer.Handles
             Player.CheckCharacterEquipedCutin(ci);
 
             // Update DB
-            NormalManagerDB.getInstance().add(0, new CmdUpdateCharacterCutinEquiped(Player.Inventory.uid, ci));
+            NormalManagerDB.Instance.add(0, new CmdUpdateCharacterCutinEquiped(Player.Inventory.uid, ci));
 
             return error;
         }
@@ -381,7 +381,7 @@ namespace Pangya_GameServer.Handles
                 var pMri = Player.Inventory.FindMyRoomItemByTypeid((uint)posterTypeId);
 
                 if (pMri == null ||
-                    sIff.getInstance().getItemGroupIdentify(pMri._typeid) != IFF_GROUP.FURNITURE)
+                    sIff.Instance.getItemGroupIdentify(pMri._typeid) != IFF_GROUP.FURNITURE)
                     return 2;
 
                 Player.Inventory.UserEquipment.poster[i] = (uint)posterTypeId;
@@ -389,7 +389,7 @@ namespace Pangya_GameServer.Handles
 
             if (Player.CheckPosterEquiped(Player.Inventory.UserEquipment) || error == 4)
             {
-                NormalManagerDB.getInstance().add(0, new CmdUpdatePosterEquiped(Player.Inventory.uid, Player.Inventory.UserEquipment));
+                NormalManagerDB.Instance.add(0, new CmdUpdatePosterEquiped(Player.Inventory.uid, Player.Inventory.UserEquipment));
             }
 
             return error;

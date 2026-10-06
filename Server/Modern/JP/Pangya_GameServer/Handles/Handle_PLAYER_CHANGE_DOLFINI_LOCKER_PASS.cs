@@ -22,33 +22,33 @@ namespace Pangya_GameServer.Handles
                 // 2. Validação e Sanitização (Old Pass)
                 if (string.IsNullOrEmpty(old_pass))
                 {
-                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou contra o server[MESSAGE=" + old_pass + "], vazio. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] Normal[UID=" + Player.UserInfo.UID + "] tentou contra o server[MESSAGE=" + old_pass + "], vazio. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 1));
                 }
 
                 if (!Tools.Sanitize(old_pass))
                 {
-                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou contra o server[MESSAGE=" + old_pass + "], tentativa de inject. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] Normal[UID=" + Player.UserInfo.UID + "] tentou contra o server[MESSAGE=" + old_pass + "], tentativa de inject. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 1));
                 }
 
                 // 3. Validação e Sanitização (New Pass)
                 if (string.IsNullOrEmpty(new_pass))
                 {
-                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou contra o server[MESSAGE=" + new_pass + "], vazio. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] Normal[UID=" + Player.UserInfo.UID + "] tentou contra o server[MESSAGE=" + new_pass + "], vazio. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 1));
                 }
 
                 if (!Tools.Sanitize(new_pass))
                 {
-                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] PLAYER[UID=" + Player.UserInfo.uid + "] tentou contra o server[MESSAGE=" + new_pass + "], tentativa de inject. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] Normal[UID=" + Player.UserInfo.UID + "] tentou contra o server[MESSAGE=" + new_pass + "], tentativa de inject. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 1));
                 }
 
                 // 4. Verificação de comprimento máximo
                 if (old_pass.Length > 4 || new_pass.Length > 4)
                 {
-                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar a senha, mas length é superior ao permitido.",
+                    throw new exception("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar a Password, mas length é superior ao permitido.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 301, 5100202));
                 }
 
@@ -58,7 +58,7 @@ namespace Pangya_GameServer.Handles
                 if (string.CompareOrdinal(old_pass, Player.Inventory.DolfineLocker.pass) != 0)
                 {
                     // Senha antiga incorreta
-                    _smp.message_pool.getInstance().push(new message("[Dolfini Locker::Change Pass][Success] PLAYER [UID=" + Player.UserInfo.uid + "] tentou trocar a senha mas a antiga[" + old_pass + "] está incorreta", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Dolfini Locker::Change Pass][Success] Normal [UID=" + Player.UserInfo.UID + "] tentou trocar a Password mas a antiga[" + old_pass + "] está incorreta", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     p.WriteUInt32(1); // Código de erro: Senha antiga não confere
                 }
@@ -68,16 +68,16 @@ namespace Pangya_GameServer.Handles
                     Player.Inventory.DolfineLocker.pass = new_pass;
                     p.WriteUInt32(0); // Sucesso
 
-                    _smp.message_pool.getInstance().push(new message("[Dolfini Locker::Change Pass][Success] PLAYER [UID=" + Player.UserInfo.uid + "] trocou a senha com sucesso", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Dolfini Locker::Change Pass][Success] Normal [UID=" + Player.UserInfo.UID + "] trocou a Password com sucesso", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                    NormalManagerDB.getInstance().add(1, new CmdUpdateDolfiniLockerPass(Player.UserInfo.uid, new_pass));
+                    NormalManagerDB.Instance.add(1, new CmdUpdateDolfiniLockerPass(Player.UserInfo.UID, new_pass));
                 }
 
                 Player.Send(p);
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_CHANGE_DOLFINI_LOCKER_PASS][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x174);
 

@@ -64,7 +64,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta[0] + Convert.ToString(m_gpc.position) + m_szConsulta[1] + Convert.ToString(m_uid) + m_szConsulta[2] + Convert.ToString(m_gpc._typeid));
 
-            checkResponse(r, "nao conseguiu atualizar o Grand Prix Clear[TYPEID=" + Convert.ToString(m_gpc._typeid) + ", POSITION=" + Convert.ToString(m_gpc.position) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o Grand Prix Clear[TYPEID=" + Convert.ToString(m_gpc._typeid) + ", POSITION=" + Convert.ToString(m_gpc.position) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }
@@ -72,6 +72,6 @@ namespace Pangya_GameServer.Repository
         private uint m_uid = new uint();
         private GrandPrixClear m_gpc = new GrandPrixClear();
 
-        private string[] m_szConsulta = { "UPDATE pangya.pangya_grandprix_clear SET flag = ", " WHERE UID = ", " AND typeid = " };
+        private string[] m_szConsulta = { "UPDATE pangya.pangya_grandprix_clear SET ServerFlag = ", " WHERE UID = ", " AND typeid = " };
     }
 }

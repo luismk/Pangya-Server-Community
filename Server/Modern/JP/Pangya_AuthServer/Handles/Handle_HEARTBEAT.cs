@@ -25,13 +25,13 @@ namespace Pangya_AuthServer.Handles
                     Player.SendAuth(response);
                 }
 
-                //_smp.message_pool.getInstance().push(new message(
-                //   $"[Handle_HEART][Sucess] UPDATE SERVER {Player.m_pi.uid} ON",
+                //_smp.LogManager.Instance.push(new AppMessage(
+                //   $"[Handle_HEART][Sucess] UPDATE SERVER {Player.m_pi.UID} ON",
                 //   type_msg.CL_FILE_LOG_AND_CONSOLE)); 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Critical] Falha no Handle_HEART para {Player.UserInfo.uid}: {ex.Message}");
+                Console.WriteLine($"[Critical] Falha no Handle_HEART para {Player.UserInfo.UID}: {ex.Message}");
             }
         }
     }

@@ -73,7 +73,7 @@ namespace Pangya_GameServer.Repository
                     catch (exception e)
                     {
 
-                        _smp.message_pool.getInstance().push(new message("[CmdEmailInfo2::lineResult][ErrorSystem][Teste com o try para nao sair do cmd db] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[CmdEmailInfo2::lineResult][ErrorSystem][Teste com o try para nao sair do cmd db] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
 
@@ -112,7 +112,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_ei.id != m_email_id)
             {
-                throw new exception("[CmdEmailInfo2::lineResult][Error] o email info retornado nao e igual ao requisitado. req id: " + Convert.ToString(m_email_id) + " != " + Convert.ToString(m_ei.id));
+                throw new exception("[CmdEmailInfo2::lineResult][Error] o email info retornado nao e igual ao requisitado. req Login: " + Convert.ToString(m_email_id) + " != " + Convert.ToString(m_ei.id));
             }
         }
 
@@ -134,7 +134,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(_uid) + ", " + Convert.ToString(m_email_id));
 
-            checkResponse(r, "nao conseguiu pegar o Email[ID=" + Convert.ToString(m_email_id) + "] information do PLAYER[UID=" + Convert.ToString(_uid) + "]");
+            checkResponse(r, "nao conseguiu pegar o Email[ID=" + Convert.ToString(m_email_id) + "] information do Normal[UID=" + Convert.ToString(_uid) + "]");
 
             return r;
         }

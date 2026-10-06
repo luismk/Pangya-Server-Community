@@ -57,7 +57,7 @@ namespace Pangya_GameServer.Handles
 
                 //// 3. Lógica de Join na Sala
                 //// No S4, se o Player já estiver em uma sala diferente, ele precisa sair primeiro
-                //if (Player.UserInfo.mi.sala_numero != -1 && Player.UserInfo.mi.sala_numero != targetRoomId)
+                //if (Player.PlayerUserStatistics.mi.RoomID != -1 && Player.PlayerUserStatistics.mi.RoomID != targetRoomId)
                 //{
                 //    // Sai da sala atual antes de migrar
                 //    Player.CurrentRoom?.RemovePlayer(Player);
@@ -72,7 +72,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[DirectJoin][ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

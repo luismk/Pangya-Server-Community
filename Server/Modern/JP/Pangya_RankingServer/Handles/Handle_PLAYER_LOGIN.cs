@@ -29,7 +29,7 @@ namespace Pangya_RankingServer.Handles
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER, 1, 0x5200101));
                 }
 
-                if (RankingServer.getInstance().haveBanList(Player.GetIP(), "", false))
+                if (RankingServer.Instance.haveBanList(Player.GetIP(), "", false))
                 {
                     throw new exception($"[{nameof(Handle_PLAYER_LOGIN)}] [Login Error] IP Banido: {Player.GetIP()}",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER, 5, 0x5200105));
@@ -46,9 +46,9 @@ namespace Pangya_RankingServer.Handles
                 Player.UserInfo.Set(cmd_pi.getInfo());
 
                 // 4. Verificação de Integridade
-                if (string.CompareOrdinal(id.Trim(), Player.UserInfo.id.Trim()) != 0)
+                if (string.CompareOrdinal(id.Trim(), Player.UserInfo.Login.Trim()) != 0)
                 {
-                    throw new exception($"[{nameof(Handle_PLAYER_LOGIN)}] [Login Error] ID divergente! Packet: {id} vs DB: {Player.UserInfo.id}",
+                    throw new exception($"[{nameof(Handle_PLAYER_LOGIN)}] [Login Error] ID divergente! Packet: {id} vs DB: {Player.UserInfo.Login}",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER, 4, 0x5200104));
                 }
 
@@ -56,44 +56,44 @@ namespace Pangya_RankingServer.Handles
                 await CheckPlayerBlock();
 
                 // 6. Gerenciamento de Múltiplas Conexões
-                var PlayerAntiga = RankingServer.getInstance().HasLoggedWithOuterSocket(Player);
+                var PlayerAntiga = RankingServer.Instance.HasLoggedWithOuterSocket(Player);
                 if (PlayerAntiga != null)
                 {
-                    _smp.message_pool.getInstance().push(new message($"[Handle_PLAYER_LOGIN] Derrubando sessão antiga do UID: {uid}", type_msg.CL_ONLY_CONSOLE));
-                    RankingServer.getInstance().Disconnect(PlayerAntiga);
+                    _smp.LogManager.Instance.push(new AppMessage($"[Handle_PLAYER_LOGIN] Derrubando sessão antiga do UID: {uid}", type_msg.CL_ONLY_CONSOLE));
+                    RankingServer.Instance.Disconnect(PlayerAntiga);
                 }
 
-                if (RankingServer.getInstance().m_unit_connect != null)
+                if (RankingServer.Instance.m_unit_connect != null)
                 {
-                    RankingServer.getInstance().m_unit_connect.getInfoPlayerOnline(Player.UserInfo.server_uid, Player.UserInfo.uid);
+                    RankingServer.Instance.m_unit_connect.getInfoPlayerOnline(Player.UserInfo.ServerIndex, Player.UserInfo.UID);
                 }
                 else
                 {
-                    RankingServer.getInstance().Disconnect(Player);
+                    RankingServer.Instance.Disconnect(Player);
                 }
             }
             catch (exception e)
             { 
 
-                // Log de Erro com o nome da classe
-                _smp.message_pool.getInstance().push(new message($"[{nameof(Handle_PLAYER_LOGIN)}] [Error] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                // Log de Erro com o Name da classe
+                _smp.LogManager.Instance.push(new AppMessage($"[{nameof(Handle_PLAYER_LOGIN)}] [Error] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                RankingServer.getInstance().Disconnect(Player);
+                RankingServer.Instance.Disconnect(Player);
             }
         }
 
         private async Task CheckPlayerBlock()
         {
-            var state = Player.UserInfo.block_flag.m_id_state;
-            if (state.ull_IDState == 0) return;
+            var state = Player.UserInfo.BlockFlag.State;
+            if (state.Value == 0) return;
 
-            if (state.L_BLOCK_TEMPORARY && (state.block_time == -1 || state.block_time > 0))
+            if (state.BlockByTime && (state.TimeBlock == -1 || state.TimeBlock > 0))
             {
                 throw new exception($"[{nameof(Handle_PLAYER_LOGIN)}] Bloqueio temporário ativo.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER, 1029, 0));
             }
 
-            if (state.L_BLOCK_FOREVER)
+            if (state.BlockForever)
             {
                 throw new exception($"[{nameof(Handle_PLAYER_LOGIN)}] Bloqueio permanente ativo.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.RANK_SERVER, 1030, 0));

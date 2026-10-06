@@ -31,7 +31,7 @@ namespace Pangya_GameServer.Repository
 
         protected override Response prepareConsulta()
         {
-            var r = consulta("SELECT uid, cookie FROM pangya.user_info WHERE uid = " + m_uid);
+            var r = consulta("SELECT UID, cookie FROM pangya.user_info WHERE UID = " + m_uid);
             checkResponse(r, "nao conseguiu pegar o cookie info do player: " + (m_uid));
             return r;
         }

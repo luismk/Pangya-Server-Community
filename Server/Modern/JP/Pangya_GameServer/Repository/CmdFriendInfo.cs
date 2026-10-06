@@ -60,8 +60,8 @@ namespace Pangya_GameServer.Repository
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message(
-                     $"[CmdFriendInfo::lineResult][Error][Warning] PLAYER[UID={m_uid}] tentou adicionar o amigo[UID={fi.uid}, ID={fi.id}] duplicado no banco de dados.",
+                _smp.LogManager.Instance.push(new AppMessage(
+                     $"[CmdFriendInfo::lineResult][Error][Warning] Normal[UID={m_uid}] tentou adicionar o amigo[UID={fi.uid}, ID={fi.id}] duplicado no banco de dados.",
                      type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }

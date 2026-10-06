@@ -56,7 +56,7 @@ namespace Pangya_GameServer.Repository
 
             if (m_id == -1)
             {
-                throw new exception("[CmdInsertTicketReport::lineResult][Error] nao conseguiu inserir um Ticket Report[TROFEL=" + Convert.ToString(m_trofel) + ", TYPE=" + Convert.ToString((ushort)m_type) + "] no banco de dados, ele retornou um id == -1", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
+                throw new exception("[CmdInsertTicketReport::lineResult][Error] nao conseguiu inserir um Ticket Report[TROFEL=" + Convert.ToString(m_trofel) + ", TYPE=" + Convert.ToString((ushort)m_type) + "] no banco de dados, ele retornou um Login == -1", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                     3, 0));
             }
         }

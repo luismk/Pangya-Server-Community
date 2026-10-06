@@ -19,19 +19,19 @@ namespace Pangya_GameServer.Feature.GM
             // 2. Validação básica de input
             if (string.IsNullOrEmpty(nickname))
             {
-                throw new exception($"[CLOSE_WHISPER][Error] UID={session.UserInfo.uid} enviou nickname vazio.",
+                throw new exception($"[CLOSE_WHISPER][Error] UID={session.UserInfo.UID} enviou NickName vazio.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 8, 0x5700108));
             }
 
-            // 3. Verificação de permissão GM via UserInfo
-            if (!session.UserInfo.UserCapabilities.game_master)
+            // 3. Verificação de permissão GM via PlayerUserStatistics
+            if (!session.UserInfo.UserCapabilities.IsGameMaster)
             {
-                throw new exception($"[CLOSE_WHISPER][Error] UID={session.UserInfo.uid} não é GM.",
+                throw new exception($"[CLOSE_WHISPER][Error] UID={session.UserInfo.UID} não é GM.",
                     ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 0x5700100));
             }
 
             // 4. Localização do alvo pelo Nickname
-            var targetSession = GameServer.getInstance().FindSessionByNickname(nickname);
+            var targetSession = GameServer.Instance.FindSessionByNickname(nickname);
 
             if (targetSession == null)
             {
@@ -41,10 +41,10 @@ namespace Pangya_GameServer.Feature.GM
 
             // 5. Execução: Remove o alvo da lista de sussurros do GM
             // Nota: m_gi (GameInterface/Info) gerencia o estado visual/interativo da sessão
-            session.m_gi.closePlayerWhisper(targetSession.UserInfo.uid);
+            session.m_gi.closePlayerWhisper(targetSession.UserInfo.UID);
 
             // Log para debug
-            Console.WriteLine($"[GM-Whisper] {session.UserInfo.nickname} removeu {nickname} da lista de whispers.");
+            Console.WriteLine($"[GM-Whisper] {session.UserInfo.NickName} removeu {nickname} da lista de whispers.");
 
         await Task.CompletedTask;
         }

@@ -34,14 +34,14 @@ namespace PangyaAPI.Network.Service.Auth
         ///,tem que ser P.binary. por que eu uso pra responder 
         /// </summary>
         /// <param name="_packet">BinaryWriter</param>
-        /// <param name="_send_server_uid_or_type">id do server ou tipo</param>
+        /// <param name="_send_server_uid_or_type">Login do server ou Type</param>
         public virtual void sendCommandToOtherServerWithAuthServer(Packet _packet, uint _send_server_uid_or_type) { }
         /// <summary>
         /// Server envia comandos e resposta para outros server com o Auth Server
         ///,tem que ser P.binary. por que eu uso pra responder 
         /// </summary>
         /// <param name="_packet">BinaryWriter</param>
-        /// <param name="_send_server_uid_or_type">id do server ou tipo</param>
+        /// <param name="_send_server_uid_or_type">Login do server ou Type</param>
         public virtual void sendReplyToOtherServerWithAuthServer(Packet _packet, uint _send_server_uid_or_type) { } 
     }
 }

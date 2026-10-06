@@ -19,7 +19,7 @@ namespace PangyaAPI.Network.Repository
         protected override Response prepareConsulta()
         {
             if (m_uid == 0u)
-                throw new Exception("[CmdUpdatePlayerMacAdress::prepareConsulta][Error] string m_ask.server_uid is invalid(zero).");
+                throw new Exception("[CmdUpdatePlayerMacAdress::prepareConsulta][Error] string m_ask.ServerIndex is invalid(zero).");
 
             var r = consulta($"update pangya.account set MacAddress = {makeText(m_ask)} where UID = {m_uid}");
 

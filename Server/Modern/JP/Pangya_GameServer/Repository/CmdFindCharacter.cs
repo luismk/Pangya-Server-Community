@@ -111,7 +111,7 @@ namespace Pangya_GameServer.Repository
         protected override Response prepareConsulta()
         {
 
-            if (m_typeid == 0 && sIff.getInstance().getItemGroupIdentify(m_typeid) != IFF_GROUP.CHARACTER)
+            if (m_typeid == 0 && sIff.Instance.getItemGroupIdentify(m_typeid) != IFF_GROUP.CHARACTER)
             {
                 throw new exception("[CmdFindCharacter::prepareConsulta][Error] typeid character invalid", STDA_MAKE_ERROR(STDA_ERROR_TYPE.PANGYA_DB,
                     4, 0));
@@ -122,7 +122,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_typeid));
 
-            checkResponse(r, "erro ao encontrar o character[UID=" + Convert.ToString(m_typeid) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "erro ao encontrar o character[UID=" + Convert.ToString(m_typeid) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

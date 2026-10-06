@@ -31,7 +31,7 @@ namespace Pangya_GameServer.Models
         public ulong price_normal = new ulong(); // Preço do Jogo Normal
         public ulong price_big = new ulong(); // Preço do Jogo Big
         public byte limitted_per_day = 1; // Limitado por dia, tem uma quantidade que pode jogar    // 0 ou 1
-        public SystemTime update_date = new SystemTime(); // Date de atualização do dia do papel shop
+        public SystemTime update_date = new SystemTime(); // Date de atualização do dia do papel ShopRoom
     }
 
     public class ctx_papel_shop_item
@@ -41,7 +41,7 @@ namespace Pangya_GameServer.Models
         }
         public uint _typeid = 0;
         public uint probabilidade = 0;
-        public int numero = -1; // Número que o papel shop já está
+        public int numero = -1; // Número que o papel ShopRoom já está
         public PAPEL_SHOP_TYPE tipo;
         public byte active = 1; // Active 0 ou 1
     }
@@ -62,7 +62,7 @@ namespace Pangya_GameServer.Models
         public PAPEL_SHOP_BALL_COLOR color { get; set; }
         public ctx_papel_shop_item ctx_psi = new ctx_papel_shop_item();
         public uint qntd = new uint(); // Qntd do item que foi sorteado
-        public object item { get; set; } // stItem, para depois que add no banco de dados, retornar o id, precisa quando envia o pacote de resposta de jogar o papel shop
+        public object item { get; set; } // stItem, para depois que add no banco de dados, retornar o Login, precisa quando envia o pacote de resposta de jogar o papel ShopRoom
     }
 
     public class ctx_papel_shop_coupon

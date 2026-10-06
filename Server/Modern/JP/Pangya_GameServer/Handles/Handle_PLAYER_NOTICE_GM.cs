@@ -14,11 +14,11 @@ namespace Pangya_GameServer.Handles
             try
             {
                 // 2. Verificação de Privilégio (Game Master)
-                // Usamos a propriedade GameMaster que você tem no UserInfo
-                if (!Player.UserInfo.UserCapabilities.game_master)
+                // Usamos a ServerProperty GameMaster que você tem no PlayerUserStatistics
+                if (!Player.UserInfo.UserCapabilities.IsGameMaster)
                 {
                     throw new exception(
-                        $"[Handle_PLAYER_NOTICE_GM][Error] PLAYER[UID={Player.UserInfo.uid}] não é GM.",
+                        $"[Handle_PLAYER_NOTICE_GM][Error] Normal[UID={Player.UserInfo.UID}] não é GM.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 0x5700100));
                 }
 
@@ -28,13 +28,13 @@ namespace Pangya_GameServer.Handles
                 if (string.IsNullOrEmpty(notice))
                 {
                     throw new exception(
-                        $"[Handle_PLAYER_NOTICE_GM][Error] PLAYER[UID={Player.UserInfo.uid}] enviou notice vazia.",
+                        $"[Handle_PLAYER_NOTICE_GM][Error] Normal[UID={Player.UserInfo.UID}] enviou notice vazia.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 8, 0x5700100));
                 }
 
                 // Log do servidor
-                _smp.message_pool.getInstance().push(new message(
-                    $"[GM::Notice] PLAYER[UID={Player.UserInfo.uid}] enviou: {notice}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[GM::Notice] Normal[UID={Player.UserInfo.UID}] enviou: {notice}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // 4. Criação do Pacote de Broadcast (0x40 - Chat/Notice)
@@ -42,14 +42,14 @@ namespace Pangya_GameServer.Handles
                 {
                     p.init_plain(0x40);
                     p.WriteByte(7);
-                    p.WriteString(Player.UserInfo.nickname);
+                    p.WriteString(Player.UserInfo.NickName);
                     p.WriteString(notice);
-                    GameServer.getInstance().SendChannelBroadCast(p);
+                    GameServer.Instance.SendChannelBroadCast(p);
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_NOTICE_GM][ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -66,7 +66,7 @@ namespace Pangya_GameServer.Handles
             {
                 p.init_plain(0x40);
                 p.WriteByte(7);
-                p.WriteString(Player.UserInfo.nickname);
+                p.WriteString(Player.UserInfo.NickName);
                 p.WriteString(errorMessage);
                 Player.Send(p);
             }

@@ -22,7 +22,7 @@ namespace PangyaAPI.Network.Service.Auth
         private TcpListener _listener;
         private CancellationTokenSource _cts;
         private IAppServerAccept _acceptLoop;
-        public TypeServer ServerType { get; set; }
+        public ServerType ServerType { get; set; }
 
         public bool IsRunning { get; private set; }
         protected readonly PacketDispatcher<T, AuthClientDispatcher> _dispatcher;
@@ -46,7 +46,7 @@ namespace PangyaAPI.Network.Service.Auth
 
         protected UnitServer(
        AppSessionManager<T> sessionManager,
-       PacketDispatcher<T, AuthClientDispatcher> dispatcher, TypeServer typeServer)
+       PacketDispatcher<T, AuthClientDispatcher> dispatcher, ServerType typeServer)
         {
             ServerType = typeServer;
             SessionsManager = sessionManager;
@@ -93,29 +93,29 @@ namespace PangyaAPI.Network.Service.Auth
 #if DEBUG
                 _listener = new TcpListener(IPAddress.Parse(m_si.ip), m_si.port);
 #else
-                _listener = new TcpListener(IPAddress.Loopback, m_si.port);
+                _listener = new TcpListener(IPAddress.Loopback, m_si.Port);
 #endif
 
                 _listener.Start();
 
                 _acceptLoop = new AcceptLoop(_listener, HandleClient);
 
-                _smp.message_pool.getInstance().push(new message(
-                    $"[AuthServer] Authentication Server started on {m_si.ip}:{m_si.port}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[AuthServer] Authentication Server started on {m_si.IpAddress}:{m_si.Port}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 IsRunning = true;
                 // Inicia o loop de aceitação de conexões
                 _ = _acceptLoop.StartAsync(_cts.Token);
                 //test connection
-                NormalManagerDB.getInstance().Connected();
+                NormalManagerDB.Instance.Connected();
                 // Inicia o monitoramento
                 _ = MonitorLoop(_cts.Token);
             }
             catch (Exception ex)
             {
                 IsRunning = false;
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[AuthServer] Failed to start: {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
                 throw;
@@ -137,7 +137,7 @@ namespace PangyaAPI.Network.Service.Auth
             }
             catch { }
 
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                 "[AuthServer] Authentication Server stopped",
                 type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
@@ -184,7 +184,7 @@ namespace PangyaAPI.Network.Service.Auth
                     if (packets == null)
                     {
                         // LOG DE SEGURANÇA: Importante para você saber quem banir no Firewall
-                        _smp.message_pool.getInstance().push(new message(
+                        _smp.LogManager.Instance.push(new AppMessage(
                             $"[Security] Protocol Violation (Invalid Size/Header) de {session.GetIP()}. Encerrando conexao.",
                             type_msg.CL_FILE_LOG_AND_CONSOLE)); 
                         break;
@@ -195,7 +195,7 @@ namespace PangyaAPI.Network.Service.Auth
                         // Validação de integridade e autorização
                         if (!CheckPacket(session, packet))
                         {
-                            _smp.message_pool.getInstance().push(new message(
+                            _smp.LogManager.Instance.push(new AppMessage(
                                 $"[Security] Packet Malicioso ou Nao Autorizado (ID: {(AuthClientDispatcher)(object)packet.Type}) de {session.GetIP()}. Encerrando.",
                                 type_msg.CL_FILE_LOG_AND_CONSOLE)); 
                             return; // Sai do método para parar de processar qualquer lixo restante
@@ -207,7 +207,7 @@ namespace PangyaAPI.Network.Service.Auth
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message($"[ServerBase::HandleClient][Error]  Client error: {ex.Message}", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[ServerBase::HandleClient][Error]  Client error: {ex.Message}", type_msg.CL_ONLY_CONSOLE));
             }
             finally
             {
@@ -233,7 +233,7 @@ namespace PangyaAPI.Network.Service.Auth
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message($"[ServerBase::DisconnectInternal][Error]  (OID: {session?.ConnectionID}): {ex.Message}", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[ServerBase::DisconnectInternal][Error]  (OID: {session?.ConnectionID}): {ex.Message}", type_msg.CL_ONLY_CONSOLE));
             }
         }
 
@@ -259,9 +259,9 @@ namespace PangyaAPI.Network.Service.Auth
                 {
 
                     // 1. Log de rotação diária
-                    if (_smp.message_pool.getInstance().check_update_day_log())
+                    if (_smp.LogManager.Instance.check_update_day_log())
                     {
-                        _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::Monitor][Info] Update File Log.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::Monitor][Info] Update File Log.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
                     OnMonitor();
@@ -301,13 +301,13 @@ namespace PangyaAPI.Network.Service.Auth
             try
             {
                 // 2. Sincronização com o Banco
-                m_si.curr_user = SessionsManager.Count;
+                m_si.CurrentUsers = SessionsManager.Count;
                 // 3. Atualização de listas
                 CmdUpdateServerList();
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                      $"[{GetType().Name}::Monitor][Error] {ex.Message}",
                      type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

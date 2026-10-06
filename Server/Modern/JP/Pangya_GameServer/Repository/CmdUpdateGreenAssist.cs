@@ -29,7 +29,7 @@ namespace Pangya_GameServer.Repository
 
             var r = _update(m_szConsulta + Convert.ToInt32(m_check) + " where UID =" + m_uid);
 
-            checkResponse(r, "nao conseguiu atualizar o Aviso[assist=" + (m_check ? "ON" : "OFF") + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o Aviso[assist=" + (m_check ? "ON" : "OFF") + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

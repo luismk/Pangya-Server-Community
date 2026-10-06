@@ -19,19 +19,19 @@ namespace Pangya_GameServer.Handles
                 short sala_numero = Packet.ReadInt16();
 
                 // aqui tem que passar o pacote86 com resposta que a sala não existe
-                var r = GameServer.getInstance().FindRoom(sala_numero) ?? throw new exception("[Handle_PLAYER_SHOW_INFO_ROOM][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] pediu info da sala[NUMERO=" + (sala_numero) + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                var r = GameServer.Instance.FindRoom(sala_numero) ?? throw new exception("[Handle_PLAYER_SHOW_INFO_ROOM][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] pediu info da sala[NUMERO=" + (sala_numero) + "] nao existe.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         10, 0));
                 
                 var ri = r.GetInfo();
 
                 Packet p = new(0x86);
-                p.WriteUInt32(ri.num_player);
-                p.WriteByte(ri.qntd_hole);
-                p.WriteUInt32((ri.GetTipo() == ROOM_INFO_TYPE.STROKE || ri.GetTipo() == ROOM_INFO_TYPE.MATCH || ri.GetTipo() == ROOM_INFO_TYPE.PANG_BATTLE) ? ri.time_vs : ((ri.GetTipo() == ROOM_INFO_TYPE.GUILD_BATTLE) ? 0 : ri.time_30s));
-                p.WriteByte((byte)ri.course);
-                p.WriteByte((byte)ri.GetTipo());
-                p.WriteByte(ri.modo);
-                p.WriteUInt32(ri.trofel);
+                p.WriteUInt32(ri.CurrentUsers);
+                p.WriteByte(ri.HoleCount);
+                p.WriteUInt32((ri.GetRoomType() == RoomTypeFlags.STROKE || ri.GetRoomType() == RoomTypeFlags.MATCH || ri.GetRoomType() == RoomTypeFlags.PANG_BATTLE) ? ri.TimeSec : ((ri.GetRoomType() == RoomTypeFlags.GUILD_BATTLE) ? 0 : ri.TimeMin));
+                p.WriteByte((byte)ri.CourseIndex);
+                p.WriteByte((byte)ri.GetRoomType());
+                p.WriteByte(ri.HoleMode);
+                p.WriteUInt32(ri.TrophyID);
 
                 List<Player> vPlayer = r.GetSessions();
                 PlayerLobbyInfo pci = null;
@@ -40,15 +40,15 @@ namespace Pangya_GameServer.Handles
                 {
                     var _channel = vPlayer[i].GetChannel();
 
-                    pci = _channel?.GetPlayerInfo(vPlayer[i]) ?? throw new exception("[Handle_PLAYER_SHOW_INFO_ROOM][Error] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] nao tem o info do Player na sala[NUMERO=" + (sala_numero) + "].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    pci = _channel?.GetPlayerInfo(vPlayer[i]) ?? throw new exception("[Handle_PLAYER_SHOW_INFO_ROOM][Error] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] nao tem o info do Player na sala[NUMERO=" + (sala_numero) + "].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             11, 0)); 
 
-                    p.WriteInt32(pci?.oid ?? -1);
-                    p.WriteByte(pci?.level ?? 0);
+                    p.WriteInt32(pci?.OID ?? -1);
+                    p.WriteByte(pci?.GameLevel ?? 0);
                     p.WriteByte(GetGameHole(vPlayer[i])); // se estiver jogando, aqui fica o número do hole
-                    p.WriteInt32(pci?.capability.ulCapability ?? 0);
-                    p.WriteUInt32(pci?.title ?? 0);
-                    p.WriteUInt32(pci?.ladder_point ?? 0);
+                    p.WriteInt32(pci?.Capability.Value ?? 0);
+                    p.WriteUInt32(pci?.TitleSkin ?? 0);
+                    p.WriteUInt32(pci?.LadderPoints ?? 0);
                 }
 
                 Player.Send(p);
@@ -58,7 +58,7 @@ namespace Pangya_GameServer.Handles
                 Packet p = new(0x86);
                 p.WriteUInt16(0);
                 Player.Send(p);
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_SHOW_INFO_ROOM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_SHOW_INFO_ROOM][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;

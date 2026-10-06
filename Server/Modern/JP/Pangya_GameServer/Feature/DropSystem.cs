@@ -69,7 +69,7 @@ namespace Pangya_GameServer.Feature
             {
             }
             public byte course;
-            public byte hole; // Número do hole em relação do course
+            public byte hole; // Número do hole em relação do CourseIndex
             public byte seq_hole; // Sequência do hole de 1 a 18
             public byte qntd_hole; // Quantidade de holes do jogo
             public uint artefact = new uint();
@@ -218,7 +218,7 @@ namespace Pangya_GameServer.Feature
                         case stDropCourse.stDropItem.eTIPO.ALL_PROBABILITY:
                         case stDropCourse.stDropItem.eTIPO.SEQUENCE_DROP:
                         default:
-                            // Aqui � item por item que sorteia, cada item tem sua chance no course
+                            // Aqui � item por item que sorteia, cada item tem sua chance no CourseIndex
                             lottery.Add(el.probabilidade[(int)stDropCourse.stDropItem.ePROB_TIPO._3HOLES_ALL], el);
                             break;
                         case stDropCourse.stDropItem.eTIPO.LAST_HOLE_PROBABILITY:
@@ -292,7 +292,7 @@ namespace Pangya_GameServer.Feature
 
             DropItem di = new DropItem();
 
-            var item = sIff.getInstance().getItem();
+            var item = sIff.Instance.getItem();
 
             LotterySystem lottery = new LotterySystem();
 
@@ -496,7 +496,7 @@ namespace Pangya_GameServer.Feature
 
             CmdDropCourseConfig cmd_dcc = new CmdDropCourseConfig(); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_dcc, null,
                   null);
 
@@ -509,7 +509,7 @@ namespace Pangya_GameServer.Feature
 
             CmdDropCourseInfo cmd_dci = new CmdDropCourseInfo(); // Waiter
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_dci, null,
                   null);
 
@@ -522,7 +522,7 @@ namespace Pangya_GameServer.Feature
 
             //#ifdef DEBUG
             if (Course.Count == 0)
-                _smp.message_pool.getInstance().push(new message("[DropSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[DropSystem::initialize][Warning] Not Loaded!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // Carregado com sucesso
             m_load = true;
@@ -549,7 +549,7 @@ namespace Pangya_GameServer.Feature
             if (!isLoad())
                 throw new exception("[DropSystem::" + ((_method)) + "][Error] Drop System not loadded, please call load method first.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.DROP_SYSTEM, 2, 0));
             if (_dc.course == 0x7F/*Random*/)
-                throw new exception("[DropSystem::" + ((_method)) + "][Error] course is invalid(0x7F) Random value", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.DROP_SYSTEM, 3, 0));
+                throw new exception("[DropSystem::" + ((_method)) + "][Error] CourseIndex is invalid(0x7F) Random value", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.DROP_SYSTEM, 3, 0));
 
             if (!_dc.v_item.Any())
                 throw new exception("[DropSystem::" + ((_method)) + "][Error] drop item vector is empty.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.DROP_SYSTEM, 4, 0));

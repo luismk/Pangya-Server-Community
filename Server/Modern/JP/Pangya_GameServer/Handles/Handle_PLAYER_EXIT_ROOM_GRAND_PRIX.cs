@@ -33,8 +33,8 @@ namespace Pangya_GameServer.Handles
                 if (Player.GetRoom() != null)
                 {
                     // Log de depuração
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[Handle_PLAYER_EXIT_ROOM_GRAND_PRIX][Sucess] PLAYER[UID: {Player.UserInfo.uid}, RID: {Player.UserInfo.Member.sala_numero}] EXIT TO ROOM. Option: {option}, Pang: {gamePang}",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[Handle_PLAYER_EXIT_ROOM_GRAND_PRIX][Sucess] Normal[UID: {Player.UserInfo.UID}, RID: {Player.UserInfo.Member.RoomID}] EXIT TO ROOM. Option: {option}, Pang: {gamePang}",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     _channel.Lobby.LeaveRoomGrandPrix(Player, 1);
@@ -46,7 +46,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_EXIT_ROOM_GRAND_PRIX][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_EXIT_ROOM_GRAND_PRIX][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             await Task.CompletedTask;
         }

@@ -8,14 +8,14 @@ namespace PangyaAPI.Utilities.Log
     /// </summary>
     public class message_pool
     {
-        private readonly LinkedList<message> m_messages;
+        private readonly LinkedList<AppMessage> m_messages;
         private readonly object _lockMessages = new object();
         private readonly object _lockConsole = new object();
         private readonly AutoResetEvent _messageEvent;
 
         public message_pool()
         {
-            m_messages = new LinkedList<message>();
+            m_messages = new LinkedList<AppMessage>();
             _messageEvent = new AutoResetEvent(false);
         }
 
@@ -49,7 +49,7 @@ namespace PangyaAPI.Utilities.Log
         }
 
         // Adiciona mensagem ao fim da fila
-        public void push(message m)
+        public void push(AppMessage m)
         {
             if (m == null) return;
 
@@ -61,7 +61,7 @@ namespace PangyaAPI.Utilities.Log
         }
 
         // Adiciona mensagem na frente da fila
-        public void push_front(message m)
+        public void push_front(AppMessage m)
         {
             if (m == null) return;
 
@@ -73,13 +73,13 @@ namespace PangyaAPI.Utilities.Log
         }
 
         // Adiciona mensagem ao final (mesmo que push)
-        public void push_back(message m)
+        public void push_back(AppMessage m)
         {
             push(m);
         }
 
         // Retira e retorna a primeira mensagem da fila (consumir)
-        public message getMessage()
+        public AppMessage getMessage()
         {
             lock (_lockMessages)
             {
@@ -93,10 +93,10 @@ namespace PangyaAPI.Utilities.Log
         }
 
         // Retorna a primeira mensagem, removendo da fila
-        public message getFirstMessage() => getMessage();
+        public AppMessage getFirstMessage() => getMessage();
 
         // Retorna a última mensagem, removendo da fila
-        public message getLastMessage()
+        public AppMessage getLastMessage()
         {
             lock (_lockMessages)
             {
@@ -110,9 +110,9 @@ namespace PangyaAPI.Utilities.Log
         }
 
         // Apenas espiar a primeira mensagem (não remove)
-        public message peekMessage() => peekFirstMessage();
+        public AppMessage peekMessage() => peekFirstMessage();
 
-        public message peekFirstMessage()
+        public AppMessage peekFirstMessage()
         {
             lock (_lockMessages)
             {
@@ -121,7 +121,7 @@ namespace PangyaAPI.Utilities.Log
         }
 
         // Apenas espiar a última mensagem (não remove)
-        public message peekLastMessage()
+        public AppMessage peekLastMessage()
         {
             lock (_lockMessages)
             {
@@ -144,7 +144,7 @@ namespace _smp
     /// ficou bem mais refatorado
     /// mais rapido e mais economico
     /// </summary>
-    public class message_pool : Singleton<list_fifo_console_asyc<message>>
+    public class LogManager : Singleton<list_fifo_console_asyc<AppMessage>>
     {
     }
 }

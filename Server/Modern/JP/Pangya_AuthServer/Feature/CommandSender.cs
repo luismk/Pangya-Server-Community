@@ -13,14 +13,14 @@ namespace Pangya_AuthServer.Feature
     {
         public static async Task SendToTarget(CommandInfo el, Packet p)
         {
-            var s = AuthServer.getInstance().FindSessionByUID(el.target);
+            var s = AuthServer.Instance.FindSessionByUID(el.target);
             if (s != null)
             {
                 s.SendAuth(p);
             }
             else
             {
-                var servers = AuthServer.getInstance().FindPlayersByType(el.target);
+                var servers = AuthServer.Instance.FindPlayersByType(el.target);
                 if (servers.Count > 0)
                 {
                     Broadcast(servers, p);

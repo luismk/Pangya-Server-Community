@@ -61,7 +61,7 @@ namespace Pangya_GameServer.Repository
 
             var r = _update(m_szConsulta[0] + (m_type == T_ROOKIE ? m_szConsulta[1] : (m_type == T_BEGINNER ? m_szConsulta[2] : m_szConsulta[3])) + m_szConsulta[4] + Convert.ToString(m_uid));
 
-            checkResponse(r, "nao conseguiu atualizar Tutorial Evento[Type=" + Convert.ToString(m_type) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar Tutorial Evento[Type=" + Convert.ToString(m_type) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

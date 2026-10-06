@@ -13,7 +13,7 @@ namespace Pangya_AuthServer.Handles.Commands
         {  
             uint typeReload = el.arg[0];
 
-            _smp.message_pool.getInstance().push(new message(
+            _smp.LogManager.Instance.push(new AppMessage(
                 $"[HandleReloadSystem] Reloading System Type: {typeReload}",
                 type_msg.CL_FILE_LOG_AND_CONSOLE));
              

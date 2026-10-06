@@ -71,7 +71,7 @@ namespace Pangya_LoginServer.Handles
             catch (Exception ex)
             {
                 // Log de erro centralizado
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_RECONNECT][Error] {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
@@ -82,11 +82,11 @@ namespace Pangya_LoginServer.Handles
 
         private bool CheckBlockStatus(Player Player)
         {
-            var state = Player.UserInfo.block_flag.m_id_state;
+            var state = Player.UserInfo.BlockFlag.State;
 
-            if (state.ull_IDState == 0) return false;
+            if (state.Value == 0) return false;
 
-            if (state.L_BLOCK_FOREVER || state.L_BLOCK_TEMPORARY)
+            if (state.BlockForever || state.BlockByTime)
             {
                 Player.Send(Handle_PACKET_RESPONSE.pacote00E(Player, "", 12, 500052));
                 return true;

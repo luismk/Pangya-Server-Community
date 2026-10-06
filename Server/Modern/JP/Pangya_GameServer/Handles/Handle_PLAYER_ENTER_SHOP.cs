@@ -21,9 +21,9 @@ namespace Pangya_GameServer.Handles
             var m_ci = Player.GetChannel();
             try
             {
-                if (Player.UserInfo.block_flag.m_flag.buy_and_gift_shop)
+                if (Player.UserInfo.BlockFlag.Flag.BuyShopAndGift)
                 {
-                    throw new exception("[Lobby::RequestEnterShop][Error] PLAYER [UID=" + Player.UserInfo.uid
+                    throw new exception("[Lobby::RequestEnterShop][Error] Normal [UID=" + Player.UserInfo.UID
                             + "] tentou jogar no Papel Shop, mas ele nao pode. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 3, 0x790002));
                 }
 

@@ -26,7 +26,7 @@ namespace Pangya_GameServer.Handles
 
                 if (email.id == 0)
                 {
-                    throw new exception("[Handle_PLAYER_INFO_MAIL][Error] PLAYER [UID=" + Player.UserInfo.uid + "] pediu para ver o info do Mail[ID=" + (email_id) + "], mas ele nao existe no banco de dados. Hacker ou Bug",
+                    throw new exception("[Handle_PLAYER_INFO_MAIL][Error] Normal [UID=" + Player.UserInfo.UID + "] pediu para ver o info do Mail[ID=" + (email_id) + "], mas ele nao existe no banco de dados. Hacker ou Bug",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 1, 0x5500251));
                 }
 
@@ -51,7 +51,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
                 // Log original mantido
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_INFO_MAIL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_INFO_MAIL][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x212);
 

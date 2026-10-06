@@ -66,7 +66,7 @@ namespace Pangya_GameServer.Repository
 
             var r = consulta(m_szConsulta[0] + Convert.ToString(m_tiki_shop_point) + m_szConsulta[1] + Convert.ToString(m_uid));
 
-            checkResponse(r, "Nao conseguiu atualizar o Legacy Tiki Shop Point[POINT=" + Convert.ToString(m_tiki_shop_point) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "Nao conseguiu atualizar o Legacy Tiki Shop Point[POINT=" + Convert.ToString(m_tiki_shop_point) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

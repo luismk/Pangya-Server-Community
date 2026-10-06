@@ -17,16 +17,16 @@ namespace PangyaAPI.Network.Repository
 
         protected override Response prepareConsulta()
         {
-            var str = (m_si.uid) + ", " + makeText(m_si.nome) + ", " + makeText(m_si.ip)
-                + ", " + (m_si.port) + ", " + (m_si.tipo) + ", " + (m_si.max_user)
-                + ", " + (m_si.curr_user) + ", " + (m_si.rate.pang) + ", " + makeText(m_si.version)
-                + ", " + makeText(m_si.version_client) + ", " + (m_si.propriedade.ulProperty) + ", " + (m_si.angelic_wings_num)
-                + ", " + (m_si.event_flag.usEventFlag) + ", " + (m_si.rate.exp) + ", " + (m_si.img_no)
-                + ", " + (m_si.rate.scratchy) + ", " + (m_si.rate.club_mastery) + ", " + (m_si.rate.treasure)
-                + ", " + (m_si.rate.papel_shop_rare_item) + ", " + (m_si.rate.papel_shop_cookie_item) + ", " + (m_si.rate.chuva);
+            var str = (m_si.UID) + ", " + makeText(m_si.Name) + ", " + makeText(m_si.IpAddress)
+                + ", " + (m_si.Port) + ", " + (m_si.Type) + ", " + (m_si.MaxUsers)
+                + ", " + (m_si.CurrentUsers) + ", " + (m_si.Rate.Pang) + ", " + makeText(m_si.BuildVersion)
+                + ", " + makeText(m_si.ClientVersion) + ", " + (m_si.Property.Value) + ", " + (m_si.AngelicWingsCount)
+                + ", " + (m_si.EventFlag.Value) + ", " + (m_si.Rate.Experience) + ", " + (m_si.ServerIcon)
+                + ", " + (m_si.Rate.Scratchy) + ", " + (m_si.Rate.ClubMastery) + ", " + (m_si.Rate.Treasure)
+                + ", " + (m_si.Rate.PapelShopRareItem) + ", " + (m_si.Rate.PapelShopCookieItem) + ", " + (m_si.Rate.Rain);
 
             var r = procedure("pangya.ProcRegServer_New", str); 
-            checkResponse(r, "nao conseguiu registrar o server[GUID=" + (m_si.uid) + ", PORT=" + (m_si.port) + ", NOME=" + (m_si.nome) + "] no banco de dados");
+            checkResponse(r, "nao conseguiu registrar o server[GUID=" + (m_si.UID) + ", PORT=" + (m_si.Port) + ", NOME=" + (m_si.Name) + "] no banco de dados");
             return r;
         }
 

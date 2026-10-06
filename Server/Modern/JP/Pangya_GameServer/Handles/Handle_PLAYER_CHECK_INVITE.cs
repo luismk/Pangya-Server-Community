@@ -36,12 +36,12 @@ namespace Pangya_GameServer.Handles
                 uint uid = Packet.ReadUInt32();
                 if (m_ci.sInvites.Any(c => c.invited_uid == uid))
                 {
-                    _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_CHECK_INVITE][Sucess] PLAYER[UID= " + Player.UserInfo.uid + ", ID: " + Player.UserInfo.id + " ] enviou convite para o PLAYER [UID=" + uid + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_CHECK_INVITE][Sucess] Normal[UID= " + Player.UserInfo.UID + ", ID: " + Player.UserInfo.Login + " ] enviou convite para o Normal [UID=" + uid + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_CHECK_INVITE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_CHECK_INVITE][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         await Task.CompletedTask;

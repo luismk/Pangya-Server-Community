@@ -8,9 +8,9 @@ namespace PangyaAPI.Network.Repository
     public class CmdUpdateRateConfigInfo : Pangya_DB
     {
         int m_server_uid = -1;
-        RateConfigInfo m_rci;
+        ServerRateInfo m_rci;
 
-        public CmdUpdateRateConfigInfo(int _uid, RateConfigInfo _rate)
+        public CmdUpdateRateConfigInfo(int _uid, ServerRateInfo _rate)
         {
             m_server_uid = _uid;
             m_rci = _rate;
@@ -24,24 +24,24 @@ namespace PangyaAPI.Network.Repository
         {
 
             if (m_server_uid == -1)
-                throw new Exception("[CmdUpdateRateConfigInfo][Error] server_uid[VALUE=" + (m_server_uid) + "] is invalid.");
+                throw new Exception("[CmdUpdateRateConfigInfo][Error] ServerIndex[VALUE=" + (m_server_uid) + "] is invalid.");
 
 
-            var r = procedure("pangya.ProcUpdateRateConfigInfo", (m_server_uid) + ", " + (m_rci.grand_zodiac_event_time)
-                + ", " + (m_rci.scratchy) + ", " + (m_rci.papel_shop_rare_item)
-                + ", " + (m_rci.papel_shop_cookie_item) + ", " + (m_rci.treasure)
-                + ", " + (m_rci.pang) + ", " + (m_rci.exp) + ", " + (m_rci.club_mastery)
-                + ", " + (m_rci.chuva) + ", " + (m_rci.memorial_shop)
-                + ", " + (m_rci.angel_event) + ", " + (m_rci.grand_prix_event)
-                + ", " + (m_rci.golden_time_event) + ", " + (m_rci.login_reward_event)
-                + ", " + (m_rci.bot_gm_event) + ", " + (m_rci.smart_calculator)
+            var r = procedure("pangya.ProcUpdateRateConfigInfo", (m_server_uid) + ", " + (m_rci.GrandZodiacEventTime)
+                + ", " + (m_rci.Scratchy) + ", " + (m_rci.PapelShopRareItem)
+                + ", " + (m_rci.PapelShopCookieItem) + ", " + (m_rci.Treasure)
+                + ", " + (m_rci.Pang) + ", " + (m_rci.Experience) + ", " + (m_rci.ClubMastery)
+                + ", " + (m_rci.Rain) + ", " + (m_rci.MemorialShop)
+                + ", " + (m_rci.AngelEvent) + ", " + (m_rci.GrandPrixEvent)
+                + ", " + (m_rci.GoldenTimeEvent) + ", " + (m_rci.LoginRewardEvent)
+                + ", " + (m_rci.GMEventBot) + ", " + (m_rci.SmartCalculation)
     );
 
             checkResponse(r, "nao conseguiu atualizar o Rate Config Info[SERVER_UID=" + (m_server_uid) + ", " + m_rci.ToString() + "]");
             return r;
         }
 
-        public RateConfigInfo GetInfo()
+        public ServerRateInfo GetInfo()
         {
             return this.m_rci;
         }

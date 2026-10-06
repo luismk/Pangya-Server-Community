@@ -11,15 +11,15 @@ namespace Pangya_GameServer.Feature.GM
             // 1. Leitura do ID do Canal (UInt16 conforme o pacote original)
             ushort channelId = packet.ReadUInt16();
              
-            // 3. Atualização do estado da Sessão e UserInfo 
+            // 3. Atualização do estado da Sessão e PlayerUserStatistics 
             session.m_gi.channel = (byte)channelId;
-            session.UserInfo.Member.state_flag.channel = (byte)channelId;
+            session.UserInfo.Member.State.Channel = (byte)channelId;
 
             // 4. Sincronização lógica: Se Channel ON, Whisper segue o mesmo estado 
             session.m_gi.whisper = session.m_gi.channel;
 
             // Log de auditoria
-            Console.WriteLine($"[GM-Action] {session.UserInfo.nickname} alterou monitoramento para o Canal: {channelId}");
+            Console.WriteLine($"[GM-Action] {session.UserInfo.NickName} alterou monitoramento para o Canal: {channelId}");
 
         await Task.CompletedTask;
         }

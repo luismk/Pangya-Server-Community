@@ -23,7 +23,7 @@ namespace Pangya_MessengerServer.Server
     {
         private readonly PlayerManager _playerManager; 
 
-        public MessengerService() : base(new PlayerManager(500), new PacketDispatcher<Player, PacketIDClient>(), TypeServer.MessengerServer)
+        public MessengerService() : base(new PlayerManager(500), new PacketDispatcher<Player, PacketIDClient>(), ServerType.MessengerServer)
         {
             // Fazemos o cast do sessionManager para o seu PlayerManager
             _playerManager = (PlayerManager)SessionsManager;
@@ -80,7 +80,7 @@ namespace Pangya_MessengerServer.Server
 
             if (_command.Count == 0)
             {
-                _smp.message_pool.getInstance().push(new message("[MessengerServer::CheckCommand][Error] Missing parameter", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::CheckCommand][Error] Missing parameter", type_msg.CL_ONLY_CONSOLE));
                 return true;
             }
 
@@ -95,7 +95,7 @@ namespace Pangya_MessengerServer.Server
             {
                 var process = Process.GetCurrentProcess();
                 var memoryUsage = process.PrivateMemorySize64 / 1024 / 1024; // MB  
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::CheckCommand][Debug] STATUS[USERS: {Sessions?.Count() ?? 0}, MEMORY: {memoryUsage}, UPTIME: {DateTime.Now - process.StartTime}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::CheckCommand][Debug] STATUS[USERS: {Sessions?.Count() ?? 0}, MEMORY: {memoryUsage}, UPTIME: {DateTime.Now - process.StartTime}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return true;
             }
             else if (!string.IsNullOrEmpty(s) && s == "reload_files")
@@ -103,7 +103,7 @@ namespace Pangya_MessengerServer.Server
                 ReloadFiles();
                 return true;
             }
-            else if (!string.IsNullOrEmpty(s) && s == "rate")
+            else if (!string.IsNullOrEmpty(s) && s == "Rate")
             {
                 string sTipo = _command.Dequeue();
                 int tipo = -1;
@@ -112,23 +112,23 @@ namespace Pangya_MessengerServer.Server
                 {
                     switch (sTipo)
                     {
-                        case "pang": tipo = 0; break;
-                        case "exp": tipo = 1; break;
+                        case "Pang": tipo = 0; break;
+                        case "Experience": tipo = 1; break;
                         case "club": tipo = 2; break;
-                        case "chuva": tipo = 3; break;
-                        case "treasure": tipo = 4; break;
-                        case "scratchy": tipo = 5; break;
+                        case "Rain": tipo = 3; break;
+                        case "Treasure": tipo = 4; break;
+                        case "Scratchy": tipo = 5; break;
                         case "pprareitem": tipo = 6; break;
                         case "ppcookieitem": tipo = 7; break;
                         case "memorial": tipo = 8; break;
                         default:
-                            _smp.message_pool.getInstance().push(new message($"[MessengerServer::checkCommand][Error] Unknown Command: \"rate {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[MessengerServer::checkCommand][Error] Unknown Command: \"Rate {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
                             break;
                     }
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message($"[MessengerServer::checkCommand][Error] Unknown Command: \"rate {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[MessengerServer::checkCommand][Error] Unknown Command: \"Rate {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
                 }
 
                 if (tipo != -1 && tipo >= 0 && tipo <= 8)
@@ -139,7 +139,7 @@ namespace Pangya_MessengerServer.Server
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message($"[MessengerServer::checkCommand][Error] Unknown value, Command: \"rate {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[MessengerServer::checkCommand][Error] Unknown value, Command: \"Rate {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
                     }
                 }
                 return true;
@@ -158,10 +158,10 @@ namespace Pangya_MessengerServer.Server
                         case "grand_zodiac_event":
                             UpdateRateAndEvent(9, qntd);
                             break;
-                        case "angel_event":
+                        case "AngelEvent":
                             UpdateRateAndEvent(10, qntd);
                             break;
-                        case "grand_prix":
+                        case "GrandPrixMode":
                             UpdateRateAndEvent(11, qntd);
                             break;
                         case "golden_time":
@@ -170,14 +170,14 @@ namespace Pangya_MessengerServer.Server
                         case "login_reward":
                             UpdateRateAndEvent(13, qntd);
                             break;
-                        case "bot_gm_event":
+                        case "GMEventBot":
                             UpdateRateAndEvent(14, qntd);
                             break;
                         case "smart_calc":
                             UpdateRateAndEvent(15, qntd);
                             break;
                         default:
-                            _smp.message_pool.getInstance().push(new message($"[MessengerServer::checkCommand][Error] Unknown Comamnd: \"Event {s}\"", type_msg.CL_ONLY_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[MessengerServer::checkCommand][Error] Unknown Comamnd: \"Event {s}\"", type_msg.CL_ONLY_CONSOLE));
                             break;
                     }
                 }
@@ -196,9 +196,9 @@ namespace Pangya_MessengerServer.Server
                         case "iff": tipo = 1; break;
                         case "card": tipo = 2; break;
                         case "comet_refill": tipo = 3; break;
-                        case "papel_shop": tipo = 4; break;
+                        case "PapelShop": tipo = 4; break;
                         case "box": tipo = 5; break;
-                        case "memorial_shop": tipo = 6; break;
+                        case "MemorialShop": tipo = 6; break;
                         case "cube_coin": tipo = 7; break;
                         case "treasure_hunter": tipo = 8; break;
                         case "drop": tipo = 9; break;
@@ -209,16 +209,16 @@ namespace Pangya_MessengerServer.Server
                         case "coin_cube_location": tipo = 14; break;
                         case "golden_time": tipo = 15; break;
                         case "login_reward": tipo = 16; break;
-                        case "bot_gm_event": tipo = 17; break;
+                        case "GMEventBot": tipo = 17; break;
                         case "smart_calc": tipo = 18; break;
                         default:
-                            _smp.message_pool.getInstance().push(new message($"[MessengerServer::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[MessengerServer::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
                             break;
                     }
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message($"[MessengerServer::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[MessengerServer::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_ONLY_CONSOLE));
                 }
 
                 if (tipo != -1 && tipo >= 0 && tipo <= 18)
@@ -241,7 +241,7 @@ namespace Pangya_MessengerServer.Server
         {
             if (session is not Player player)
             {
-                Console.WriteLine($"[Erro] A sessão conectada não é do tipo Player! Tipo real: {session.GetType().Name}");
+                Console.WriteLine($"[Erro] A sessão conectada não é do Type Player! Tipo real: {session.GetType().Name}");
                 return;
             }
 
@@ -252,11 +252,11 @@ namespace Pangya_MessengerServer.Server
                 packet.WriteByte(0);
                 packet.WriteInt32(player._ParseKey);
                 player.Send(packet, true);
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::OnClientConnected][Sucess] PLAYER[IP: {player.GetIP()}, OID: {player.ConnectionID}", 0));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::OnClientConnected][Sucess] PLAYER[IP: {player.GetIP()}, OID: {player.ConnectionID}", 0));
             }
             catch (exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
               $"[MessengerServer.OnClientConnected][ErrorSt]: {ex.getFullMessageError()}",
               type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -280,11 +280,11 @@ namespace Pangya_MessengerServer.Server
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[MessengerService::OnClientDisconnecteded][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerService::OnClientDisconnecteded][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
             // Log para não mostrar essa mensagem 2x (evita spam se o logout já foi processado)
             if (ret)
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::OnClientDisconnected][Warning] PLAYER[ID: {p.UserInfo?.id} UID: {p.UserInfo?.uid}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::OnClientDisconnected][Warning] PLAYER[ID: {p.UserInfo?.Login} UID: {p.UserInfo?.UID}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
         }
 
         protected override bool CheckPacket(IAppSession session, Packet packet)
@@ -356,7 +356,7 @@ namespace Pangya_MessengerServer.Server
 
         protected override void OnStart()
         {
-            Console.Title = $"Messenger Service - P: {m_si.curr_user}, Auth: {(m_unit_connect != null && m_unit_connect.isLive()? "ON": "OFF")}";
+            Console.Title = $"Messenger Service - P: {m_si.CurrentUsers}, Auth: {(m_unit_connect != null && m_unit_connect.isLive()? "ON": "OFF")}";
         }
          
         public override async void LoadConfig()
@@ -364,63 +364,63 @@ namespace Pangya_MessengerServer.Server
             base.LoadConfig();
 
             // Tipo Server
-            m_si.tipo = 3;
+            m_si.Type = 3;
 
 
-            // Recupera Valores de rate do server do banco de dados
-            var cmd_rci = new CmdRateConfigInfo(m_si.uid);  // Waiter
+            // Recupera Valores de Rate do server do banco de dados
+            var cmd_rci = new CmdRateConfigInfo(m_si.UID);  // Waiter
 
-            if (cmd_rci.getException().getCodeError() != 0 || cmd_rci.isError()/*Deu erro na consulta não tinha o rate config info para esse gs, pode ser novo*/)
+            if (cmd_rci.getException().getCodeError() != 0 || cmd_rci.isError()/*Deu erro na consulta não tinha o Rate config info para esse gs, pode ser novo*/)
             {
 
                 if (cmd_rci.getException().getCodeError() != 0)
-                    _smp.message_pool.getInstance().push(new message("[MessengerService::config_init][ErrorSystem] " + cmd_rci.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[MessengerService::config_init][ErrorSystem] " + cmd_rci.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                _smp.message_pool.getInstance().push(new message("[MessengerService::config_init][Error] nao conseguiu recuperar os valores de rate do server[UID="
-                        + (m_si.uid) + "] no banco de dados. Utilizando valores padroes de rates.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerService::config_init][Error] nao conseguiu recuperar os valores de Rate do server[UID="
+                        + (m_si.UID) + "] no banco de dados. Utilizando valores padroes de rates.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                m_si.rate.scratchy = 100;
-                m_si.rate.papel_shop_rare_item = 100;
-                m_si.rate.papel_shop_cookie_item = 100;
-                m_si.rate.treasure = 100;
-                m_si.rate.memorial_shop = 100;
-                m_si.rate.chuva = 100;
-                m_si.rate.grand_zodiac_event_time = 1; // Ativo por padr�o
-                m_si.rate.grand_prix_event = 1;        // Ativo por padr�o
-                m_si.rate.golden_time_event = 1;       // Ativo por padr�o
-                m_si.rate.login_reward_event = 1;      // Ativo por padr�o
-                m_si.rate.bot_gm_event = 1;            // Ativo por padr�o
-                m_si.rate.smart_calculator = 0;        // Atibo por padr�o
+                m_si.Rate.Scratchy = 100;
+                m_si.Rate.PapelShopRareItem = 100;
+                m_si.Rate.PapelShopCookieItem = 100;
+                m_si.Rate.Treasure = 100;
+                m_si.Rate.MemorialShop = 100;
+                m_si.Rate.Rain = 100;
+                m_si.Rate.GrandZodiacEventTime = 1; // Ativo por padr�o
+                m_si.Rate.GrandPrixEvent = 1;        // Ativo por padr�o
+                m_si.Rate.GoldenTimeEvent = 1;       // Ativo por padr�o
+                m_si.Rate.LoginRewardEvent = 1;      // Ativo por padr�o
+                m_si.Rate.GMEventBot = 1;            // Ativo por padr�o
+                m_si.Rate.SmartCalculation = 0;        // Atibo por padr�o
 
-                m_si.rate.angel_event = 0;             // Desativado por padr�o
-                m_si.rate.pang = 0;
-                m_si.rate.exp = 0;
-                m_si.rate.club_mastery = 0;
+                m_si.Rate.AngelEvent = 0;             // Desativado por padr�o
+                m_si.Rate.Pang = 0;
+                m_si.Rate.Experience = 0;
+                m_si.Rate.ClubMastery = 0;
 
                 // Atualiza no banco de dados
-               snmdb.NormalManagerDB.getInstance().add(2, new CmdUpdateRateConfigInfo(m_si.uid, m_si.rate), DBResponse, this);
+               snmdb.NormalManagerDB.Instance.add(2, new CmdUpdateRateConfigInfo(m_si.UID, m_si.Rate), DBResponse, this);
 
             }
             else
             {   // Conseguiu recuperar com sucesso os valores do server
 
-                m_si.rate.scratchy = cmd_rci.getInfo().scratchy;
-                m_si.rate.papel_shop_rare_item = cmd_rci.getInfo().papel_shop_rare_item;
-                m_si.rate.papel_shop_cookie_item = cmd_rci.getInfo().papel_shop_cookie_item;
-                m_si.rate.treasure = cmd_rci.getInfo().treasure;
-                m_si.rate.memorial_shop = cmd_rci.getInfo().memorial_shop;
-                m_si.rate.chuva = cmd_rci.getInfo().chuva;
-                m_si.rate.grand_zodiac_event_time = cmd_rci.getInfo().grand_zodiac_event_time;
-                m_si.rate.grand_prix_event = cmd_rci.getInfo().grand_prix_event;
-                m_si.rate.golden_time_event = cmd_rci.getInfo().golden_time_event;
-                m_si.rate.login_reward_event = cmd_rci.getInfo().login_reward_event;
-                m_si.rate.bot_gm_event = cmd_rci.getInfo().bot_gm_event;
-                m_si.rate.smart_calculator = cmd_rci.getInfo().smart_calculator;
+                m_si.Rate.Scratchy = cmd_rci.getInfo().Scratchy;
+                m_si.Rate.PapelShopRareItem = cmd_rci.getInfo().PapelShopRareItem;
+                m_si.Rate.PapelShopCookieItem = cmd_rci.getInfo().PapelShopCookieItem;
+                m_si.Rate.Treasure = cmd_rci.getInfo().Treasure;
+                m_si.Rate.MemorialShop = cmd_rci.getInfo().MemorialShop;
+                m_si.Rate.Rain = cmd_rci.getInfo().Rain;
+                m_si.Rate.GrandZodiacEventTime = cmd_rci.getInfo().GrandZodiacEventTime;
+                m_si.Rate.GrandPrixEvent = cmd_rci.getInfo().GrandPrixEvent;
+                m_si.Rate.GoldenTimeEvent = cmd_rci.getInfo().GoldenTimeEvent;
+                m_si.Rate.LoginRewardEvent = cmd_rci.getInfo().LoginRewardEvent;
+                m_si.Rate.GMEventBot = cmd_rci.getInfo().GMEventBot;
+                m_si.Rate.SmartCalculation = cmd_rci.getInfo().SmartCalculation;
 
-                m_si.rate.angel_event = cmd_rci.getInfo().angel_event;
-                m_si.rate.pang = cmd_rci.getInfo().pang;
-                m_si.rate.exp = cmd_rci.getInfo().exp;
-                m_si.rate.club_mastery = cmd_rci.getInfo().club_mastery;
+                m_si.Rate.AngelEvent = cmd_rci.getInfo().AngelEvent;
+                m_si.Rate.Pang = cmd_rci.getInfo().Pang;
+                m_si.Rate.Experience = cmd_rci.getInfo().Experience;
+                m_si.Rate.ClubMastery = cmd_rci.getInfo().ClubMastery;
             }
         }
 
@@ -432,7 +432,7 @@ namespace Pangya_MessengerServer.Server
             // Reload All Globals Systems
             ReloadSystem();
 
-            _smp.message_pool.getInstance().push(new message("[MessengerServer::ReloadFiles][Log] Reload System now sucess!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::ReloadFiles][Log] Reload System now sucess!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
         }
 
@@ -467,8 +467,8 @@ namespace Pangya_MessengerServer.Server
                 {
 
                     // Log
-                    _smp.message_pool.getInstance().push(new message("[MessengerServer::authCmdDisconnectPlayer][log] Comando do Auth Server, Server[UID=" + (_req_server_uid)
-                            + "] pediu para desconectar o PLAYER[UID=" + (s.UserInfo.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::authCmdDisconnectPlayer][log] Comando do Auth Server, Server[UID=" + (_req_server_uid)
+                            + "] pediu para desconectar o PLAYER[UID=" + (s.UserInfo.UID) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // Deconecta o Player
                     if (_force == 1) // Força o Disconect do player, sem verificar as regras do Game Server
@@ -484,10 +484,10 @@ namespace Pangya_MessengerServer.Server
                 {
 
                     // Não encontrou o player no server, então desconecta no banco de dados
-                    snmdb.NormalManagerDB.getInstance().add(5, new CmdRegisterLogon(_player_uid, 1/*Logout*/), DBResponse, this);
+                    snmdb.NormalManagerDB.Instance.add(5, new CmdRegisterLogon(_player_uid, 1/*Logout*/), DBResponse, this);
 
                     // Log
-                    _smp.message_pool.getInstance().push(new message("[MessengerServer::authCmdDisconnectPlayer][Warning] Comando do Auth Server, Server[UID=" + (_req_server_uid)
+                    _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::authCmdDisconnectPlayer][Warning] Comando do Auth Server, Server[UID=" + (_req_server_uid)
                             + "] pediu para desconectar o PLAYER[UID=" + (_player_uid) + "], mas nao encontrou ele no server, entao desconecta ele no banco de dados.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
@@ -498,7 +498,7 @@ namespace Pangya_MessengerServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[MessengerServer::authCmdDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::authCmdDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -523,7 +523,7 @@ namespace Pangya_MessengerServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[MessengerServer::authCmdNewRate][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::authCmdNewRate][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -536,7 +536,7 @@ namespace Pangya_MessengerServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[MessengerServer::authCmdReloadGlobalSystem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::authCmdReloadGlobalSystem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -559,14 +559,14 @@ namespace Pangya_MessengerServer.Server
 
                 }
                 else
-                    _smp.message_pool.getInstance().push(new message("[MessengerServer::authCmdConfirmSendInfoPlayerOnline][Warning] PLAYER[UID=" + (_aspi.uid)
+                    _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::authCmdConfirmSendInfoPlayerOnline][Warning] PLAYER[UID=" + (_aspi.uid)
                             + "] retorno do confirma login com Auth Server do Server[UID=" + (_req_server_uid) + "], mas o palyer nao esta mais conectado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[MessengerServer::authCmdConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::authCmdConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -599,9 +599,9 @@ namespace Pangya_MessengerServer.Server
                 {
 
                     // Validações de Segurança
-                    if (_aspi.uid != _session.UserInfo.uid ||
+                    if (_aspi.uid != _session.UserInfo.UID ||
                         _aspi.option != 1 ||
-                        _aspi.id != _session.UserInfo.id ||
+                        _aspi.id != _session.UserInfo.Login ||
                         _aspi.ip != _session.GetIP())
                     {
                         goto send_error;
@@ -616,12 +616,12 @@ namespace Pangya_MessengerServer.Server
                     _session.UserInfo.m_state = 4;
                     _session.Authorized = true;
 
-                    _smp.message_pool.getInstance().push(new message($"[MessengerServer] Player[UID={_session.UserInfo.uid}] logou com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[MessengerServer] Player[UID={_session.UserInfo.UID}] logou com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // Resposta de Sucesso (0x2F)
                     p.init_plain(0x2F);
                     p.WriteByte(0); // OK
-                    p.WriteUInt32(_session.UserInfo.uid);
+                    p.WriteUInt32(_session.UserInfo.UID);
 
                     _session.Send(p); 
                     return; // IMPORTANTE: Sai do método aqui para não executar o erro abaixo!
@@ -637,7 +637,7 @@ namespace Pangya_MessengerServer.Server
                 }
                 catch (Exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message($"[MessengerServer::confirmLogin] Error: {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[MessengerServer::confirmLogin] Error: {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
         }
@@ -672,7 +672,7 @@ namespace Pangya_MessengerServer.Server
         {
             if (_m_player == null || _m_player.Count == 0)
             {
-                _m_player = MessengerServer.getInstance().FindAllGuildMember(_s.UserInfo.guild_uid);
+                _m_player = MessengerServer.Instance.FindAllGuildMember(_s.UserInfo.GuildIndex);
             }
 
             foreach (var el in _m_player)
@@ -724,7 +724,7 @@ namespace Pangya_MessengerServer.Server
                         FriendInfoEx pFi = null;
 
                         // Se o amigo está online E não bloqueou o 'target'
-                        if (s_friend != null && (pFi = s_friend.UserInfo.m_friend_manager.findFriendInAllFriend(target.UserInfo.uid)) != null && !pFi.state.block.IsTrue())
+                        if (s_friend != null && (pFi = s_friend.UserInfo.m_friend_manager.findFriendInAllFriend(target.UserInfo.UID)) != null && !pFi.state.block.IsTrue())
                         {
                             p.WriteBytes(s_friend.UserInfo.m_cpi.ToArray());
                             p.WriteByte(s_friend.UserInfo.m_state);
@@ -753,9 +753,9 @@ namespace Pangya_MessengerServer.Server
 
                         p.WriteByte(friend.cUnknown_flag);
 
-                        // Lógica de Flag (Master/Sub/Membro/Level)
+                        // Lógica de ServerFlag (Master/Sub/Membro/Level)
                         byte flagValue = (friend.flag.ucFlag == 2)
-                            ? (byte)(friend.uid == target.UserInfo.uid ? 1 : 0)
+                            ? (byte)(friend.uid == target.UserInfo.UID ? 1 : 0)
                             : friend.level;
 
                         p.WriteByte(flagValue);
@@ -768,7 +768,7 @@ namespace Pangya_MessengerServer.Server
             }
             else
             {
-                // Envia página vazia se não tiver amigos/guild
+                // Envia página vazia se não tiver amigos/Guild
                 p.init_plain((ushort)0x30);
                 p.WriteUInt16(0x102);
                 p.WriteBytes(mp.pag.ToArray());
@@ -798,17 +798,17 @@ namespace Pangya_MessengerServer.Server
 
                 p.WriteUInt16(0x10F); // Sub packet Id
 
-                p.WriteUInt32(_session.UserInfo.uid);
+                p.WriteUInt32(_session.UserInfo.UID);
 
                 FriendBroadcast(_playerManager.FindAllFriend(_session.UserInfo.m_friend_manager.getAllFriendAndGuildMember(true/*Not Send To Block Friend*/)), _session, p);
 
-                _smp.message_pool.getInstance().push(new message("[MessengerService::SendUpdatePlayerLogoutToFriends][Log] PLAYER[ID: " + (_session.UserInfo.id) + ", UID: " + (_session.UserInfo.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerService::SendUpdatePlayerLogoutToFriends][Log] PLAYER[ID: " + (_session.UserInfo.Login) + ", UID: " + (_session.UserInfo.UID) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[MessengerService::SendUpdatePlayerLogoutToFriends][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerService::SendUpdatePlayerLogoutToFriends][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Error
                 ret = false;
@@ -825,7 +825,7 @@ namespace Pangya_MessengerServer.Server
         private void ReloadSystem()
         {
             // Recarrega IFF_STRUCT
-            sIff.getInstance().reload(); 
+            sIff.Instance.reload(); 
         }
 
         private void ReloadGlobalSystem(uint _tipo)
@@ -840,7 +840,7 @@ namespace Pangya_MessengerServer.Server
 
                     case 1:     // IFF
                                 // Recarrega IFF_STRUCT
-                        sIff.getInstance().reload();
+                        sIff.Instance.reload();
                         break;
                     case 2:     // Card
                     case 3:     // Comet Refill
@@ -862,7 +862,7 @@ namespace Pangya_MessengerServer.Server
                         break;
                     case 18:    // Smart Calculator Lib
                                 // Recarrega Smart Calculator Lib
-                                // sSmartCalculator.getInstance().load();
+                                // sSmartCalculator.Instance.load();
                         break;
 
                     default:
@@ -870,20 +870,20 @@ namespace Pangya_MessengerServer.Server
                 }
 
                 // Log
-                _smp.message_pool.getInstance().push(
-                     new message($"[MessengerServer::reloadGlobalSystem][Error] Recarregou o Sistema[Tipo={_tipo}] com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE)
+                _smp.LogManager.Instance.push(
+                     new AppMessage($"[MessengerServer::reloadGlobalSystem][Error] Recarregou o Sistema[Tipo={_tipo}] com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE)
                  );
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(
-                     new message($"[MessengerServer::reloadGlobalSystem][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE)
+                _smp.LogManager.Instance.push(
+                     new AppMessage($"[MessengerServer::reloadGlobalSystem][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE)
                  );
             }
         }
 
 
-        // Update rate e Event of Server
+        // Update Rate e Event of Server
 
         public void UpdateRateAndEvent(int _tipo, uint _qntd)
         {
@@ -915,24 +915,24 @@ namespace Pangya_MessengerServer.Server
                     case 14: // Bot GM Event
                     case 15: // Smart Calculator
                         {
-                            m_si.rate.smart_calculator = (short)_qntd;
+                            m_si.Rate.SmartCalculation = (short)_qntd;
 
                             // Recarrega o Smart Calculator System se ele foi ativado
-                            if (m_si.rate.smart_calculator == 1)
+                            if (m_si.Rate.SmartCalculation == 1)
                                 ReloadGlobalSystem(18/*Smart Calculator*/);
 
                             break;
                         }
                     default:
                         throw new exception("[MessengerServer::UpdateRateAndEvent][Error] troca Rate[TIPO=" + (_tipo) + ", QNTD="
-                                + (_qntd) + "], tipo desconhecido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 120, 0));
+                                + (_qntd) + "], Type desconhecido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 120, 0));
                 }
 
                 // Update no DB os server do server que foram alterados
-                snmdb.NormalManagerDB.getInstance().add(2, new CmdUpdateRateConfigInfo(m_si.uid, m_si.rate), DBResponse, this);
+                snmdb.NormalManagerDB.Instance.add(2, new CmdUpdateRateConfigInfo(m_si.UID, m_si.Rate), DBResponse, this);
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[MessengerServer::UpdateRateAndEvent][Error] New Rate[Tipo=" + (_tipo) + ", QNTD="
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::UpdateRateAndEvent][Error] New Rate[Tipo=" + (_tipo) + ", QNTD="
                         + (_qntd) + "] com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
 
@@ -940,7 +940,7 @@ namespace Pangya_MessengerServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[MessengerServer::UpdateRateAndEvent][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerServer::UpdateRateAndEvent][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -950,14 +950,14 @@ namespace Pangya_MessengerServer.Server
         {
             if (_arg == null)
             {
-                _smp.message_pool.getInstance().push(new message("[MessengerService::DBResponse][WARNING] _arg is nullptr, na msg_id = " + (_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerService::DBResponse][WARNING] _arg is nullptr, na msg_id = " + (_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
-            // Por Hora s� sai, depois fa�o outro tipo de tratamento se precisar
+            // Por Hora s� sai, depois fa�o outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[MessengerService::DBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[MessengerService::DBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 

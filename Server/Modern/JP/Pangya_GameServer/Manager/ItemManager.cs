@@ -40,7 +40,7 @@ namespace Pangya_GameServer.Manager
     type_msg MSG_ACTIVE_DEBUG = type_msg.CL_ONLY_FILE_LOG;
 #endif
 
-            _smp.message_pool.getInstance().push(new message($"[ItemManager::{func}][Sucess] Player_s[UID=" + (_s_snd.Inventory.uid) + "] " + log + "[Typeid="
+            _smp.LogManager.Instance.push(new AppMessage($"[ItemManager::{func}][Sucess] Player_s[UID=" + (_s_snd.Inventory.uid) + "] " + log + "[Typeid="
             + (_psi.item._typeid) + ", ID=" + (_psi.item.id) + ", QNTD=" + (_psi.item.qntd) + ", PANG(qntd*unit)="
             + (_psi.item.pang * (ulong)_psi.item.qntd) + "] transferiu para o Player_r[UID=" + (_s_rcv.Inventory.uid) + "]", MSG_ACTIVE_DEBUG));
 
@@ -54,8 +54,8 @@ namespace Pangya_GameServer.Manager
     type_msg MSG_ACTIVE_DEBUG = type_msg.CL_ONLY_FILE_LOG;
 #endif
 
-            _smp.message_pool.getInstance().push(new message(
-                $"[ItemManager::{func}][Sucess] PLAYER[UID={_session.Inventory.uid}] {log} [Typeid={_item._typeid}, ID={_item.id}, QNTD={(_item.STDA_C_ITEM_QNTD > 0 && _item.qntd <= 0xFFu ? _item.STDA_C_ITEM_QNTD : _item.qntd)}]",
+            _smp.LogManager.Instance.push(new AppMessage(
+                $"[ItemManager::{func}][Sucess] Normal[UID={_session.Inventory.uid}] {log} [Typeid={_item._typeid}, ID={_item.id}, QNTD={(_item.STDA_C_ITEM_QNTD > 0 && _item.qntd <= 0xFFu ? _item.STDA_C_ITEM_QNTD : _item.qntd)}]",
                 MSG_ACTIVE_DEBUG));
         }
 
@@ -67,7 +67,7 @@ namespace Pangya_GameServer.Manager
             _item.qntd = (int)_bi.qntd;
             _item.date.date.sysDate[0] = new SystemTime(item.date.Start.Year, item.date.Start.Month, item.date.Start.Day, item.date.Start.Hour, item.date.Start.Minute, item.date.Start.Second, item.date.Start.MilliSecond);//check start later
             _item.date.date.sysDate[1] = new SystemTime(item.date.End.Year, item.date.End.Month, item.date.End.Day, item.date.End.Hour, item.date.End.Minute, item.date.End.Second, item.date.End.MilliSecond);//check End later
-            _item.date.active = Convert.ToUInt32(item.date.active);//check active date later
+            _item.date.active = Convert.ToUInt32(item.date.active);//check State date later
             _item.price = item.Shop.Price;
             _item.desconto = item.Shop.DiscountPrice;
             _item.is_cash = (byte)(item.Shop.flag_shop.IsCash ? 1 : 0);
@@ -78,7 +78,7 @@ namespace Pangya_GameServer.Manager
         {
             if (iffInfo == null || iffInfo.ID == 0)
             {
-                iffInfo = sIff.getInstance().findCommomItem(buyItem._typeid);
+                iffInfo = sIff.Instance.findCommomItem(buyItem._typeid);
             }
 
             if (iffInfo != null)
@@ -89,18 +89,18 @@ namespace Pangya_GameServer.Manager
             }
             else
             {
-                _smp.message_pool.getInstance().push(new message(
-                    $"[ItemManager::BeginInitBuyItem][Error] UID={player.uid}, TID={buyItem._typeid}] ITEM NOT FOUND",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[ItemManager::BeginInitBuyItem][Error] UID={player.UID}, TID={buyItem._typeid}] ITEM NOT FOUND",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
         static void CheckItemLevel(PlayerInfo _pi, ref stItem _item, bool _gift_opt, bool _chk_lvl, IFFCommon item)
         {
-            if (!_gift_opt && !_chk_lvl && !item.Level.GoodLevel((byte)_pi.level))
+            if (!_gift_opt && !_chk_lvl && !item.Level.GoodLevel((byte)_pi.Level))
             {
-                _smp.message_pool.getInstance().push(new message(
-            $"[Log] PLAYER[UID={_pi.uid}] nao tem o level[value={item.Level}] necessario para comprar esse item[TYPEID={item.ID}]",
+                _smp.LogManager.Instance.push(new AppMessage(
+            $"[Log] Normal[UID={_pi.UID}] nao tem o Level[value={item.Level}] necessario para comprar esse item[TYPEID={item.ID}]",
             type_msg.CL_FILE_LOG_AND_CONSOLE));
                 _item._typeid = 0;
                 return;
@@ -109,10 +109,10 @@ namespace Pangya_GameServer.Manager
 
         static void CheckIsGift(PlayerInfo _pi, ref stItem _item, bool _gift_opt, bool _chk_lvl, IFFCommon item)
         {
-            if (_gift_opt && !sIff.getInstance().IsGiftItem(item.ID))
+            if (_gift_opt && !sIff.Instance.IsGiftItem(item.ID))
             {
-                _smp.message_pool.getInstance().push(new message(
-                            $"[Log] PLAYER[UID={_pi.uid}] tentou presentear um item que não pode ser presenteado.",
+                _smp.LogManager.Instance.push(new AppMessage(
+                            $"[Log] Normal[UID={_pi.UID}] tentou presentear um item que não pode ser presenteado.",
                             type_msg.CL_FILE_LOG_AND_CONSOLE));
                 
                 _item._typeid = 0;
@@ -151,7 +151,7 @@ namespace Pangya_GameServer.Manager
             stItem item = new stItem();
             BuyItem bi = new BuyItem();
 
-            SetItem set_item = sIff.getInstance().findSetItem(_typeid);
+            SetItem set_item = sIff.Instance.findSetItem(_typeid);
 
             if (set_item == null)
             {
@@ -195,11 +195,11 @@ namespace Pangya_GameServer.Manager
             // Limpa o _item
             _item.clear();
 
-            switch (sIff.getInstance().getItemGroupIdentify(_bi._typeid))
+            switch (sIff.Instance.getItemGroupIdentify(_bi._typeid))
             {
                 case IFF_GROUP.CHARACTER:
                     {
-                        var item = sIff.getInstance().findCharacter(_bi._typeid);
+                        var item = sIff.Instance.findCharacter(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -208,7 +208,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.PART:
                     {
-                        var item = sIff.getInstance().findPart(_bi._typeid);
+                        var item = sIff.Instance.findPart(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -218,7 +218,7 @@ namespace Pangya_GameServer.Manager
                             _item.is_cash = 0; // Pang, por que é rental
                             _item.STDA_C_ITEM_TIME = 7; // 7 dias    // no original é no C[3] o tempos
                             _item.flag = 0x60; // dias Rental(acho)
-                                               // time tipo 6 rental, 4, 2,
+                                               // time Type 6 rental, 4, 2,
                             _item.flag_time = 6;
                         }
                         else if (_bi.time > 0)
@@ -226,7 +226,7 @@ namespace Pangya_GameServer.Manager
 
                             if (item.Shop.flag_shop.time_shop.active)
                             {
-                                _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][WARNIG] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] inicializou Part[TYPEID=" + Convert.ToString(_bi._typeid) + "] com tempo[VALUE=" + Convert.ToString(_bi.time) + "], mas no IFF_STRUCT do server ele nao é um item por tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][WARNIG] Normal[UID=" + Convert.ToString(_pi.UID) + "] inicializou Part[TYPEID=" + Convert.ToString(_bi._typeid) + "] com tempo[VALUE=" + Convert.ToString(_bi.time) + "], mas no IFF_STRUCT do server ele nao é um item por tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             }
 
                             _item.STDA_C_ITEM_TIME = (short)_bi.time;
@@ -249,7 +249,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.CLUBSET:
                     {
-                        var item = sIff.getInstance().findClubSet(_bi._typeid);
+                        var item = sIff.Instance.findClubSet(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -267,7 +267,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.BALL:
                     {
-                        var item = sIff.getInstance().findBall(_bi._typeid);
+                        var item = sIff.Instance.findBall(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -306,7 +306,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.ITEM:
                     {
-                        var item = sIff.getInstance().findItem(_bi._typeid);
+                        var item = sIff.Instance.findItem(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -319,17 +319,17 @@ namespace Pangya_GameServer.Manager
                         }
 
 
-                        // essa regra é para os itens que é 1 item, mas tem mais quantidade que vai ser add, 1 item normal, mas ele vem 10, fica no STDA_C_ITEM_QNTD
+                        // essa regra é para os itens que é 1 item, mas tem mais quantidade que vai ser add, 1 item Normal, mas ele vem 10, fica no STDA_C_ITEM_QNTD
                         if (_item.qntd > 0 && _item.STDA_C_ITEM_QNTD != 0 && (_item.STDA_C_ITEM_QNTD == 1 || _item.STDA_C_ITEM_QNTD == _item.qntd))
                             _item.qntd /= (int)_item.STDA_C_ITEM_QNTD;
 
 
                         // Tem preço de tempo
-                        var empty_price = sIff.getInstance().EMPTY_ARRAY_PRICE(_item.c);
+                        var empty_price = sIff.Instance.EMPTY_ARRAY_PRICE(_item.c);
 
                         if (_bi.time > 0
                             && !empty_price
-                            && sIff.getInstance().getEnchantSlotStat(_item._typeid) == 0x21)
+                            && sIff.Instance.getEnchantSlotStat(_item._typeid) == 0x21)
                         {
 
                             if (item.Shop.flag_shop.time_shop.active && item.Shop.flag_shop.time_shop.dia > 0)
@@ -379,15 +379,15 @@ namespace Pangya_GameServer.Manager
 
                                 if (_bi.time > 365)
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[Warning] PLAYER[UID=" + Convert.ToString(_pi.uid) + "]. Queria colocar mais[request=" + Convert.ToString(_bi.time) + "] que 365 dia na compra do Premium Ticket. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[Warning] Normal[UID=" + Convert.ToString(_pi.UID) + "]. Queria colocar mais[request=" + Convert.ToString(_bi.time) + "] que 365 dia na compra do Premium Ticket. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 }
                             }
 
                         }
-                        else if (_bi.time == 0 && !empty_price && sIff.getInstance().getEnchantSlotStat(_item._typeid) == 0x21 && _bi.qntd > 0)
+                        else if (_bi.time == 0 && !empty_price && sIff.Instance.getEnchantSlotStat(_item._typeid) == 0x21 && _bi.qntd > 0)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Warning] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] tentou inicializar Item[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Warning] Normal[UID=" + Convert.ToString(_pi.UID) + "] tentou inicializar Item[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             _bi.time = (short)(_bi.qntd > 365 ? 365 : _bi.qntd);
 
@@ -444,7 +444,7 @@ namespace Pangya_GameServer.Manager
 
                                 if (_bi.time > 365)
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[Warning] PLAYER[UID=" + Convert.ToString(_pi.uid) + "]. Queria colocar mais[request=" + Convert.ToString(_bi.time) + "] que 365 dia na compra do Premium Ticket. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[Warning] Normal[UID=" + Convert.ToString(_pi.UID) + "]. Queria colocar mais[request=" + Convert.ToString(_bi.time) + "] que 365 dia na compra do Premium Ticket. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 }
                             }
                         }
@@ -465,7 +465,7 @@ namespace Pangya_GameServer.Manager
                             _item.qntd = (int)_bi.qntd;
                         }
 
-                        if (sIff.getInstance().IsItemEquipable(_bi._typeid))
+                        if (sIff.Instance.IsItemEquipable(_bi._typeid))
                         { // Equiável
                         }
                         else
@@ -478,7 +478,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.CADDIE:
                     {
-                        var item = sIff.getInstance().findCaddie(_bi._typeid);
+                        var item = sIff.Instance.findCaddie(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -500,12 +500,12 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.CAD_ITEM:
                     {
-                        var item = sIff.getInstance().findCaddieItem(_bi._typeid);
+                        var item = sIff.Instance.findCaddieItem(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
                         // Aqui não precisa ver se tem time_limit e time_start, so tem que verificar se tem o item->price[0~4]
-                        var empty_price = sIff.getInstance().EMPTY_ARRAY_PRICE(item.price);
+                        var empty_price = sIff.Instance.EMPTY_ARRAY_PRICE(item.price);
 
                         if (_bi.time > 0 && !empty_price)
                         {
@@ -547,7 +547,7 @@ namespace Pangya_GameServer.Manager
                         else if (_bi.time > 0 && (item.Shop.flag_shop.time_shop.active || item.Shop.flag_shop.time_shop.dia > 0))
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Warning] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] inicializou Caddie Item[TYPEID=" + Convert.ToString(_bi._typeid) + "] com tempo no jogo e no IFF_STRUCT, mas ele nao tem os precos de tempo no IFF_STRUCT. Box ou Comando GM", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Warning] Normal[UID=" + Convert.ToString(_pi.UID) + "] inicializou Caddie Item[TYPEID=" + Convert.ToString(_bi._typeid) + "] com tempo no jogo e no IFF_STRUCT, mas ele nao tem os precos de tempo no IFF_STRUCT. Box ou Comando GM", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             // Qntd tem que ser 1 por que o item é por tempo
                             if (_bi.qntd > 1)
@@ -564,7 +564,7 @@ namespace Pangya_GameServer.Manager
                         else if (_bi.time == 0 && !empty_price && _bi.qntd > 0)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Warning] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] tentou inicializar Caddie Item[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Warning] Normal[UID=" + Convert.ToString(_pi.UID) + "] tentou inicializar Caddie Item[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             _bi.time = (short)(_bi.qntd > 30 ? 30 : _bi.qntd);
 
@@ -601,7 +601,7 @@ namespace Pangya_GameServer.Manager
                                     }
                                     break;
                                 default: // Não passou a quantidade de dias certo manda a soma de todos os preços que tem no iff
-                                    _item.price = sIff.getInstance().SUM_ARRAY_PRICE_ULONG(item.price);
+                                    _item.price = sIff.Instance.SUM_ARRAY_PRICE_ULONG(item.price);
                                     break;
                             }
 
@@ -614,7 +614,7 @@ namespace Pangya_GameServer.Manager
                         else if (_bi.time == 0 && !empty_price && _bi.qntd == 0)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Error] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] tentou inicializar Caddie Item[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo e sem quantidade no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Error] Normal[UID=" + Convert.ToString(_pi.UID) + "] tentou inicializar Caddie Item[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo e sem quantidade no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             _item._typeid = 0;
 
@@ -626,7 +626,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.SET_ITEM:
                     {
-                        var item = sIff.getInstance().findSetItem(_bi._typeid);
+                        var item = sIff.Instance.findSetItem(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -635,7 +635,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.SKIN:
                     {
-                        var item = sIff.getInstance().findSkin(_bi._typeid);
+                        var item = sIff.Instance.findSkin(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -643,7 +643,7 @@ namespace Pangya_GameServer.Manager
                         //item->Shop.flag_shop.time_shop.uc_time_start //---- AS SKINS É DO 7
 
                         // Aqui não precisa ver se tem time_limit e time_start, so tem que verificar se tem o item->price[0~4]
-                        var empty_price = sIff.getInstance().EMPTY_ARRAY_PRICE(item.price);
+                        var empty_price = sIff.Instance.EMPTY_ARRAY_PRICE(item.price);
 
                         if (_bi.time > 0 && !empty_price)
                         {
@@ -681,7 +681,7 @@ namespace Pangya_GameServer.Manager
                                     }
                                     break;
                                 default: // Não passou a quantidade de dias certo manda a soma de todos os preços que tem no iff
-                                    _item.price = sIff.getInstance().SUM_ARRAY_PRICE_ULONG(item.price);
+                                    _item.price = sIff.Instance.SUM_ARRAY_PRICE_ULONG(item.price);
                                     break;
                             }
 
@@ -694,7 +694,7 @@ namespace Pangya_GameServer.Manager
                         else if (_bi.time > 0 && (item.Shop.flag_shop.time_shop.active || item.Shop.flag_shop.time_shop.dia > 0))
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Warning] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] inicializou Skin[TYPEID=" + Convert.ToString(_bi._typeid) + "] com tempo no jogo e no IFF_STRUCT, mas ele nao tem os precos de tempo no IFF_STRUCT. Box ou Comando GM", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Warning] Normal[UID=" + Convert.ToString(_pi.UID) + "] inicializou Skin[TYPEID=" + Convert.ToString(_bi._typeid) + "] com tempo no jogo e no IFF_STRUCT, mas ele nao tem os precos de tempo no IFF_STRUCT. Box ou Comando GM", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             // Qntd tem que ser 1 por que o item é por tempo
                             if (_bi.qntd > 1)
@@ -711,7 +711,7 @@ namespace Pangya_GameServer.Manager
                         else if (_bi.time == 0 && !empty_price && _bi.qntd > 0)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Warning] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] tentou inicializar Skin[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Warning] Normal[UID=" + Convert.ToString(_pi.UID) + "] tentou inicializar Skin[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             _bi.time = (short)(_bi.qntd > 365 ? 365 : _bi.qntd);
 
@@ -754,7 +754,7 @@ namespace Pangya_GameServer.Manager
                                     }
                                     break;
                                 default: // Não passou a quantidade de dias certo manda a soma de todos os preços que tem no iff
-                                    _item.price = sIff.getInstance().SUM_ARRAY_PRICE_ULONG(item.price);
+                                    _item.price = sIff.Instance.SUM_ARRAY_PRICE_ULONG(item.price);
                                     break;
                             }
 
@@ -767,7 +767,7 @@ namespace Pangya_GameServer.Manager
                         else if (_bi.time == 0 && !empty_price && _bi.qntd == 0)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Error] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] tentou inicializar Skin[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo e sem quantidade no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Error] Normal[UID=" + Convert.ToString(_pi.UID) + "] tentou inicializar Skin[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo e sem quantidade no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             _item._typeid = 0;
 
@@ -779,7 +779,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.HAIR_STYLE:
                     {
-                        var item = sIff.getInstance().findHairStyle(_bi._typeid);
+                        var item = sIff.Instance.findHairStyle(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -788,13 +788,13 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.MASCOT:
                     {
-                        var item = sIff.getInstance().findMascot(_bi._typeid);
+                        var item = sIff.Instance.findMascot(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
                         // Dias
                         // Aqui não precisa ver se tem time_limit e time_start, so tem que verificar se tem o item->price[0~4]
-                        var empty_price = sIff.getInstance().EMPTY_ARRAY_PRICE(item.price);
+                        var empty_price = sIff.Instance.EMPTY_ARRAY_PRICE(item.price);
 
                         if (_bi.time > 0 && !empty_price)
                         {
@@ -843,10 +843,10 @@ namespace Pangya_GameServer.Manager
                         {
 
                             if (_shop
-                                && !sIff.getInstance().IsBuyItem(item.ID)
-                                && !sIff.getInstance().IsGiftItem(item.ID))
+                                && !sIff.Instance.IsBuyItem(item.ID)
+                                && !sIff.Instance.IsGiftItem(item.ID))
                             {
-                                _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Warning] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] inicializou Mascot[TYPEID=" + Convert.ToString(_bi._typeid) + "] com tempo no jogo e no IFF_STRUCT, mas ele nao tem os precos de tempo no IFF_STRUCT. Box ou Comando GM", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Warning] Normal[UID=" + Convert.ToString(_pi.UID) + "] inicializou Mascot[TYPEID=" + Convert.ToString(_bi._typeid) + "] com tempo no jogo e no IFF_STRUCT, mas ele nao tem os precos de tempo no IFF_STRUCT. Box ou Comando GM", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             }
 
                             // Qntd tem que ser 1 por que o item é por tempo
@@ -864,7 +864,7 @@ namespace Pangya_GameServer.Manager
                         else if (_bi.time == 0 && !empty_price && _bi.qntd > 0)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Warning] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] tentou inicializar Mascot[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Warning] Normal[UID=" + Convert.ToString(_pi.UID) + "] tentou inicializar Mascot[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             _bi.time = (short)(_bi.qntd > 365 ? 365 : _bi.qntd);
 
@@ -907,7 +907,7 @@ namespace Pangya_GameServer.Manager
                                     }
                                     break;
                                 default: // Não passou a quantidade de dias certo manda a soma de todos os preços que tem no iff
-                                    _item.price = sIff.getInstance().SUM_ARRAY_PRICE_ULONG(item.price);
+                                    _item.price = sIff.Instance.SUM_ARRAY_PRICE_ULONG(item.price);
                                     break;
                             }
 
@@ -920,7 +920,7 @@ namespace Pangya_GameServer.Manager
                         else if (_bi.time == 0 && !empty_price && _bi.qntd == 0)
                         {
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::initItemFromBuyItem][Error] PLAYER[UID=" + Convert.ToString(_pi.uid) + "] tentou inicializar Mascot[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo e sem quantidade no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::initItemFromBuyItem][Error] Normal[UID=" + Convert.ToString(_pi.UID) + "] tentou inicializar Mascot[TYPEID=" + Convert.ToString(_bi._typeid) + "] sem tempo e sem quantidade no jogo e no IFF_STRUCT ele tem tempo. Hacker ou Command GM.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             _item._typeid = 0;
 
@@ -932,7 +932,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.FURNITURE:
                     {
-                        var item = sIff.getInstance().findFurniture(_bi._typeid);
+                        var item = sIff.Instance.findFurniture(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -946,7 +946,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.AUX_PART:
                     {
-                        var item = sIff.getInstance().findAuxPart(_bi._typeid);
+                        var item = sIff.Instance.findAuxPart(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -960,7 +960,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.CARD:
                     {
-                        var item = sIff.getInstance().findCard(_bi._typeid);
+                        var item = sIff.Instance.findCard(_bi._typeid);
 
                         BeginInitBuyItem(_pi, ref _item, _bi, _gift_opt.IsTrue(), _chk_lvl.IsTrue(), (item != null && item.ID == 0) ? null : item);
 
@@ -972,8 +972,8 @@ namespace Pangya_GameServer.Manager
                         //END_INIT_BUYITEM; nao é nada, so um log simples
                         break;
                     }
-                default: // Não tem esse item para vender no shop
-                    _smp.message_pool.getInstance().push(new message("PLAYER[UID=" + Convert.ToString(_pi.uid) + "] Tentou comprar um item que nao tem no shop para vender. typeid: " + Convert.ToString(_bi._typeid), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                default: // Não tem esse item para vender no ShopRoom
+                    _smp.LogManager.Instance.push(new AppMessage("Normal[UID=" + Convert.ToString(_pi.UID) + "] Tentou comprar um item que nao tem no ShopRoom para vender. typeid: " + Convert.ToString(_bi._typeid), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     break;
             }
@@ -991,7 +991,7 @@ namespace Pangya_GameServer.Manager
 
             _item.flag_time = _ei_item.flag_time;
 
-            // Aqui tem que criar o proprio dele por que tem o tipo do tempo[dias, horas, minutos, segundos] e etc
+            // Aqui tem que criar o proprio dele por que tem o Type do tempo[dias, horas, minutos, segundos] e etc
             initItemFromBuyItem(_pi,
                 _item, item, false, 0, 0, 1);
         }
@@ -1040,7 +1040,7 @@ namespace Pangya_GameServer.Manager
                 // Error Grave lança uma excessa
                 if (_uid == 0)
                 {
-                    throw new exception("[ItemManager::addItem][Error] uid invalid(zero).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                    throw new exception("[ItemManager::addItem][Error] UID invalid(zero).", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                         8, 0));
                 }
 
@@ -1050,14 +1050,14 @@ namespace Pangya_GameServer.Manager
                         9, 0));
                 }
 
-                switch (sIff.getInstance().getItemGroupIdentify(_item._typeid))
+                switch (sIff.Instance.getItemGroupIdentify(_item._typeid))
                 {
                     case IFF_GROUP.CHARACTER:
                         {
 
                             if ( ownerItem(_uid, _item._typeid))
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] add um character[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] add um character[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -1074,7 +1074,7 @@ namespace Pangya_GameServer.Manager
                             var cmd_ac = new CmdAddCharacter(_uid, // Waitable
                                 ce, _purchase, 0);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_ac);
 
                             if (cmd_ac.getException().getCodeError() != 0)
@@ -1095,7 +1095,7 @@ namespace Pangya_GameServer.Manager
                             _item.stat.qntd_ant = 0;
                             _item.stat.qntd_dep = 1;
 
-                            ret_id = RetAddItem.SUCCESS;//ce.id;
+                            ret_id = RetAddItem.SUCCESS;//ce.Login;
 
                             break;
                         }
@@ -1104,7 +1104,7 @@ namespace Pangya_GameServer.Manager
 
                             if ( ownerItem(_uid, _item._typeid))
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou add um caddie[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possi.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] tentou add um caddie[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possi.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -1123,7 +1123,7 @@ namespace Pangya_GameServer.Manager
                             CmdAddCaddie cmd_ac = new CmdAddCaddie(_uid, // Waitable
                                 ci, _purchase, 0);
 
-                            NormalManagerDB.getInstance().add(2,
+                            NormalManagerDB.Instance.add(2,
                                   cmd_ac);
 
                             if (cmd_ac.getException().getCodeError() != 0)
@@ -1144,19 +1144,19 @@ namespace Pangya_GameServer.Manager
                             _item.stat.qntd_ant = 0;
                             _item.stat.qntd_dep = 1;
 
-                            ret_id = RetAddItem.SUCCESS;//ci.id;
+                            ret_id = RetAddItem.SUCCESS;//CharacterInfo.Login;
 
                             break;
                         }
                     case IFF_GROUP.CAD_ITEM:
                         {
-                            uint cad_typeid = (uint)((Convert.ToUInt32(sIff.getInstance().CADDIE) << 26) | sIff.getInstance().getCaddieIdentify(_item._typeid));
+                            uint cad_typeid = (uint)((Convert.ToUInt32(sIff.Instance.CADDIE) << 26) | sIff.Instance.getCaddieIdentify(_item._typeid));
 
                             var ci =  _ownerCaddieItem(_uid, _item._typeid);
 
                             if (!(ci.id > 0))
                             {
-                                throw new exception("[itme_manager::addItem][Log] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou comprar um caddie item[TYPEID=" + Convert.ToString(_item._typeid) + "] sem o caddie[TYPEID=" + Convert.ToString(cad_typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[itme_manager::addItem][Log] Normal[UID=" + Convert.ToString(_uid) + "] tentou comprar um caddie item[TYPEID=" + Convert.ToString(_item._typeid) + "] sem o caddie[TYPEID=" + Convert.ToString(cad_typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     14, 0));
                             }
 
@@ -1178,7 +1178,7 @@ namespace Pangya_GameServer.Manager
 
                                 _item.id = ci.id;
 
-                                ret_id = RetAddItem.SUCCESS;//ci.id;
+                                ret_id = RetAddItem.SUCCESS;//CharacterInfo.Login;
 
 
                             }
@@ -1195,14 +1195,14 @@ namespace Pangya_GameServer.Manager
 
                                 _item.id = ci.id;
 
-                                ret_id = RetAddItem.SUCCESS;//ci.id;
+                                ret_id = RetAddItem.SUCCESS;//CharacterInfo.Login;
 
                             }
 
                             var str_end_date = UtilTime.FormatDate(ci.end_parts_date);
 
                             // Atualiza no para os 2 aqui
-                            NormalManagerDB.getInstance().add(5,
+                            NormalManagerDB.Instance.add(5,
                                   new CmdUpdateCaddieItem(_uid,
                                       str_end_date, ci),
                                   SQLDBResponse,
@@ -1212,11 +1212,11 @@ namespace Pangya_GameServer.Manager
                         }
                     case IFF_GROUP.MASCOT:
                         {
-                            var mascot = sIff.getInstance().findMascot(_item._typeid);
+                            var mascot = sIff.Instance.findMascot(_item._typeid);
 
                             if (mascot == null)
                             {
-                                throw new exception("[ItemManager::addItem][Erorr] mascot[TYPEID=" + Convert.ToString(_item._typeid) + "] nao foi encontrado no IFF_STRUCT do server, para o PLAYER[UID=" + Convert.ToString(_uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Erorr] mascot[TYPEID=" + Convert.ToString(_item._typeid) + "] nao foi encontrado no IFF_STRUCT do server, para o Normal[UID=" + Convert.ToString(_uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -1249,7 +1249,7 @@ namespace Pangya_GameServer.Manager
                                     var str_date = UtilTime._formatDate(pMi.data);
 
                                     // Cmd update time mascot db
-                                    NormalManagerDB.getInstance().add(6,
+                                    NormalManagerDB.Instance.add(6,
                                           new CmdUpdateMascotTime(_uid,
                                               pMi.id, str_date),
                                           SQLDBResponse,
@@ -1258,7 +1258,7 @@ namespace Pangya_GameServer.Manager
 
                                 _item.id = pMi.id;
 
-                                ret_id = RetAddItem.SUCCESS;//_item.id;
+                                ret_id = RetAddItem.SUCCESS;//_item.Login;
 
                             }
                             else
@@ -1284,7 +1284,7 @@ namespace Pangya_GameServer.Manager
                                     mi, _item.STDA_C_ITEM_TIME,
                                     _purchase, 0);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_am);
 
                                 if (cmd_am.getException().getCodeError() != 0)
@@ -1329,7 +1329,7 @@ namespace Pangya_GameServer.Manager
                                     _item.date.date.sysDate[1] = mi.data;
                                 }
 
-                                ret_id = RetAddItem.SUCCESS;//mi.id;
+                                ret_id = RetAddItem.SUCCESS;//mi.Login;
 
                             }
 
@@ -1349,9 +1349,9 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
                                 _item.id = pWi.id;
-                                ret_id = RetAddItem.SUCCESS;//pWi.id;
+                                ret_id = RetAddItem.SUCCESS;//pWi.Login;
 
-                                NormalManagerDB.getInstance().add(7,
+                                NormalManagerDB.Instance.add(7,
                                       new CmdUpdateBallQntd(_uid,
                                           pWi.id, pWi.STDA_C_ITEM_QNTD),
                                       SQLDBResponse,
@@ -1374,7 +1374,7 @@ namespace Pangya_GameServer.Manager
                                 CmdAddBall cmd_ab = new CmdAddBall(_uid, // Waiter
                                     wi, _purchase, 0);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_ab);
 
 
@@ -1395,7 +1395,7 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_ant = 0;
                                 _item.stat.qntd_dep = (int)wi.STDA_C_ITEM_QNTD;
 
-                                ret_id = RetAddItem.SUCCESS;//wi.id;
+                                ret_id = RetAddItem.SUCCESS;//wi.Login;
                             }
 
                         }
@@ -1403,7 +1403,7 @@ namespace Pangya_GameServer.Manager
                     case IFF_GROUP.CLUBSET:
                         {
 
-                            var clubset = sIff.getInstance().findClubSet(_item._typeid);
+                            var clubset = sIff.Instance.findClubSet(_item._typeid);
 
                             if (clubset == null)
                             {
@@ -1448,7 +1448,7 @@ namespace Pangya_GameServer.Manager
                                     _item.date.date.sysDate[1] = (UtilTime.UnixToSystemTime(pWi.end_date_unix_local));
 
                                     // Atualiza o tempo do ClubSet do player
-                                    NormalManagerDB.getInstance().add(20,
+                                    NormalManagerDB.Instance.add(20,
                                           new CmdUpdateClubSetTime(_uid, pWi),
                                           SQLDBResponse,
                                           null);
@@ -1458,12 +1458,12 @@ namespace Pangya_GameServer.Manager
                                     _item.stat.qntd_dep = _item.qntd;
 
                                     _item.id = pWi.id;
-                                    ret_id = RetAddItem.SUCCESS;//pWi.id;
+                                    ret_id = RetAddItem.SUCCESS;//pWi.Login;
 
 
                                 }
                                 else
-                                    throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou add clubset[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                    throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] tentou add clubset[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                         10, 0));
 
                             }
@@ -1496,7 +1496,7 @@ namespace Pangya_GameServer.Manager
                                     CmdGetGiftClubSet cmd_ggcs = new CmdGetGiftClubSet(_uid, // Waiter
                                         wi);
 
-                                    NormalManagerDB.getInstance().add(0,
+                                    NormalManagerDB.Instance.add(0,
                                           cmd_ggcs);
 
                                     if (cmd_ggcs.getException().getCodeError() != 0)
@@ -1509,7 +1509,7 @@ namespace Pangya_GameServer.Manager
 
                                     if (wi.id <= 0)
                                     {
-                                        throw new exception("[ItemManager::addItem][Error] nao conseguiu pegar o presente de ClubSet[TYPEID=" + Convert.ToString(_item._typeid) + "] para o PLAYER[UID=" + Convert.ToString(_uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                        throw new exception("[ItemManager::addItem][Error] nao conseguiu pegar o presente de ClubSet[TYPEID=" + Convert.ToString(_item._typeid) + "] para o Normal[UID=" + Convert.ToString(_uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                             13, 0));
                                     }
 
@@ -1519,7 +1519,7 @@ namespace Pangya_GameServer.Manager
                                     CmdAddClubSet cmd_acs = new CmdAddClubSet(_uid, // Waiter
                                         wi, _purchase, 0);
 
-                                    NormalManagerDB.getInstance().add(0,
+                                    NormalManagerDB.Instance.add(0,
                                           cmd_acs);
 
                                     if (cmd_acs.getException().getCodeError() != 0)
@@ -1562,7 +1562,7 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_ant = 0;
                                 _item.stat.qntd_dep = _item.qntd;
 
-                                ret_id = RetAddItem.SUCCESS;//wi.id;
+                                ret_id = RetAddItem.SUCCESS;//wi.Login;
 
                             }
 
@@ -1582,9 +1582,9 @@ namespace Pangya_GameServer.Manager
 
                                 _item.stat.qntd_dep = pCi.qntd;
 
-                                _item.id = pCi.id; ret_id = RetAddItem.SUCCESS;//pCi.id;
+                                _item.id = pCi.id; ret_id = RetAddItem.SUCCESS;//pCi.Login;
 
-                                NormalManagerDB.getInstance().add(8,
+                                NormalManagerDB.Instance.add(8,
                                       new CmdUpdateCardQntd(_uid,
                                           pCi.id, pCi.qntd),
                                       SQLDBResponse,
@@ -1604,7 +1604,7 @@ namespace Pangya_GameServer.Manager
                                 CmdAddCard cmd_ac = new CmdAddCard(_uid, // Waiter
                                     ci, _purchase, 0);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_ac);
 
                                 if (cmd_ac.getException().getCodeError() != 0)
@@ -1624,7 +1624,7 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_ant = 0;
                                 _item.stat.qntd_dep = _item.qntd;
 
-                                ret_id = RetAddItem.SUCCESS;//ci.id;
+                                ret_id = RetAddItem.SUCCESS;//CharacterInfo.Login;
 
                             }
 
@@ -1633,17 +1633,17 @@ namespace Pangya_GameServer.Manager
                     case IFF_GROUP.FURNITURE:
                         {
                             // Tem que fazer esse aqui, por que pode vim por Set Item ou MailBox
-                            var furniture = sIff.getInstance().findFurniture(_item._typeid);
+                            var furniture = sIff.Instance.findFurniture(_item._typeid);
 
                             if (furniture == null)
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou add um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + "] que nao existe no IFF_STRUCT do server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] tentou add um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + "] que nao existe no IFF_STRUCT do server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     12, 0));
                             }
 
                             if ( ownerItem(_uid, _item._typeid))
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou add um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja tem", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] tentou add um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja tem", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -1657,7 +1657,7 @@ namespace Pangya_GameServer.Manager
                             CmdAddFurniture cmd_af = new CmdAddFurniture(_uid, // Waiter
                                 mri);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_af);
 
                             if (cmd_af.getException().getCodeError() != 0)
@@ -1684,16 +1684,16 @@ namespace Pangya_GameServer.Manager
                     case IFF_GROUP.AUX_PART:
                         {
                             // Tem que fazer esse aqui, por que pode vim por Set Item ou MailBox
-                            //auto auxPart = sIff::getInstance().FindAuxPart(_item._typeid);
+                            //auto auxPart = sIff::Instance.FindAuxPart(_item._typeid);
 
                             var pWi =  _ownerAuxPart(_uid, _item._typeid);
 
                             if ((pWi.id > 0))
                             {
 
-                                if (!sIff.getInstance().IsCanOverlapped(pWi._typeid))
+                                if (!sIff.Instance.IsCanOverlapped(pWi._typeid))
                                 {
-                                    throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou add AuxPart[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                    throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] tentou add AuxPart[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                         10, 0));
                                 }
 
@@ -1704,9 +1704,9 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
                                 _item.id = pWi.id;
-                                ret_id = RetAddItem.SUCCESS;//pWi.id;
+                                ret_id = RetAddItem.SUCCESS;//pWi.Login;
 
-                                NormalManagerDB.getInstance().add(9,
+                                NormalManagerDB.Instance.add(9,
                                       new CmdUpdateItemQntd(_uid,
                                           pWi.id, pWi.STDA_C_ITEM_QNTD),
                                       SQLDBResponse,
@@ -1733,7 +1733,7 @@ namespace Pangya_GameServer.Manager
                                 CmdAddItem cmd_ai = new CmdAddItem(_uid, // Waiter
                                     wi, _purchase, 0);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_ai);
 
                                 if (cmd_ai.getException().getCodeError() != 0)
@@ -1772,7 +1772,7 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_ant = 0;
                                 _item.stat.qntd_dep = wi.STDA_C_ITEM_QNTD;
 
-                                ret_id = RetAddItem.SUCCESS;//wi.id;
+                                ret_id = RetAddItem.SUCCESS;//wi.Login;
 
                             }
 
@@ -1784,7 +1784,7 @@ namespace Pangya_GameServer.Manager
                             if (_item._typeid == PANG_POUCH_TYPEID)
                             {
                                 // Pang Pouch para o player 
-                                var _session = GameServer.getInstance().FindPlayer(_uid);
+                                var _session = GameServer.Instance.FindPlayer(_uid);
                                 if (_session != null)
                                 {
                                    _session.addPang((uint)((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD)); 
@@ -1793,7 +1793,7 @@ namespace Pangya_GameServer.Manager
                                 {
                                      PlayerInfo.addPang(_uid,(uint)((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD));
                                 }
-                                _smp.message_pool.getInstance().push(new message("[Pangya Shop][Log] PLAYER[UID=" + Convert.ToString(_uid) + "] Adicionou Pang Pouch. item[TYPEID=" + Convert.ToString(_item._typeid) + "] Qntd[value=" + Convert.ToString((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Pangya Shop][Log] Normal[UID=" + Convert.ToString(_uid) + "] Adicionou Pang Pouch. item[TYPEID=" + Convert.ToString(_item._typeid) + "] Qntd[value=" + Convert.ToString((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 // Libera Block memória para o UID, previne de add mais de um item simuntaneamente, para não gerar valores errados
                                 BlockMemoryManager.unblockUID(_uid);
@@ -1804,7 +1804,7 @@ namespace Pangya_GameServer.Manager
                             {
 
                                 // Exp Pouch para o player
-                                var _session = GameServer.getInstance().FindPlayer(_uid);
+                                var _session = GameServer.Instance.FindPlayer(_uid);
                                 if (_session != null)
                                 {
                                     _session.addExp(((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD));
@@ -1814,7 +1814,7 @@ namespace Pangya_GameServer.Manager
                                     Player.addExp(_uid, ((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD));
                                 }
 
-                                _smp.message_pool.getInstance().push(new message("[Pangya Shop][Log] PLAYER[UID=" + Convert.ToString(_uid) + "] Adicionou Exp Pouch. item[TYPEID=" + Convert.ToString(_item._typeid) + "] Qntd[value=" + Convert.ToString((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD) + "]", type_msg.CL_ONLY_FILE_LOG));
+                                _smp.LogManager.Instance.push(new AppMessage("[Pangya Shop][Log] Normal[UID=" + Convert.ToString(_uid) + "] Adicionou Exp Pouch. item[TYPEID=" + Convert.ToString(_item._typeid) + "] Qntd[value=" + Convert.ToString((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD) + "]", type_msg.CL_ONLY_FILE_LOG));
 
                                 // Libera Block memória para o UID, previne de add mais de um item simuntaneamente, para não gerar valores errados
                                 BlockMemoryManager.unblockUID(_uid);
@@ -1830,7 +1830,7 @@ namespace Pangya_GameServer.Manager
                                 cp_log.setType(CPLog.TYPE.CP_POUCH);
 
                                 cp_log.setCookie((ulong)((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD)); 
-                                var _session = GameServer.getInstance().FindPlayer(_uid);
+                                var _session = GameServer.Instance.FindPlayer(_uid);
                                 if (_session != null)
                                 {
                                     _session.addCookie((ulong)((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD));
@@ -1844,7 +1844,7 @@ namespace Pangya_GameServer.Manager
                                     PlayerInfo.addCookie(_uid, (ulong)((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD));
                                 } 
 
-                                _smp.message_pool.getInstance().push(new message("[Pangya Shop][Log] PLAYER[UID=" + Convert.ToString(_uid) + "] Adicionou CP Pouch. item[TYPEID=" + Convert.ToString(_item._typeid) + "] Qntd[value=" + Convert.ToString((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD) + "]", type_msg.CL_ONLY_FILE_LOG));
+                                _smp.LogManager.Instance.push(new AppMessage("[Pangya Shop][Log] Normal[UID=" + Convert.ToString(_uid) + "] Adicionou CP Pouch. item[TYPEID=" + Convert.ToString(_item._typeid) + "] Qntd[value=" + Convert.ToString((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD) + "]", type_msg.CL_ONLY_FILE_LOG));
 
                                 // Libera Block memória para o UID, previne de add mais de um item simuntaneamente, para não gerar valores errados
                                 BlockMemoryManager.unblockUID(_uid);
@@ -1859,9 +1859,9 @@ namespace Pangya_GameServer.Manager
                             if ((pWi.id > 0) && _item._typeid != TICKET_REPORT_SCROLL_TYPEID)
                             {
 
-                                if (sPremiumSystem.getInstance().isPremium(pWi._typeid) && pWi.ano > 0)
+                                if (sPremiumSystem.Instance.isPremium(pWi._typeid) && pWi.ano > 0)
                                 {
-                                    throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou add Item[TYPEID=" + Convert.ToString(_item._typeid) + "] 'Premium Ticket' que ele ja possui, com tempo, tem que esperar acabar o tempo", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                    throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] tentou add Item[TYPEID=" + Convert.ToString(_item._typeid) + "] 'Premium Ticket' que ele ja possui, com tempo, tem que esperar acabar o tempo", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                         15, 0));
                                 }
 
@@ -1872,9 +1872,9 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
                                 _item.id = pWi.id;
-                                ret_id = RetAddItem.SUCCESS;//pWi.id;
+                                ret_id = RetAddItem.SUCCESS;//pWi.Login;
 
-                                NormalManagerDB.getInstance().add(9,
+                                NormalManagerDB.Instance.add(9,
                                       new CmdUpdateItemQntd(_uid,
                                           pWi.id, pWi.STDA_C_ITEM_QNTD),
                                       SQLDBResponse,
@@ -1901,7 +1901,7 @@ namespace Pangya_GameServer.Manager
                                 CmdAddItem cmd_ai = new CmdAddItem(_uid, // Waiter
                                     wi, _purchase, 0);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_ai);
 
                                 if (cmd_ai.getException().getCodeError() != 0)
@@ -1940,7 +1940,7 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_ant = 0;
                                 _item.stat.qntd_dep = wi.STDA_C_ITEM_QNTD;
 
-                                ret_id = RetAddItem.SUCCESS;//wi.id;
+                                ret_id = RetAddItem.SUCCESS;//wi.Login;
                             }
 
                             break;
@@ -1950,7 +1950,7 @@ namespace Pangya_GameServer.Manager
 
                             if ( ownerItem(_uid, _item._typeid))
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou add Skin[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] tentou add Skin[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -1964,7 +1964,7 @@ namespace Pangya_GameServer.Manager
                             CmdAddSkin cmd_as = new CmdAddSkin(_uid, // Waiter
                                 wi, _purchase, 0);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_as);
 
                             if (cmd_as.getException().getCodeError() != 0)
@@ -2003,15 +2003,15 @@ namespace Pangya_GameServer.Manager
                             _item.stat.qntd_ant = 0;
                             _item.stat.qntd_dep = _item.qntd;
 
-                            ret_id = RetAddItem.SUCCESS;//wi.id;
+                            ret_id = RetAddItem.SUCCESS;//wi.Login;
 
                             break;
                         }
                     case IFF_GROUP.PART:
                         {
-                            if ( ownerItem(_uid, _item._typeid) && !sIff.getInstance().IsCanOverlapped(_item._typeid))
+                            if ( ownerItem(_uid, _item._typeid) && !sIff.Instance.IsCanOverlapped(_item._typeid))
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou add Part[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] tentou add Part[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -2041,7 +2041,7 @@ namespace Pangya_GameServer.Manager
                                 CmdGetGiftPart cmd_ggp = new CmdGetGiftPart(_uid, // Waiter
                                     wi, _item.type_iff);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_ggp);
 
                                 if (cmd_ggp.getException().getCodeError() != 0)
@@ -2054,7 +2054,7 @@ namespace Pangya_GameServer.Manager
 
                                 if (wi.id <= 0)
                                 {
-                                    throw new exception("[ItemManager::addItem][Error] nao conseguiu pegar o presente de Part[TYPEID=" + Convert.ToString(_item._typeid) + "] para o PLAYER[UID=" + Convert.ToString(_uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                    throw new exception("[ItemManager::addItem][Error] nao conseguiu pegar o presente de Part[TYPEID=" + Convert.ToString(_item._typeid) + "] para o Normal[UID=" + Convert.ToString(_uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                         13, 0));
                                 }
 
@@ -2065,7 +2065,7 @@ namespace Pangya_GameServer.Manager
                                     wi, _purchase, 0,
                                     _item.type_iff);
 
-                                NormalManagerDB.getInstance().add(3,
+                                NormalManagerDB.Instance.add(3,
                                       cmd_ap);
 
                                 if (cmd_ap.getException().getCodeError() != 0)
@@ -2125,13 +2125,13 @@ namespace Pangya_GameServer.Manager
                                 }
                             }
 
-                            ret_id = RetAddItem.SUCCESS;//wi.id;
+                            ret_id = RetAddItem.SUCCESS;//wi.Login;
 
                             break;
                         }
                     case IFF_GROUP.HAIR_STYLE:
                         {
-                            var hair = sIff.getInstance().findHairStyle(_item._typeid);
+                            var hair = sIff.Instance.findHairStyle(_item._typeid);
 
                             if (hair != null)
                             {
@@ -2142,23 +2142,23 @@ namespace Pangya_GameServer.Manager
 
                                     ce.default_hair = hair.Color;
 
-                                    NormalManagerDB.getInstance().add(4,
+                                    NormalManagerDB.Instance.add(4,
                                           new CmdAddCharacterHairStyle(_uid,
                                               ce, _purchase, 0),
                                           SQLDBResponse,
                                           null);
 
-                                    ret_id = RetAddItem.SUCCESS;//ce.id;
+                                    ret_id = RetAddItem.SUCCESS;//ce.Login;
 
                                 }
                                 else
-                                    throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] nao tem esse character.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                    throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] nao tem esse character.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                         16, 0));
                             }
 
                             else
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_uid) + "] hairstyle[TYPEID=" + Convert.ToString(_item._typeid) + "] nao tem no IFF_STRUCT.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_uid) + "] hairstyle[TYPEID=" + Convert.ToString(_item._typeid) + "] nao tem no IFF_STRUCT.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     17, 0));
                             }
 
@@ -2166,7 +2166,7 @@ namespace Pangya_GameServer.Manager
                         }
                     case IFF_GROUP.MATCH: // Troféu
                         {
-                            var type_trofel = sIff.getInstance().getItemSubGroupIdentify24(_item._typeid);
+                            var type_trofel = sIff.Instance.getItemSubGroupIdentify24(_item._typeid);
 
                             // Troféu Espacial
                             if (type_trofel == 1 || type_trofel == 2)
@@ -2184,9 +2184,9 @@ namespace Pangya_GameServer.Manager
                                     _item.stat.qntd_dep = tsi.qntd;
 
                                     _item.id = tsi.id;
-                                    ret_id = RetAddItem.SUCCESS;//tsi.id;
+                                    ret_id = RetAddItem.SUCCESS;//tsi.Login;
 
-                                    NormalManagerDB.getInstance().add(18,
+                                    NormalManagerDB.Instance.add(18,
                                           new CmdUpdateTrofelEspecialQntd(_uid,
                                               tsi.id, tsi.qntd,
                                               CmdUpdateTrofelEspecialQntd.eTYPE.ESPECIAL),
@@ -2206,7 +2206,7 @@ namespace Pangya_GameServer.Manager
                                         ts,
                                         CmdAddTrofelEspecial.eTYPE.ESPECIAL);
 
-                                    NormalManagerDB.getInstance().add(0,
+                                    NormalManagerDB.Instance.add(0,
                                           cmd_ts);
 
 
@@ -2227,7 +2227,7 @@ namespace Pangya_GameServer.Manager
                                     _item.stat.qntd_ant = 0;
                                     _item.stat.qntd_dep = ts.qntd;
 
-                                    ret_id = RetAddItem.SUCCESS;//ts.id;
+                                    ret_id = RetAddItem.SUCCESS;//ts.Login;
                                 }
 
                             }
@@ -2246,8 +2246,8 @@ namespace Pangya_GameServer.Manager
                                     _item.stat.qntd_dep = tsi.qntd;
 
                                     _item.id = tsi.id;
-                                    ret_id = RetAddItem.SUCCESS;//tsi.id;
-                                    NormalManagerDB.getInstance().add(18,
+                                    ret_id = RetAddItem.SUCCESS;//tsi.Login;
+                                    NormalManagerDB.Instance.add(18,
                                           new CmdUpdateTrofelEspecialQntd(_uid,
                                               tsi.id, tsi.qntd,
                                               CmdUpdateTrofelEspecialQntd.eTYPE.GRAND_PRIX),
@@ -2268,7 +2268,7 @@ namespace Pangya_GameServer.Manager
                                         CmdAddTrofelEspecial.eTYPE.GRAND_PRIX
                                         );
 
-                                    NormalManagerDB.getInstance().add(0,
+                                    NormalManagerDB.Instance.add(0,
                                           cmd_ts);
 
                                     if (cmd_ts.getException().getCodeError() != 0)
@@ -2288,7 +2288,7 @@ namespace Pangya_GameServer.Manager
                                     _item.stat.qntd_ant = 0;
                                     _item.stat.qntd_dep = ts.qntd;
 
-                                    ret_id = RetAddItem.SUCCESS;//ts.id;
+                                    ret_id = RetAddItem.SUCCESS;//ts.Login;
                                 }
                             }
 
@@ -2304,7 +2304,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[ItemManager::addItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ItemManager::addItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Libera Block memória para o UID, previne de add mais de um item simuntaneamente, para não gerar valores errados
                 BlockMemoryManager.unblockUID(_uid);
@@ -2330,7 +2330,7 @@ namespace Pangya_GameServer.Manager
                     _dup)) <= 0)
                 {
 
-                    _smp.message_pool.getInstance().push(new message("[ItemManager::addItem][Log] PLAYER[UID=" + Convert.ToString(_uid) + "] tentou adicionar o item[TYPEID=" + Convert.ToString(it._typeid) + ", ID=" + Convert.ToString(it.id) + "], " + ((type == RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH) ? "mas era pang, exp ou CP pouch" : "mas nao conseguiu.Bug"), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::addItem][Log] Normal[UID=" + Convert.ToString(_uid) + "] tentou adicionar o item[TYPEID=" + Convert.ToString(it._typeid) + ", ID=" + Convert.ToString(it.id) + "], " + ((type == RetAddItem.SUCCESS_PANG_AND_EXP_AND_CP_POUCH) ? "mas era Pang, Experience ou CP pouch" : "mas nao conseguiu.Bug"), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     rai.fails.Add(it);
 
@@ -2408,7 +2408,7 @@ namespace Pangya_GameServer.Manager
                         9, 0));
                 }
 
-                switch (sIff.getInstance().getItemGroupIdentify(_item._typeid))
+                switch (sIff.Instance.getItemGroupIdentify(_item._typeid))
                 {
                     case IFF_GROUP.CHARACTER:
                         {
@@ -2416,7 +2416,7 @@ namespace Pangya_GameServer.Manager
 
                             if (pCi != null)
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] add um character[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] add um character[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -2433,7 +2433,7 @@ namespace Pangya_GameServer.Manager
                             var cmd_ac = new CmdAddCharacter(_session.Inventory.uid, // Waitable
                                 ce, _purchase, 0);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_ac);
 
                             if (cmd_ac.getException().getCodeError() != 0)
@@ -2462,12 +2462,12 @@ namespace Pangya_GameServer.Manager
                             _session.Inventory.UserEquipment.character_id = it_char.id;
                             _session.Inventory.UserEquippedItem.CharacterEquiped = it_char;
 
-                            NormalManagerDB.getInstance().add(17,
+                            NormalManagerDB.Instance.add(17,
                                   new CmdUpdateCharacterEquiped(_session.Inventory.uid, _session.Inventory.UserEquipment.character_id),
                                   SQLDBResponse,
                                   null);
 
-                            ret_id = RetAddItem.SUCCESS;//ce.id;
+                            ret_id = RetAddItem.SUCCESS;//ce.Login;
 
                             break;
                         }
@@ -2477,7 +2477,7 @@ namespace Pangya_GameServer.Manager
 
                             if (pCi != null)
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add um caddie[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possi.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add um caddie[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possi.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -2496,7 +2496,7 @@ namespace Pangya_GameServer.Manager
                             CmdAddCaddie cmd_ac = new CmdAddCaddie(_session.Inventory.uid, // Waitable
                                 ci, _purchase, 0);
 
-                            NormalManagerDB.getInstance().add(2,
+                            NormalManagerDB.Instance.add(2,
                                   cmd_ac);
 
                             if (cmd_ac.getException().getCodeError() != 0)
@@ -2521,19 +2521,19 @@ namespace Pangya_GameServer.Manager
                             // Add List Item ON Server
                             _session.Inventory.Caddies.Add(ci.id, ci);
 
-                            ret_id = RetAddItem.SUCCESS;//ci.id;
+                            ret_id = RetAddItem.SUCCESS;//CharacterInfo.Login;
 
                             break;
                         }
                     case IFF_GROUP.CAD_ITEM:
                         {
-                            uint cad_typeid = (uint)((Convert.ToUInt32(sIff.getInstance().CADDIE << 26)) | sIff.getInstance().getCaddieIdentify(_item._typeid));
+                            uint cad_typeid = (uint)((Convert.ToUInt32(sIff.Instance.CADDIE << 26)) | sIff.Instance.getCaddieIdentify(_item._typeid));
 
                             var ci = _session.Inventory.FindCaddieByTypeid(cad_typeid);
 
                             if (ci == null)
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou comprar um caddie item[TYPEID=" + Convert.ToString(_item._typeid) + "] sem o caddie[TYPEID=" + Convert.ToString(cad_typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou comprar um caddie item[TYPEID=" + Convert.ToString(_item._typeid) + "] sem o caddie[TYPEID=" + Convert.ToString(cad_typeid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     14, 0));
                             }
 
@@ -2555,7 +2555,7 @@ namespace Pangya_GameServer.Manager
 
                                 _item.id = ci.id;
 
-                                ret_id = RetAddItem.SUCCESS;//ci.id;
+                                ret_id = RetAddItem.SUCCESS;//CharacterInfo.Login;
 
                             }
                             else
@@ -2571,7 +2571,7 @@ namespace Pangya_GameServer.Manager
 
                                 _item.id = ci.id;
 
-                                ret_id = RetAddItem.SUCCESS;//ci.id;
+                                ret_id = RetAddItem.SUCCESS;//CharacterInfo.Login;
                             }
 
                             // Verifica se o Caddie já tem um item update do parts do caddie, por que se tiver, 
@@ -2596,7 +2596,7 @@ namespace Pangya_GameServer.Manager
                             var str_end_date = UtilTime.formatDateLocal(end_date);
 
                             // Atualiza no para os 2 aqui
-                            NormalManagerDB.getInstance().add(5,
+                            NormalManagerDB.Instance.add(5,
                                   new CmdUpdateCaddieItem(_session.Inventory.uid,
                                       str_end_date, ci),
                                   SQLDBResponse,
@@ -2606,11 +2606,11 @@ namespace Pangya_GameServer.Manager
                         }
                     case IFF_GROUP.MASCOT:
                         {
-                            var mascot = sIff.getInstance().findMascot(_item._typeid);
+                            var mascot = sIff.Instance.findMascot(_item._typeid);
 
                             if (mascot == null)
                             {
-                                throw new exception("[ItemManager::addItem][Erorr] mascot[TYPEID=" + Convert.ToString(_item._typeid) + "] nao foi encontrado no IFF_STRUCT do server, para o PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Erorr] mascot[TYPEID=" + Convert.ToString(_item._typeid) + "] nao foi encontrado no IFF_STRUCT do server, para o Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -2642,7 +2642,7 @@ namespace Pangya_GameServer.Manager
                                     var str_date = UtilTime._formatDate(pMi.data);
 
                                     // Cmd update time mascot db
-                                    NormalManagerDB.getInstance().add(6,
+                                    NormalManagerDB.Instance.add(6,
                                           new CmdUpdateMascotTime(_session.Inventory.uid,
                                               pMi.id, str_date),
                                           SQLDBResponse,
@@ -2651,7 +2651,7 @@ namespace Pangya_GameServer.Manager
 
                                 _item.id = pMi.id;
 
-                                ret_id = RetAddItem.SUCCESS;//_item.id;
+                                ret_id = RetAddItem.SUCCESS;//_item.Login;
 
                                 // Verifica se o Mascot está no item update, por que se tiver, 
                                 // ele vai desequipar esse mascot por que o player não relogou quando acabou o tempo do Mascot
@@ -2697,7 +2697,7 @@ namespace Pangya_GameServer.Manager
                                     mi, _item.STDA_C_ITEM_TIME,
                                     _purchase, 0);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_am);
 
                                 if (cmd_am.getException().getCodeError() != 0)
@@ -2747,7 +2747,7 @@ namespace Pangya_GameServer.Manager
                                 // Add List Item ON Server
                                 _session.Inventory.Mascots.Add(mi.id, mi);
 
-                                ret_id = RetAddItem.SUCCESS;//mi.id;
+                                ret_id = RetAddItem.SUCCESS;//mi.Login;
                             }
 
                             break;
@@ -2765,9 +2765,9 @@ namespace Pangya_GameServer.Manager
 
                                 _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
-                                ret_id = RetAddItem.SUCCESS;//pWi.id;
+                                ret_id = RetAddItem.SUCCESS;//pWi.Login;
                                 _item.id = pWi.id;
-                                NormalManagerDB.getInstance().add(7,
+                                NormalManagerDB.Instance.add(7,
                                       new CmdUpdateBallQntd(_session.Inventory.uid,
                                           pWi.id, pWi.STDA_C_ITEM_QNTD),
                                       SQLDBResponse,
@@ -2792,7 +2792,7 @@ namespace Pangya_GameServer.Manager
                                 CmdAddBall cmd_ab = new CmdAddBall(_session.Inventory.uid, // Waiter
                                     wi, _purchase, 0);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_ab);
 
                                 if (cmd_ab.getException().getCodeError() != 0)
@@ -2815,7 +2815,7 @@ namespace Pangya_GameServer.Manager
                                 // Add List Item ON Server
                                 _session.Inventory.WarehouseItems.Add(wi.id, wi);
 
-                                ret_id = RetAddItem.SUCCESS;//wi.id;
+                                ret_id = RetAddItem.SUCCESS;//wi.Login;
                                                               //  ITEM_MANAGER_LOG("Adicionou Ball", _session, _item);
 
                             }
@@ -2825,7 +2825,7 @@ namespace Pangya_GameServer.Manager
                     case IFF_GROUP.CLUBSET:
                         {
 
-                            var clubset = sIff.getInstance().findClubSet(_item._typeid);
+                            var clubset = sIff.Instance.findClubSet(_item._typeid);
 
                             if (clubset == null)
                             {
@@ -2868,7 +2868,7 @@ namespace Pangya_GameServer.Manager
                                     _item.date.date.sysDate[0] = (UtilTime.UnixToSystemTime(pWi.apply_date_unix_local));
                                     _item.date.date.sysDate[1] = (UtilTime.UnixToSystemTime(pWi.end_date_unix_local));
                                     // Atualiza o tempo do ClubSet do player
-                                    NormalManagerDB.getInstance().add(20,
+                                    NormalManagerDB.Instance.add(20,
                                           new CmdUpdateClubSetTime(_session.Inventory.uid, pWi),
                                           SQLDBResponse,
                                           null);
@@ -2876,7 +2876,7 @@ namespace Pangya_GameServer.Manager
                                     _item.STDA_C_ITEM_QNTD = 1;
                                     _item.stat.qntd_ant = 0;
                                     _item.stat.qntd_dep = _item.qntd;
-                                    ret_id = RetAddItem.SUCCESS;//pWi.id;
+                                    ret_id = RetAddItem.SUCCESS;//pWi.Login;
                                     _item.id = pWi.id;
                                     // Verifica se o ClubSet está no item update, por que se tiver, 
                                     // ele vai desequipar esse clubset por que o player não relogou quando acabou o tempo do clubset
@@ -2900,7 +2900,7 @@ namespace Pangya_GameServer.Manager
 
                                 }
                                 else
-                                    throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add clubset[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                    throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add clubset[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                         10, 0));
                             }
                             else
@@ -2933,7 +2933,7 @@ namespace Pangya_GameServer.Manager
                                     CmdGetGiftClubSet cmd_ggcs = new CmdGetGiftClubSet(_session.Inventory.uid, // Waiter
                                         wi);
 
-                                    NormalManagerDB.getInstance().add(0,
+                                    NormalManagerDB.Instance.add(0,
                                           cmd_ggcs);
 
                                     if (cmd_ggcs.getException().getCodeError() != 0)
@@ -2946,7 +2946,7 @@ namespace Pangya_GameServer.Manager
 
                                     if (wi.id <= 0)
                                     {
-                                        throw new exception("[ItemManager::addItem][Error] nao conseguiu pegar o presente de ClubSet[TYPEID=" + Convert.ToString(_item._typeid) + "] para o PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                        throw new exception("[ItemManager::addItem][Error] nao conseguiu pegar o presente de ClubSet[TYPEID=" + Convert.ToString(_item._typeid) + "] para o Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                             13, 0));
                                     }
 
@@ -2956,7 +2956,7 @@ namespace Pangya_GameServer.Manager
                                     CmdAddClubSet cmd_acs = new CmdAddClubSet(_session.Inventory.uid, // Waiter
                                         wi, _purchase, 0);
 
-                                    NormalManagerDB.getInstance().add(0,
+                                    NormalManagerDB.Instance.add(0,
                                           cmd_acs);
 
                                     if (cmd_acs.getException().getCodeError() != 0)
@@ -3001,7 +3001,7 @@ namespace Pangya_GameServer.Manager
                                 // Add List Item ON Server
                                 _session.Inventory.WarehouseItems.Add(wi.id, wi);
 
-                                ret_id = RetAddItem.SUCCESS;//wi.id;
+                                ret_id = RetAddItem.SUCCESS;//wi.Login;
 
                             }
 
@@ -3024,7 +3024,7 @@ namespace Pangya_GameServer.Manager
 
                                 ret_id = RetAddItem.SUCCESS;
 
-                                NormalManagerDB.getInstance().add(8,
+                                NormalManagerDB.Instance.add(8,
                                       new CmdUpdateCardQntd(_session.Inventory.uid,
                                           pCi.id, pCi.qntd),
                                       SQLDBResponse,
@@ -3046,7 +3046,7 @@ namespace Pangya_GameServer.Manager
 
                                 CmdAddCard cmd_ac = new CmdAddCard(_session.Inventory.uid, ci, _purchase, 0);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_ac);
 
                                 if (cmd_ac.getException().getCodeError() != 0)
@@ -3076,11 +3076,11 @@ namespace Pangya_GameServer.Manager
                     case IFF_GROUP.FURNITURE:
                         {
                             // Tem que fazer esse aqui, por que pode vim por Set Item ou MailBox
-                            var furniture = sIff.getInstance().findFurniture(_item._typeid);
+                            var furniture = sIff.Instance.findFurniture(_item._typeid);
 
                             if (furniture == null)
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + "] que nao existe no IFF_STRUCT do server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + "] que nao existe no IFF_STRUCT do server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     12, 0));
                             }
 
@@ -3088,7 +3088,7 @@ namespace Pangya_GameServer.Manager
 
                             if (pFi != null)
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja tem", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja tem", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -3102,7 +3102,7 @@ namespace Pangya_GameServer.Manager
                             CmdAddFurniture cmd_af = new(_session.Inventory.uid, // Waiter
                                 mri);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_af);
 
                             if (cmd_af.getException().getCodeError() != 0)
@@ -3134,16 +3134,16 @@ namespace Pangya_GameServer.Manager
                     case IFF_GROUP.AUX_PART:
                         {
                             // Tem que fazer esse aqui, por que pode vim por Set Item ou MailBox
-                            //auto auxPart = sIff::getInstance().FindAuxPart(_item._typeid);
+                            //auto auxPart = sIff::Instance.FindAuxPart(_item._typeid);
 
                             var pWi = _session.Inventory.FindWarehouseItemByTypeid(_item._typeid);
 
                             if (pWi != null)
                             { // Já tem item add quantidade do AuxPart
 
-                                if (!sIff.getInstance().IsCanOverlapped(pWi._typeid))
+                                if (!sIff.Instance.IsCanOverlapped(pWi._typeid))
                                 {
-                                    throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add AuxPart[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                    throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add AuxPart[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                         10, 0));
                                 }
 
@@ -3154,9 +3154,9 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
                                 _item.id = pWi.id;
-                                ret_id = RetAddItem.SUCCESS;//pWi.id;
+                                ret_id = RetAddItem.SUCCESS;//pWi.Login;
 
-                                NormalManagerDB.getInstance().add(9,
+                                NormalManagerDB.Instance.add(9,
                                       new CmdUpdateItemQntd(_session.Inventory.uid,
                                           pWi.id, pWi.STDA_C_ITEM_QNTD),
                                       SQLDBResponse,
@@ -3185,7 +3185,7 @@ namespace Pangya_GameServer.Manager
                                 CmdAddItem cmd_ai = new CmdAddItem(_session.Inventory.uid, // Waiter
                                     wi, _purchase, 0);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_ai);
 
                                 if (cmd_ai.getException().getCodeError() != 0)
@@ -3227,7 +3227,7 @@ namespace Pangya_GameServer.Manager
                                 // Add List Item ON Server
                                 _session.Inventory.WarehouseItems.Add(wi.id, wi);
 
-                                ret_id = RetAddItem.SUCCESS;//wi.id;
+                                ret_id = RetAddItem.SUCCESS;//wi.Login;
 
                                 //  ITEM_MANAGER_LOG("Adicionou AuxPart", _session, _item);
 
@@ -3245,7 +3245,7 @@ namespace Pangya_GameServer.Manager
                                 // Pang Pouch para o player
                                 _session.addPang((ulong)((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD));
 
-                                _smp.message_pool.getInstance().push(new message("[Pangya Shop][Log] PLAYER[UID=" + (_session.Inventory.uid) + "] Adicionou Pang Pouch. item[TYPEID="
+                                _smp.LogManager.Instance.push(new AppMessage("[Pangya Shop][Log] Normal[UID=" + (_session.Inventory.uid) + "] Adicionou Pang Pouch. item[TYPEID="
                                         + (_item._typeid) + "] Qntd[value=" + ((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD) + "]", type_msg.CL_ONLY_FILE_LOG));
 
                                 // Libera Block memória para o UID, previne de add mais de um item simuntaneamente, para não gerar valores errados
@@ -3258,9 +3258,9 @@ namespace Pangya_GameServer.Manager
                             {
 
                                 // Exp Pouch para o player
-                                _session.addExp((int)((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD), true/*Send packet for update level and exp in game*/);
+                                _session.addExp((int)((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD), true/*Send packet for update Level and Experience in game*/);
 
-                                _smp.message_pool.getInstance().push(new message("[Pangya Shop][Log] PLAYER[UID=" + (_session.Inventory.uid) + "] Adicionou Exp Pouch. item[TYPEID="
+                                _smp.LogManager.Instance.push(new AppMessage("[Pangya Shop][Log] Normal[UID=" + (_session.Inventory.uid) + "] Adicionou Exp Pouch. item[TYPEID="
                                         + (_item._typeid) + "] Qntd[value=" + ((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD) + "]", type_msg.CL_ONLY_FILE_LOG));
 
                                 // Libera Block memória para o UID, previne de add mais de um item simuntaneamente, para não gerar valores errados
@@ -3285,7 +3285,7 @@ namespace Pangya_GameServer.Manager
                                 // Log de Ganhos de CP
                                 _session.saveCPLog(cp_log);
 
-                                _smp.message_pool.getInstance().push(new message("[Pangya Shop][Log] PLAYER[UID=" + (_session.Inventory.uid) + "] Adicionou CP Pouch. item[TYPEID="
+                                _smp.LogManager.Instance.push(new AppMessage("[Pangya Shop][Log] Normal[UID=" + (_session.Inventory.uid) + "] Adicionou CP Pouch. item[TYPEID="
                                         + (_item._typeid) + "] Qntd[value=" + ((_item.qntd > 0xFFu) ? _item.qntd : _item.STDA_C_ITEM_QNTD) + "]", type_msg.CL_ONLY_FILE_LOG));
 
                                 // Libera Block memória para o UID, previne de add mais de um item simuntaneamente, para não gerar valores errados
@@ -3301,13 +3301,13 @@ namespace Pangya_GameServer.Manager
                             if (pWi != null && _item._typeid != TICKET_REPORT_SCROLL_TYPEID)
                             {   // Já tem item add quantidade do Item
 
-                                if (sPremiumSystem.getInstance().isPremium(pWi._typeid))
+                                if (sPremiumSystem.Instance.isPremium(pWi._typeid))
                                 {
 
                                     var st = UtilTime.UnixToSystemTime(pWi.end_date_unix_local);
 
-                                    if (UtilTime.GetLocalTimeDiffDESC(st) > 0 || _session.UserInfo.UserCapabilities.premium_user)
-                                        throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + (_session.Inventory.uid) + "] tentou add Item[TYPEID="
+                                    if (UtilTime.GetLocalTimeDiffDESC(st) > 0 || _session.UserInfo.UserCapabilities.UserPremium)
+                                        throw new exception("[ItemManager::addItem][Error] Normal[UID=" + (_session.Inventory.uid) + "] tentou add Item[TYPEID="
                                                 + (_item._typeid) + "] 'Premium Ticket' que ele ja possui com tempo, tem que esperar acabar o tempo.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER, 15, 0));
                                 }
 
@@ -3318,10 +3318,10 @@ namespace Pangya_GameServer.Manager
                                 _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
                                 _item.id = pWi.id;
-                                ret_id = RetAddItem.SUCCESS;//pWi.id;
+                                ret_id = RetAddItem.SUCCESS;//pWi.Login;
 
                                 // Verifica se é Premium Ticket
-                                if (sPremiumSystem.getInstance().isPremium(pWi._typeid))
+                                if (sPremiumSystem.Instance.isPremium(pWi._typeid))
                                 { // Renova o Premium Ticket por mais 30(tempo, coloquei mais opções) dias
 
                                     if (_item.STDA_C_ITEM_TIME > 0)
@@ -3332,7 +3332,7 @@ namespace Pangya_GameServer.Manager
                                         pWi.STDA_C_ITEM_TIME = (short)(_item.STDA_C_ITEM_TIME / 24); // converte de novo para Dias para salvar no banco de dados
 
                                         // Atualiza o tempo do Premium Ticket do player
-                                        NormalManagerDB.getInstance().add(19, new CmdUpdatePremiumTicketTime(_session.Inventory.uid, pWi), SQLDBResponse, null);
+                                        NormalManagerDB.Instance.add(19, new CmdUpdatePremiumTicketTime(_session.Inventory.uid, pWi), SQLDBResponse, null);
 
                                         // update ano (Horas) que o item ainda tem
                                         pWi.ano = (_item.STDA_C_ITEM_TIME > 0) ? TranslateFlagTimeToHour(_item.flag_time, _item.STDA_C_ITEM_TIME) : -1;
@@ -3358,13 +3358,13 @@ namespace Pangya_GameServer.Manager
 
                                     }
 
-                                    if (sPremiumSystem.getInstance().isPremium(_item._typeid))
+                                    if (sPremiumSystem.Instance.isPremium(_item._typeid))
                                     {
 
-                                        _smp.message_pool.getInstance().push(new message("[ItemManager::addItem][Log] PLAYER[UID=" + (_session.Inventory.uid) + "] renovou premium ticket[TYPEID="
+                                        _smp.LogManager.Instance.push(new AppMessage("[ItemManager::addItem][Log] Normal[UID=" + (_session.Inventory.uid) + "] renovou premium ticket[TYPEID="
                                                 + (pWi._typeid) + "] por " + (_item.STDA_C_ITEM_TIME / 24u) + " Dias", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                                        sPremiumSystem.getInstance().addPremiumUser(_session, pWi, (uint)(_item.STDA_C_ITEM_TIME / 24)/*Dias*/);
+                                        sPremiumSystem.Instance.addPremiumUser(_session, pWi, (uint)(_item.STDA_C_ITEM_TIME / 24)/*Dias*/);
                                     }
 
                                     // Verifica se o Premium Ticket está no item update, por que se tiver
@@ -3384,8 +3384,8 @@ namespace Pangya_GameServer.Manager
                                     // ---- fim do verifica se o Premium Ticket está no update item ----
 
                                 }
-                                else // Atualiza a quantidade do item normal
-                                    NormalManagerDB.getInstance().add(9, new CmdUpdateItemQntd(_session.Inventory.uid, pWi.id, pWi.STDA_C_ITEM_QNTD), SQLDBResponse, null);
+                                else // Atualiza a quantidade do item Normal
+                                    NormalManagerDB.Instance.add(9, new CmdUpdateItemQntd(_session.Inventory.uid, pWi.id, pWi.STDA_C_ITEM_QNTD), SQLDBResponse, null);
 
                                 // Atualiza Gacha Coupon
                                 if (_item._typeid == 0x1A000080/*Coupon Gacha*/)
@@ -3399,7 +3399,7 @@ namespace Pangya_GameServer.Manager
                             else
                             {
 
-                                if (sPremiumSystem.getInstance().isPremium(_item._typeid))
+                                if (sPremiumSystem.Instance.isPremium(_item._typeid))
                                 {
 
                                     pWi = (_session.Inventory.PremiumTicket._typeid == 0) ? null : _session.Inventory.FindWarehouseItemByTypeid(_session.Inventory.PremiumTicket._typeid);
@@ -3409,8 +3409,8 @@ namespace Pangya_GameServer.Manager
 
                                         var st = UtilTime.UnixToSystemTime(pWi.end_date_unix_local);
 
-                                        if (UtilTime.GetLocalTimeDiffDESC(st) > 0 || _session.UserInfo.UserCapabilities.premium_user)
-                                            throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + (_session.Inventory.uid) + "] tentou add Item[TYPEID="
+                                        if (UtilTime.GetLocalTimeDiffDESC(st) > 0 || _session.UserInfo.UserCapabilities.UserPremium)
+                                            throw new exception("[ItemManager::addItem][Error] Normal[UID=" + (_session.Inventory.uid) + "] tentou add Item[TYPEID="
                                                     + (_item._typeid) + "] 'Premium Ticket' que ele ja possui outro Premium Ticket[TYPEID="
                                                     + (pWi._typeid) + "] com tempo, tem que esperar acabar o tempo.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER, 15, 0));
                                     }
@@ -3432,7 +3432,7 @@ namespace Pangya_GameServer.Manager
 
                                 var cmd_ai = new CmdAddItem(_session.Inventory.uid, wi, _purchase, 0/*_gift_flag*/);   // Waiter
 
-                                NormalManagerDB.getInstance().add(0, cmd_ai);
+                                NormalManagerDB.Instance.add(0, cmd_ai);
 
                                 if (cmd_ai.getException().getCodeError() != 0)
                                     throw cmd_ai.getException();
@@ -3476,16 +3476,16 @@ namespace Pangya_GameServer.Manager
 
                                 _session.Inventory.WarehouseItems.Add(wi.id, wi);
 
-                                if (sPremiumSystem.getInstance().isPremium(_item._typeid))
+                                if (sPremiumSystem.Instance.isPremium(_item._typeid))
                                 {
 
-                                    _smp.message_pool.getInstance().push(new message("[ItemManager::addItem][Log] PLAYER[UID=" + (_session.Inventory.uid) + "] comprou premium ticket[TYPEID="
+                                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::addItem][Log] Normal[UID=" + (_session.Inventory.uid) + "] comprou premium ticket[TYPEID="
                                             + (wi._typeid) + "] por " + (_item.STDA_C_ITEM_TIME / 24) + " Dias", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                                    sPremiumSystem.getInstance().addPremiumUser(_session, wi, (uint)(_item.STDA_C_ITEM_TIME / 24));
+                                    sPremiumSystem.Instance.addPremiumUser(_session, wi, (uint)(_item.STDA_C_ITEM_TIME / 24));
                                 }
 
-                                ret_id = RetAddItem.SUCCESS;//wi.id;
+                                ret_id = RetAddItem.SUCCESS;//wi.Login;
 
                             }
 
@@ -3497,7 +3497,7 @@ namespace Pangya_GameServer.Manager
 
                             if (pWi != null)
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add Skin[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add Skin[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -3512,7 +3512,7 @@ namespace Pangya_GameServer.Manager
                             CmdAddSkin cmd_as = new CmdAddSkin(_session.Inventory.uid, // Waiter
                                 wi, _purchase, 0);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_as);
 
                             if (cmd_as.getException().getCodeError() != 0)
@@ -3554,16 +3554,16 @@ namespace Pangya_GameServer.Manager
                             // Add List Item ON Server
                             _session.Inventory.WarehouseItems.Add(wi.id, wi);
 
-                            ret_id = RetAddItem.SUCCESS;//wi.id;
+                            ret_id = RetAddItem.SUCCESS;//wi.Login;
                             break;
                         }
                     case IFF_GROUP.PART:
                         {
                             var pWi = _session.Inventory.FindWarehouseItemByTypeid(_item._typeid);
 
-                            if (pWi != null && !sIff.getInstance().IsCanOverlapped(pWi._typeid))
+                            if (pWi != null && !sIff.Instance.IsCanOverlapped(pWi._typeid))
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add Part[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou add Part[TYPEID=" + Convert.ToString(_item._typeid) + "] que ele ja possui", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     10, 0));
                             }
 
@@ -3594,7 +3594,7 @@ namespace Pangya_GameServer.Manager
                                 CmdGetGiftPart cmd_ggp = new CmdGetGiftPart(_session.Inventory.uid, // Waiter
                                     wi, _item.type_iff);
 
-                                NormalManagerDB.getInstance().add(0,
+                                NormalManagerDB.Instance.add(0,
                                       cmd_ggp);
                                 if (cmd_ggp.getException().getCodeError() != 0)
                                 {
@@ -3606,7 +3606,7 @@ namespace Pangya_GameServer.Manager
 
                                 if (wi.id <= 0)
                                 {
-                                    throw new exception("[ItemManager::addItem][Error] nao conseguiu pegar o presente de Part[TYPEID=" + Convert.ToString(_item._typeid) + "] para o PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                    throw new exception("[ItemManager::addItem][Error] nao conseguiu pegar o presente de Part[TYPEID=" + Convert.ToString(_item._typeid) + "] para o Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                         13, 0));
                                 }
 
@@ -3617,7 +3617,7 @@ namespace Pangya_GameServer.Manager
                                     wi, _purchase, 0,
                                     _item.type_iff);
 
-                                NormalManagerDB.getInstance().add(3,
+                                NormalManagerDB.Instance.add(3,
                                       cmd_ap);
 
                                 if (cmd_ap.getException().getCodeError() != 0)
@@ -3680,16 +3680,16 @@ namespace Pangya_GameServer.Manager
                             // Add List Item ON Server
                             _session.Inventory.WarehouseItems.Add(wi.id, wi);
 
-                            ret_id = RetAddItem.SUCCESS;//wi.id;
+                            ret_id = RetAddItem.SUCCESS;//wi.Login;
                             break;
                         }
                     case IFF_GROUP.HAIR_STYLE:
                         {
-                            var hair = sIff.getInstance().findHairStyle(_item._typeid);
+                            var hair = sIff.Instance.findHairStyle(_item._typeid);
 
                             if (hair != null)
                             {
-                                uint char_typeid = (uint)((sIff.getInstance().CHARACTER << 26) | hair.Character);
+                                uint char_typeid = (uint)((sIff.Instance.CHARACTER << 26) | hair.Character);
 
                                 CharacterInfo ce = _session.Inventory.FindCharacterByTypeid(char_typeid);
 
@@ -3698,24 +3698,24 @@ namespace Pangya_GameServer.Manager
 
                                     ce.default_hair = hair.Color;
 
-                                    NormalManagerDB.getInstance().add(4,
+                                    NormalManagerDB.Instance.add(4,
                                           new CmdAddCharacterHairStyle(_session.Inventory.uid,
                                               ce, _purchase, 0),
                                           SQLDBResponse,
                                           _session);
 
-                                    ret_id = RetAddItem.SUCCESS;//ce.id;
+                                    ret_id = RetAddItem.SUCCESS;//ce.Login;
 
 
                                 }
                                 else
-                                    throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem esse character[TYPEID=" + Convert.ToString(char_typeid) + "].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                    throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem esse character[TYPEID=" + Convert.ToString(char_typeid) + "].", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                         16, 0));
                             }
 
                             else
                             {
-                                throw new exception("[ItemManager::addItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] hairstyle[TYPEID=" + Convert.ToString(_item._typeid) + "] nao tem no IFF_STRUCT.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                                throw new exception("[ItemManager::addItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] hairstyle[TYPEID=" + Convert.ToString(_item._typeid) + "] nao tem no IFF_STRUCT.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                     17, 0));
                             }
 
@@ -3723,7 +3723,7 @@ namespace Pangya_GameServer.Manager
                         }
                     case IFF_GROUP.MATCH: // Troféu
                         {
-                            var type_trofel = sIff.getInstance().getItemSubGroupIdentify24(_item._typeid);
+                            var type_trofel = sIff.Instance.getItemSubGroupIdentify24(_item._typeid);
 
                             // Troféu Espacial
                             if (type_trofel == 1 || type_trofel == 2)
@@ -3739,10 +3739,10 @@ namespace Pangya_GameServer.Manager
                                     tsi.qntd += _item.STDA_C_ITEM_QNTD;
 
                                     _item.stat.qntd_dep = tsi.qntd;
-                                    ret_id = RetAddItem.SUCCESS;//tsi.id;
+                                    ret_id = RetAddItem.SUCCESS;//tsi.Login;
                                     _item.id = tsi.id;
 
-                                    NormalManagerDB.getInstance().add(18,
+                                    NormalManagerDB.Instance.add(18,
                                           new CmdUpdateTrofelEspecialQntd(_session.Inventory.uid,
                                               tsi.id, tsi.qntd,
                                               CmdUpdateTrofelEspecialQntd.eTYPE.ESPECIAL),
@@ -3762,7 +3762,7 @@ namespace Pangya_GameServer.Manager
                                         ts,
                                         CmdAddTrofelEspecial.eTYPE.ESPECIAL);
 
-                                    NormalManagerDB.getInstance().add(0,
+                                    NormalManagerDB.Instance.add(0,
                                           cmd_ts);
 
                                     if (cmd_ts.getException().getCodeError() != 0)
@@ -3785,7 +3785,7 @@ namespace Pangya_GameServer.Manager
                                     // Add List Item ON Server
                                     _session.Inventory.CurrentSpecialTrophies.Add(ts);
 
-                                    ret_id = RetAddItem.SUCCESS;//ts.id;
+                                    ret_id = RetAddItem.SUCCESS;//ts.Login;
                                 }
 
                             }
@@ -3803,9 +3803,9 @@ namespace Pangya_GameServer.Manager
 
                                     _item.stat.qntd_dep = tsi.qntd;
 
-                                    ret_id = RetAddItem.SUCCESS;//tsi.id;
+                                    ret_id = RetAddItem.SUCCESS;//tsi.Login;
                                     _item.id = tsi.id;
-                                    NormalManagerDB.getInstance().add(18,
+                                    NormalManagerDB.Instance.add(18,
                                           new CmdUpdateTrofelEspecialQntd(_session.Inventory.uid,
                                               tsi.id, tsi.qntd,
                                               CmdUpdateTrofelEspecialQntd.eTYPE.GRAND_PRIX),
@@ -3825,7 +3825,7 @@ namespace Pangya_GameServer.Manager
                                         ts,
                                         CmdAddTrofelEspecial.eTYPE.GRAND_PRIX);
 
-                                    NormalManagerDB.getInstance().add(0,
+                                    NormalManagerDB.Instance.add(0,
                                           cmd_ts);
 
                                     if (cmd_ts.getException().getCodeError() != 0)
@@ -3848,7 +3848,7 @@ namespace Pangya_GameServer.Manager
                                     // Add List Item ON Server
                                     _session.Inventory.CurrentGrandPrixTrophies.Add(ts);
 
-                                    ret_id = RetAddItem.SUCCESS;//ts.id;
+                                    ret_id = RetAddItem.SUCCESS;//ts.Login;
                                 }
                             }
 
@@ -3863,7 +3863,7 @@ namespace Pangya_GameServer.Manager
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[ItemManager::addItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ItemManager::addItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Libera Block memória para o UID, previne de add mais de um item simuntaneamente, para não gerar valores errados
                 BlockMemoryManager.unblockUID(_session.Inventory.uid);
@@ -3949,17 +3949,17 @@ namespace Pangya_GameServer.Manager
 
             int ret_id = -1;
 
-            switch (sIff.getInstance().getItemGroupIdentify(_item._typeid))
+            switch (sIff.Instance.getItemGroupIdentify(_item._typeid))
             {
                 case IFF_GROUP.CHARACTER:
                     // Não pode deletar Character
-                    throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Character[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                    throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Character[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                         20, 0));
                 case IFF_GROUP.CADDIE:
-                    throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Caddie[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                    throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Caddie[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                         20, 0));
                 case IFF_GROUP.CAD_ITEM:
-                    throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um CaddieItem[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                    throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um CaddieItem[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                         20, 0));
                 case IFF_GROUP.CARD:
                     {
@@ -3967,7 +3967,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi == null)
                         {
-                            throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                            throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                 21, 0));
                         }
 
@@ -3984,12 +3984,12 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi.qntd == 0)
                         {
-                            NormalManagerDB.getInstance().add(12, // Delete Card
+                            NormalManagerDB.Instance.add(12, // Delete Card
                                   new CmdDeleteCard(_session.Inventory.uid, pCi.id),
                                   SQLDBResponse,
                                   null);
 
-                            //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_ci, second.id, == , pCi->id);
+                            //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_ci, second.Login, == , pCi->Login);
                             var it = _session.Inventory.FindCaddieById(pCi.id);
 
                             if (it != null)
@@ -3999,7 +3999,7 @@ namespace Pangya_GameServer.Manager
                         }
                         else
                         {
-                            NormalManagerDB.getInstance().add(8, // Update
+                            NormalManagerDB.Instance.add(8, // Update
                                   new CmdUpdateCardQntd(_session.Inventory.uid,
                                       pCi.id, pCi.qntd),
                                   SQLDBResponse,
@@ -4014,7 +4014,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                            throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                 21, 0));
                         }
 
@@ -4022,7 +4022,7 @@ namespace Pangya_GameServer.Manager
                         _item.stat.qntd_dep = 0;
                         _item.STDA_C_ITEM_QNTD = short.MaxValue;
 
-                        NormalManagerDB.getInstance().add(13, // Gift ClubSet
+                        NormalManagerDB.Instance.add(13, // Gift ClubSet
                               new CmdGiftClubSet(_session.Inventory.uid, pWi.id),
                               SQLDBResponse,
                               null);
@@ -4045,13 +4045,13 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                            throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                 21, 0));
                         }
 
                         if (_item.STDA_C_ITEM_QNTD > pWi.STDA_C_ITEM_QNTD)
                         {
-                            throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem quantidade[value=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", req=" + Convert.ToString(_item.STDA_C_ITEM_QNTD) + "] suficiente para o Ball[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                            throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem quantidade[value=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", req=" + Convert.ToString(_item.STDA_C_ITEM_QNTD) + "] suficiente para o Ball[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                 22, 0));
                         }
 
@@ -4068,12 +4068,12 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi.STDA_C_ITEM_QNTD == 0)
                         {
-                            NormalManagerDB.getInstance().add(11, // Delete Ball
+                            NormalManagerDB.Instance.add(11, // Delete Ball
                                    (Pangya_DB)new CmdDeleteBall(_session.Inventory.uid, pWi.id),
                                   SQLDBResponse,
                                   null);
 
-                            //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_wi, id, == , pWi->id);
+                            //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_wi, Login, == , pWi->Login);
                             var it = _session.Inventory.FindWarehouseItemById(pWi.id);
 
                             if (it != null)
@@ -4083,7 +4083,7 @@ namespace Pangya_GameServer.Manager
                         }
                         else
                         {
-                            NormalManagerDB.getInstance().add(7, // Update
+                            NormalManagerDB.Instance.add(7, // Update
                                   new CmdUpdateBallQntd(_session.Inventory.uid,
                                       pWi.id, pWi.STDA_C_ITEM_QNTD),
                                   SQLDBResponse,
@@ -4093,10 +4093,10 @@ namespace Pangya_GameServer.Manager
                         break;
                     }
                 case IFF_GROUP.FURNITURE:
-                    throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                    throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                         20, 0));
                 case IFF_GROUP.HAIR_STYLE:
-                    throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um HairStyle[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                    throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um HairStyle[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                         20, 0));
                 case IFF_GROUP.ITEM:
                     {
@@ -4104,13 +4104,13 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                            throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                 21, 0));
                         }
 
                         if (_item.STDA_C_ITEM_QNTD > pWi.STDA_C_ITEM_QNTD)
                         {
-                            throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem quantidade[value=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", req=" + Convert.ToString(_item.STDA_C_ITEM_QNTD) + "] suficiente para o item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                            throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem quantidade[value=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", req=" + Convert.ToString(_item.STDA_C_ITEM_QNTD) + "] suficiente para o item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                 22, 0));
                         }
 
@@ -4127,12 +4127,12 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi.STDA_C_ITEM_QNTD == 0)
                         {
-                            NormalManagerDB.getInstance().add(10, // Delete Item
+                            NormalManagerDB.Instance.add(10, // Delete Item
                                   new CmdDeleteItem(_session.Inventory.uid, pWi.id),
                                   SQLDBResponse,
                                   null);
 
-                            //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_wi, id, == , pWi->id);
+                            //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_wi, Login, == , pWi->Login);
                             var it = _session.Inventory.FindWarehouseItemById(pWi.id);
 
                             if (it != null)
@@ -4142,7 +4142,7 @@ namespace Pangya_GameServer.Manager
                         }
                         else
                         {
-                            NormalManagerDB.getInstance().add(9, // Update
+                            NormalManagerDB.Instance.add(9, // Update
                                   new CmdUpdateItemQntd(_session.Inventory.uid,
                                       pWi.id, pWi.STDA_C_ITEM_QNTD),
                                   SQLDBResponse,
@@ -4152,13 +4152,13 @@ namespace Pangya_GameServer.Manager
                         break;
                     }
                 case IFF_GROUP.SET_ITEM:
-                    throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um SetItem[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                    throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um SetItem[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                         20, 0));
                 case IFF_GROUP.SKIN:
-                    throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Skin[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                    throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Skin[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                         20, 0));
                 case IFF_GROUP.MASCOT:
-                    throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Mascot[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                    throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode presentear um Mascot[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] ja comprado", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                         20, 0));
                 case IFF_GROUP.PART:
                     {
@@ -4167,7 +4167,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            throw new exception("[ItemManager::giveItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
+                            throw new exception("[ItemManager::giveItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] para ser presenteado.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE._ITEM_MANAGER,
                                 21, 0));
                         }
 
@@ -4175,7 +4175,7 @@ namespace Pangya_GameServer.Manager
                         _item.stat.qntd_dep = 0;
                         _item.STDA_C_ITEM_QNTD = short.MaxValue;
 
-                        NormalManagerDB.getInstance().add(14, // Gift Part
+                        NormalManagerDB.Instance.add(14, // Gift Part
                               new CmdGiftPart(_session.Inventory.uid, pWi.id),
                               SQLDBResponse,
                               null);
@@ -4218,7 +4218,7 @@ namespace Pangya_GameServer.Manager
         { 
             int ret_id = -1;
 
-            switch (sIff.getInstance().getItemGroupIdentify(_item._typeid))
+            switch (sIff.Instance.getItemGroupIdentify(_item._typeid))
             {
                 case IFF_GROUP.AUX_PART: // Warehouse
                     {
@@ -4226,7 +4226,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um AuxPart[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um AuxPart[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4242,12 +4242,12 @@ namespace Pangya_GameServer.Manager
 
                             _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   new CmdDeleteItem(_session.Inventory.uid, pWi.id),
                                   SQLDBResponse,
                                   null);
 
-                            //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_wi, id, == , pWi->id);
+                            //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_wi, Login, == , pWi->Login);
                             var it = _session.Inventory.FindWarehouseItemById(pWi.id);
 
                             if (it != null)
@@ -4274,13 +4274,13 @@ namespace Pangya_GameServer.Manager
                                         el.unequipAuxPart(_item._typeid);
 
                                         // Update ON DB
-                                        NormalManagerDB.getInstance().add(0,
+                                        NormalManagerDB.Instance.add(0,
                                               new CmdUpdateCharacterAllPartEquiped(_session.Inventory.uid, el),
                                               SQLDBResponse,
                                               null);
 
 #if DEBUG
-                                        _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Log] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] desequipou o AuxPart[TYPEID=" + Convert.ToString(_item._typeid) + "] do Character[TYPEID=" + Convert.ToString(el._typeid) + ", ID=" + Convert.ToString(el.id) + "] por que ele foi deletado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                        _smp.message_pool.getInstance.push(new message("[ItemManager::removeItem][Log] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] desequipou o AuxPart[TYPEID=" + Convert.ToString(_item._typeid) + "] do Character[TYPEID=" + Convert.ToString(el._typeid) + ", ID=" + Convert.ToString(el.id) + "] por que ele foi deletado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 #endif // DEBUG
 
                                         // Update ON GAME
@@ -4306,7 +4306,7 @@ namespace Pangya_GameServer.Manager
 
                             _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   new CmdUpdateItemQntd(_session.Inventory.uid,
                                       pWi.id, pWi.STDA_C_ITEM_QNTD),
                                   SQLDBResponse,
@@ -4324,7 +4324,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Ball[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Ball[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4343,12 +4343,12 @@ namespace Pangya_GameServer.Manager
                             // Passa o typeid do Warehouse para o _item para garantir, se não tiver colocado o typeid, na estrutura
                             _item._typeid = pWi._typeid;
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   new CmdDeleteBall(_session.Inventory.uid, pWi.id),
                                   SQLDBResponse,
                                   null);
 
-                            //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_wi, id, == , pWi->id);
+                            //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_wi, Login, == , pWi->Login);
                             var it = _session.Inventory.FindWarehouseItemById(pWi.id);
 
                             if (it != null)
@@ -4368,7 +4368,7 @@ namespace Pangya_GameServer.Manager
 
                                 if ((pBall = _session.Inventory.FindWarehouseItemByTypeid(0x14000000)) == null)
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error][Warning] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem a Comet padrao para substituir a bola[TYPEID=" + Convert.ToString(_item._typeid) + "] deletada. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error][Warning] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem a Comet padrao para substituir a bola[TYPEID=" + Convert.ToString(_item._typeid) + "] deletada. Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 }
                                 else
                                 { // Substitui
@@ -4379,13 +4379,13 @@ namespace Pangya_GameServer.Manager
                                     _session.Inventory.UserEquippedItem.Ball_WI = pBall;
 
                                     // Update ON DB
-                                    NormalManagerDB.getInstance().add(0,
+                                    NormalManagerDB.Instance.add(0,
                                           new CmdUpdateBallEquiped(_session.Inventory.uid, _session.Inventory.UserEquipment.ball_typeid),
                                           SQLDBResponse,
                                           null);
 
 #if DEBUG
-                                    _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Log] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] substitui a bola[TYPEID=" + Convert.ToString(_item._typeid) + "] deletada pela COMET PADRAO[TYPEID=" + Convert.ToString(DEFAULT_COMET_TYPEID) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.message_pool.getInstance.push(new message("[ItemManager::removeItem][Log] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] substitui a bola[TYPEID=" + Convert.ToString(_item._typeid) + "] deletada pela COMET PADRAO[TYPEID=" + Convert.ToString(DEFAULT_COMET_TYPEID) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 #endif // DEBUG
 
                                     // Update ON GAME   
@@ -4403,7 +4403,7 @@ namespace Pangya_GameServer.Manager
 
                             _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   new CmdUpdateBallQntd(_session.Inventory.uid,
                                       pWi.id, pWi.STDA_C_ITEM_QNTD),
                                   SQLDBResponse,
@@ -4421,7 +4421,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Caddie[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Caddie[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4432,12 +4432,12 @@ namespace Pangya_GameServer.Manager
 
                         _item.stat.qntd_dep = 0;
 
-                        NormalManagerDB.getInstance().add(0,
+                        NormalManagerDB.Instance.add(0,
                                (Pangya_DB)new CmdDeleteCaddie(_session.Inventory.uid, pCi.id),
                               SQLDBResponse,
                               null);
 
-                        //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_ci, second.id, == , pCi->id);
+                        //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_ci, second.Login, == , pCi->Login);
                         var it = _session.Inventory.FindCaddieById(pCi.id);
 
                         if (it != null)
@@ -4451,7 +4451,7 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.CAD_ITEM:
                     // por hora nao exclui esse por que ainda nao vi nenhum que exclui caddie item
-                    _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um caddie item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] mas nao e permitido. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um caddie item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] mas nao e permitido. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     break;
                 case IFF_GROUP.CARD:
                     {
@@ -4459,7 +4459,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Card[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Card[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4476,12 +4476,12 @@ namespace Pangya_GameServer.Manager
 
                             pCi.qntd = 0;
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                    (Pangya_DB)new CmdDeleteCard(_session.Inventory.uid, pCi.id),
                                   SQLDBResponse,
                                   null);
 
-                            //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_card_info, id, == , pCi->id);
+                            //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_card_info, Login, == , pCi->Login);
                             var it = _session.Inventory.FindCardById(pCi.id);
 
                             if (it != null)
@@ -4501,7 +4501,7 @@ namespace Pangya_GameServer.Manager
 
                             _item.stat.qntd_dep = (int)pCi.qntd;
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   new CmdUpdateCardQntd(_session.Inventory.uid,
                                       pCi.id, pCi.qntd),
                                   SQLDBResponse,
@@ -4514,7 +4514,7 @@ namespace Pangya_GameServer.Manager
                         break;
                     }
                 case IFF_GROUP.CHARACTER:
-                    _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um character[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] mas nao e permitido. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um character[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] mas nao e permitido. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     break;
                 case IFF_GROUP.CLUBSET: // Warehouse
                     {
@@ -4522,7 +4522,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um ClubSet[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um ClubSet[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4533,12 +4533,12 @@ namespace Pangya_GameServer.Manager
 
                         _item.stat.qntd_dep = 0;
 
-                        NormalManagerDB.getInstance().add(0,
+                        NormalManagerDB.Instance.add(0,
                               new CmdDeleteItem(_session.Inventory.uid, pWi.id),
                               SQLDBResponse,
                               null);
 
-                        //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_wi, id, == , pWi->id);
+                        //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_wi, Login, == , pWi->Login);
                         var it = _session.Inventory.FindWarehouseItemById(pWi.id);
 
                         if (it != null)
@@ -4556,7 +4556,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pFi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Furniture[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4567,12 +4567,12 @@ namespace Pangya_GameServer.Manager
 
                         _item.stat.qntd_dep = 0;
 
-                        NormalManagerDB.getInstance().add(0,
+                        NormalManagerDB.Instance.add(0,
                               new CmdDeleteFurniture(_session.Inventory.uid, pFi.id),
                               SQLDBResponse,
                               null);
 
-                        //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_mri, id, == , pFi->id);
+                        //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_mri, Login, == , pFi->Login);
                         var it = _session.Inventory.FindMyRoomItemById(pFi.id);
 
                         if (it != null)
@@ -4585,7 +4585,7 @@ namespace Pangya_GameServer.Manager
                         break;
                     }
                 case IFF_GROUP.HAIR_STYLE:
-                    _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um hairstyle[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] mas nao e permitido. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um hairstyle[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] mas nao e permitido. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     break;
                 case IFF_GROUP.ITEM: // Warehouse
                     {
@@ -4593,7 +4593,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Item[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4609,7 +4609,7 @@ namespace Pangya_GameServer.Manager
 
                             _item.stat.qntd_dep = pWi.STDA_C_ITEM_QNTD;
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   new CmdDeleteItem(_session.Inventory.uid, pWi.id),
                                   SQLDBResponse,
                                   null);
@@ -4634,7 +4634,7 @@ namespace Pangya_GameServer.Manager
 
                             _item.stat.qntd_dep = (int)pWi.STDA_C_ITEM_QNTD;
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   new CmdUpdateItemQntd(_session.Inventory.uid,
                                       pWi.id, pWi.STDA_C_ITEM_QNTD),
                                   SQLDBResponse,
@@ -4651,7 +4651,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pMi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Mascot[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Mascot[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4662,7 +4662,7 @@ namespace Pangya_GameServer.Manager
 
                         _item.stat.qntd_dep = 0;
 
-                        NormalManagerDB.getInstance().add(0,
+                        NormalManagerDB.Instance.add(0,
                               new CmdDeleteMascot(_session.Inventory.uid, pMi.id),
                               SQLDBResponse,
                               null);
@@ -4685,7 +4685,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Part[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Part[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4696,12 +4696,12 @@ namespace Pangya_GameServer.Manager
 
                         _item.stat.qntd_dep = 0;
 
-                        NormalManagerDB.getInstance().add(0,
+                        NormalManagerDB.Instance.add(0,
                               new CmdDeleteItem(_session.Inventory.uid, pWi.id),
                               SQLDBResponse,
                               null);
 
-                        //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_wi, id, == , pWi->id);
+                        //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_wi, Login, == , pWi->Login);
                         var it = _session.Inventory.FindWarehouseItemById(pWi.id);
 
                         if (it != null)
@@ -4722,12 +4722,12 @@ namespace Pangya_GameServer.Manager
                             ci.unequipPart(_item._typeid);
 
                             // Update ON DB
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   new CmdUpdateCharacterAllPartEquiped(_session.Inventory.uid, ci),
                                   SQLDBResponse,
                                   null);
 
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Log] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] desequipou o Part[TYPEID=" + Convert.ToString(_item._typeid) + "] por que ele foi deletado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Log] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] desequipou o Part[TYPEID=" + Convert.ToString(_item._typeid) + "] por que ele foi deletado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             // Update ON GAME
                             var p = new Packet(0x6B);
@@ -4741,7 +4741,7 @@ namespace Pangya_GameServer.Manager
                         break;
                     }
                 case IFF_GROUP.SET_ITEM:
-                    _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um SetItem[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] mas nao e permitido. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um SetItem[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] mas nao e permitido. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     break;
                 case IFF_GROUP.SKIN: // Warehouse
                     {
@@ -4749,7 +4749,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::removeItem][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Skin[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::removeItem][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou remover um Skin[TYPEID=" + Convert.ToString(_item._typeid) + ", ID=" + Convert.ToString(_item.id) + "] que ele nao tem. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -4760,12 +4760,12 @@ namespace Pangya_GameServer.Manager
 
                         _item.stat.qntd_dep = 0;
 
-                        NormalManagerDB.getInstance().add(0,
+                        NormalManagerDB.Instance.add(0,
                               new CmdDeleteItem(_session.Inventory.uid, pWi.id),
                               SQLDBResponse,
                               null);
 
-                        //auto it = VECTOR_FIND_ITEM(_session.UserInfo.v_wi, id, == , pWi->id);
+                        //auto it = VECTOR_FIND_ITEM(_session.PlayerUserStatistics.v_wi, Login, == , pWi->Login);
                         var it = _session.Inventory.FindWarehouseItemById(pWi.id);
 
                         if (it != null)
@@ -4818,7 +4818,7 @@ namespace Pangya_GameServer.Manager
         { 
             object ret_wi = null;
 
-            switch (sIff.getInstance().getItemGroupIdentify(_psi.item._typeid))
+            switch (sIff.Instance.getItemGroupIdentify(_psi.item._typeid))
             {
                 case IFF_GROUP.ITEM:
                     {
@@ -4826,14 +4826,14 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi_s == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem o item[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] para enviar para transferir para o player recv[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem o item[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] para enviar para transferir para o player recv[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return null;
                         }
 
                         if (pWi_s.STDA_C_ITEM_QNTD < (int)_psi.item.qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem quantidade de item[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + ", QNTD=" + Convert.ToString(_psi.item.qntd) + "] para transferir para o PLAYER[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem quantidade de item[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + ", QNTD=" + Convert.ToString(_psi.item.qntd) + "] para transferir para o Normal[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return null;
                         }
@@ -4847,7 +4847,7 @@ namespace Pangya_GameServer.Manager
 
                             ret_wi = new WarehouseItemEx(pWi_r);
 
-                            NormalManagerDB.getInstance().add(9,
+                            NormalManagerDB.Instance.add(9,
                                   new CmdUpdateItemQntd(_s_rcv.Inventory.uid,
                                       pWi_r.id,
                                       pWi_r.STDA_C_ITEM_QNTD),
@@ -4876,7 +4876,7 @@ namespace Pangya_GameServer.Manager
                             CmdAddItem cmd_ai = new CmdAddItem(_s_rcv.Inventory.uid, // Waiter
                                 wi, 0, 0);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_ai);
 
                             if (cmd_ai.getException().getCodeError() != 0)
@@ -4887,7 +4887,7 @@ namespace Pangya_GameServer.Manager
                             wi = new WarehouseItemEx(cmd_ai.getInfo());
                             if (wi.id <= 0)
                             {
-                                _smp.message_pool.getInstance().push(new message("[Log] nao conseguiu adicionar o Item[TYPEID=" + Convert.ToString(wi._typeid) + "] para o player: " + Convert.ToString(_s_rcv.Inventory.uid), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Log] nao conseguiu adicionar o Item[TYPEID=" + Convert.ToString(wi._typeid) + "] para o player: " + Convert.ToString(_s_rcv.Inventory.uid), type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 return null;
                             }
 
@@ -4901,7 +4901,7 @@ namespace Pangya_GameServer.Manager
                         pWi_s.STDA_C_ITEM_QNTD -= (short)_psi.item.qntd;
                         if (pWi_s.STDA_C_ITEM_QNTD == 0)
                         {
-                            NormalManagerDB.getInstance().add(10, // Delete Item
+                            NormalManagerDB.Instance.add(10, // Delete Item
                                   new CmdDeleteItem(_s_snd.Inventory.uid, pWi_s.id),
                                   SQLDBResponse,
                                   null);
@@ -4917,7 +4917,7 @@ namespace Pangya_GameServer.Manager
                         }
                         else
                         {
-                            NormalManagerDB.getInstance().add(9, // Update
+                            NormalManagerDB.Instance.add(9, // Update
                                   new CmdUpdateItemQntd(_s_snd.Inventory.uid,
                                       pWi_s.id,
                                       pWi_s.STDA_C_ITEM_QNTD),
@@ -4934,33 +4934,33 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi_s == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem o Part[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] para enviar para transferir para o player recv[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem o Part[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] para enviar para transferir para o player recv[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return null;
                         }
 
                         var pWi_r = _s_rcv.Inventory.FindWarehouseItemByTypeid(_psi.item._typeid);
 
-                        if (pWi_r != null && !sIff.getInstance().IsCanOverlapped(pWi_r._typeid))
+                        if (pWi_r != null && !sIff.Instance.IsCanOverlapped(pWi_r._typeid))
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] PLAYER[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar o Part[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] que ele ja possui do PLAYER[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] Normal[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar o Part[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] que ele ja possui do Normal[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return null;
                         }
                         else
                         {
 
-                            var part = sIff.getInstance().findPart(_psi.item._typeid);
+                            var part = sIff.Instance.findPart(_psi.item._typeid);
 
                             if (part == null)
                             {
-                                _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] PLAYER[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar o Part[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] que nao esta no IFF_STRUCT do server, do PLAYER[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] Normal[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar o Part[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] que nao esta no IFF_STRUCT do server, do Normal[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 return null;
                             }
 
                             // CmdTransferPart
-                            NormalManagerDB.getInstance().add(16,
+                            NormalManagerDB.Instance.add(16,
                                   new CmdTransferPart(_s_snd.Inventory.uid,
                                       _s_rcv.Inventory.uid, pWi_s.id,
                                       (byte)part.type_item),
@@ -4987,27 +4987,27 @@ namespace Pangya_GameServer.Manager
                 case IFF_GROUP.CLUBSET:
                     {
                         // Vai ter mas só quando eu liberar no cliente
-                        var @base = sIff.getInstance().findCommomItem(_psi.item._typeid);
+                        var @base = sIff.Instance.findCommomItem(_psi.item._typeid);
 
                         if (@base == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] PLAYER[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar ClubSet[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] que nao existe no IFF_STRUCT do server, do PLAYER[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] Normal[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar ClubSet[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] que nao existe no IFF_STRUCT do server, do Normal[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return null;
                         }
 
-                        _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Log][Warning] PLAYER[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar ClubSet[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] no Personal Shop[Owner UID=" + Convert.ToString(_s_snd.Inventory.uid) + "], mas eu ainda nao liberei " + (@base.Shop.flag_shop.can_send_mail_and_personal_shop ? "" : "no cliente e") + " no server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Log][Warning] Normal[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar ClubSet[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] no Personal Shop[Owner UID=" + Convert.ToString(_s_snd.Inventory.uid) + "], mas eu ainda nao liberei " + (@base.Shop.flag_shop.can_send_mail_and_personal_shop ? "" : "no cliente e") + " no server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         LogTransferItemSuccess("Transferiu Item", _s_snd, _s_rcv, _psi);
                         break;
                     }
                 case IFF_GROUP.CARD:
                     {
                         // Vai ter mas só quando eu liberar no cliente
-                        var @base = sIff.getInstance().findCommomItem(_psi.item._typeid);
+                        var @base = sIff.Instance.findCommomItem(_psi.item._typeid);
 
                         if (@base == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] PLAYER[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar Card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] que nao existe no IFF_STRUCT do server, do PLAYER[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] Normal[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "] tentou comprar Card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] que nao existe no IFF_STRUCT do server, do Normal[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return null;
                         }
@@ -5016,14 +5016,14 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi_s == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] para enviar para transferir para o player recv[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + "] para enviar para transferir para o player recv[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return null;
                         }
 
                         if (pCi_s.qntd < (int)_psi.item.qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem quantidade do Card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + ", QNTD=" + Convert.ToString(_psi.item.qntd) + "] para transferir para o PLAYER[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] player send[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] nao tem quantidade do Card[TYPEID=" + Convert.ToString(_psi.item._typeid) + ", ID=" + Convert.ToString(_psi.item.id) + ", QNTD=" + Convert.ToString(_psi.item.qntd) + "] para transferir para o Normal[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return null;
                         }
@@ -5039,7 +5039,7 @@ namespace Pangya_GameServer.Manager
 
                             ret_wi = pCi_r;
 
-                            NormalManagerDB.getInstance().add(9,
+                            NormalManagerDB.Instance.add(9,
                                   new CmdUpdateCardQntd(_s_rcv.Inventory.uid,
                                       pCi_r.id, pCi_r.qntd),
                                   SQLDBResponse,
@@ -5060,7 +5060,7 @@ namespace Pangya_GameServer.Manager
                             CmdAddCard cmd_ac = new CmdAddCard(_s_rcv.Inventory.uid, // Waiter
                                 ci, 0, 0);
 
-                            NormalManagerDB.getInstance().add(0,
+                            NormalManagerDB.Instance.add(0,
                                   cmd_ac);
 
                             if (cmd_ac.getException().getCodeError() != 0)
@@ -5073,7 +5073,7 @@ namespace Pangya_GameServer.Manager
 
                             if (ci.id <= 0)
                             {
-                                _smp.message_pool.getInstance().push(new message("[Log] nao conseguiu adicionar o Card[TYPEID=" + Convert.ToString(ci._typeid) + "] para o player: " + Convert.ToString(_s_rcv.Inventory.uid), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[Log] nao conseguiu adicionar o Card[TYPEID=" + Convert.ToString(ci._typeid) + "] para o player: " + Convert.ToString(_s_rcv.Inventory.uid), type_msg.CL_FILE_LOG_AND_CONSOLE));
                                 return null;
                             }
                             ret_wi = ci;
@@ -5085,7 +5085,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi_s.qntd == 0)
                         {
-                            NormalManagerDB.getInstance().add(10, // Delete Item
+                            NormalManagerDB.Instance.add(10, // Delete Item
                                   new CmdDeleteCard(_s_snd.Inventory.uid, pCi_s.id),
                                   SQLDBResponse,
                                   null);
@@ -5101,7 +5101,7 @@ namespace Pangya_GameServer.Manager
                         }
                         else
                         {
-                            NormalManagerDB.getInstance().add(9, // Update
+                            NormalManagerDB.Instance.add(9, // Update
                                   new CmdUpdateCardQntd(_s_snd.Inventory.uid,
                                       pCi_s.id, pCi_s.qntd),
                                   SQLDBResponse,
@@ -5111,12 +5111,12 @@ namespace Pangya_GameServer.Manager
                         break;
                     }
                 default: // Não suporta todos os outros, [não é permitido vender no Personal Shop]
-                    _smp.message_pool.getInstance().push(new message("[ItemManager::transferItem][Error] player_rcv[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "], player_snd[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] Esse Item[TYPEID=" + Convert.ToString(_psi.item._typeid) + "] nao pode ser vendido no Personal Shop", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::transferItem][Error] player_rcv[UID=" + Convert.ToString(_s_rcv.Inventory.uid) + "], player_snd[UID=" + Convert.ToString(_s_snd.Inventory.uid) + "] Esse Item[TYPEID=" + Convert.ToString(_psi.item._typeid) + "] nao pode ser vendido no Personal Shop", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     break;
             }
 
             if (ret_wi != null)
-                NormalManagerDB.getInstance().add(15, new CmdPersonalShopLog(_s_snd.Inventory.uid, _s_rcv.Inventory.uid, _psi, _psi_r.item.id), ItemManager.SQLDBResponse, null);
+                NormalManagerDB.Instance.add(15, new CmdPersonalShopLog(_s_snd.Inventory.uid, _s_rcv.Inventory.uid, _psi, _psi_r.item.id), ItemManager.SQLDBResponse, null);
 
 
             return ret_wi;
@@ -5126,7 +5126,7 @@ namespace Pangya_GameServer.Manager
         { 
             int ret_id = -1;
 
-            switch (sIff.getInstance().getItemGroupIdentify(_typeid))
+            switch (sIff.Instance.getItemGroupIdentify(_typeid))
             {
                 case IFF_GROUP.CADDIE:
                     {
@@ -5134,30 +5134,30 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (_qntd != 1u)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de caddie é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de caddie é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
-                        var caddie = sIff.getInstance().findCaddie(_typeid);
+                        var caddie = sIff.Instance.findCaddie(_typeid);
 
                         if (caddie == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (caddie.valor_mensal > 0)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que é por tempo, isso nao é permitido pelo server", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que é por tempo, isso nao é permitido pelo server", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -5172,30 +5172,30 @@ namespace Pangya_GameServer.Manager
 
                         if (pMi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (_qntd != 1u)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de mascot é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de mascot é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
-                        var mascot = sIff.getInstance().findMascot(_typeid);
+                        var mascot = sIff.Instance.findMascot(_typeid);
 
                         if (mascot == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (mascot.Shop.flag_shop.time_shop.dia > 0 && mascot.Shop.flag_shop.time_shop.active)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que nao é permitido[de tempo] trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que nao é permitido[de tempo] trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -5210,23 +5210,23 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (pCi.qntd < (int)_qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Card no CadiCauldron mais nao tem quantidade[have=" + Convert.ToString(pCi.qntd) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Card no CadiCauldron mais nao tem quantidade[have=" + Convert.ToString(pCi.qntd) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
-                        var card = sIff.getInstance().findCard(_typeid);
+                        var card = sIff.Instance.findCard(_typeid);
 
                         if (card == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -5242,23 +5242,23 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (pWi.STDA_C_ITEM_QNTD < (short)_qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar AuxPart no CadiCauldron mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar AuxPart no CadiCauldron mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
-                        var auxPart = sIff.getInstance().findAuxPart(_typeid);
+                        var auxPart = sIff.Instance.findAuxPart(_typeid);
 
                         if (auxPart == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -5273,23 +5273,23 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (pWi.STDA_C_ITEM_QNTD < (short)_qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Ball no CadiCauldron mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Ball no CadiCauldron mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
-                        var ball = sIff.getInstance().findBall(_typeid);
+                        var ball = sIff.Instance.findBall(_typeid);
 
                         if (ball == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -5304,23 +5304,23 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (pWi.STDA_C_ITEM_QNTD < (short)_qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Item no CadiCauldron mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Item no CadiCauldron mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
-                        var item = sIff.getInstance().findItem(_typeid);
+                        var item = sIff.Instance.findItem(_typeid);
 
                         if (item == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -5335,23 +5335,23 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (_qntd != 1u)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] ClubSet[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de clubset é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] ClubSet[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de clubset é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
-                        var clubset = sIff.getInstance().findClubSet(_typeid);
+                        var clubset = sIff.Instance.findClubSet(_typeid);
 
                         if (clubset == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -5366,23 +5366,23 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (_qntd != 1u)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] Part[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de part é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] Part[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de part é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
-                        var part = sIff.getInstance().findPart(_typeid);
+                        var part = sIff.Instance.findPart(_typeid);
 
                         if (part == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -5397,23 +5397,23 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Skin no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Skin no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
                         if (_qntd != 1u)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] Skin[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de skin é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] Skin[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de ItemSkin é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
 
-                        var skin = sIff.getInstance().findSkin(_typeid);
+                        var skin = sIff.Instance.findSkin(_typeid);
 
                         if (skin == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Skin[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Skin[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return -1;
                         }
@@ -5424,7 +5424,7 @@ namespace Pangya_GameServer.Manager
                     } // End Warehouse Item
                 default:
                     {
-                        _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeCadieMagicBox][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que nao pode no CadieCauldron. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeCadieMagicBox][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que nao pode no CadieCauldron. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         break;
                     } // End Default
             } // End Switch
@@ -5437,14 +5437,14 @@ namespace Pangya_GameServer.Manager
 
             List<stItem> v_item = new List<stItem>();
 
-            switch (sIff.getInstance().getItemGroupIdentify(_typeid))
+            switch (sIff.Instance.getItemGroupIdentify(_typeid))
             {
                 case IFF_GROUP.CADDIE:
                     {
 
                         if (_qntd > 1)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem duplicata de Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem duplicata de Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5453,23 +5453,23 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
-                        var caddie = sIff.getInstance().findCaddie(_typeid);
+                        var caddie = sIff.Instance.findCaddie(_typeid);
 
                         if (caddie == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
                         if (caddie.valor_mensal > 0)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que é por tempo, isso nao é permitido pelo server", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um caddie[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que é por tempo, isso nao é permitido pelo server", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5490,7 +5490,7 @@ namespace Pangya_GameServer.Manager
 
                         if (_qntd > 1)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem duplicata de Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem duplicata de Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5499,30 +5499,30 @@ namespace Pangya_GameServer.Manager
 
                         if (pMi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
                         if (_qntd != 1)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de mascot é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] quantidade[value=" + Convert.ToString(_qntd) + "] de mascot é errado, nao pode mais que 1. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
-                        var mascot = sIff.getInstance().findMascot(_typeid);
+                        var mascot = sIff.Instance.findMascot(_typeid);
 
                         if (mascot == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
                         if (mascot.Shop.flag_shop.time_shop.dia > 0 && mascot.Shop.flag_shop.time_shop.active)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que nao é permitido[de tempo] trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um Mascot[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que nao é permitido[de tempo] trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5545,23 +5545,23 @@ namespace Pangya_GameServer.Manager
 
                         if (pCi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
                         if (pCi.qntd < (int)_qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Card no Tiki Shop mais nao tem quantidade[have=" + Convert.ToString(pCi.qntd) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Card no Tiki Shop mais nao tem quantidade[have=" + Convert.ToString(pCi.qntd) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
-                        var card = sIff.getInstance().findCard(_typeid);
+                        var card = sIff.Instance.findCard(_typeid);
 
                         if (card == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Card[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5585,7 +5585,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5594,30 +5594,30 @@ namespace Pangya_GameServer.Manager
                             || (pWi.flag & 0x40) == 0x40
                             || (pWi.flag & 0x60) == 0x60)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar AuxPart no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar AuxPart no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
                         if (pWi.STDA_C_ITEM_QNTD < (short)_qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar AuxPart no Tiki Shop mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar AuxPart no Tiki Shop mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
-                        var auxPart = sIff.getInstance().findAuxPart(_typeid);
+                        var auxPart = sIff.Instance.findAuxPart(_typeid);
 
                         if (auxPart == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
                         if (_session.Inventory.isAuxPartEquiped(_typeid))
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode trocar o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] equipado no Tiki Shop. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode trocar o AuxPart[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] equipado no Tiki Shop. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5640,7 +5640,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5649,23 +5649,23 @@ namespace Pangya_GameServer.Manager
                             || (pWi.flag & 0x40) == 0x40
                             || (pWi.flag & 0x60) == 0x60)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Ball no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Ball no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
                         if (pWi.STDA_C_ITEM_QNTD < (short)_qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Ball no Tiki Shop mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Ball no Tiki Shop mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
-                        var ball = sIff.getInstance().findBall(_typeid);
+                        var ball = sIff.Instance.findBall(_typeid);
 
                         if (ball == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Ball[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5688,7 +5688,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5697,23 +5697,23 @@ namespace Pangya_GameServer.Manager
                             || (pWi.flag & 0x40) == 0x40
                             || (pWi.flag & 0x60) == 0x60)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Item no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Item no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
                         if (pWi.STDA_C_ITEM_QNTD < (short)_qntd)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Item no Tiki Shop mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Item no Tiki Shop mais nao tem quantidade[have=" + Convert.ToString(pWi.STDA_C_ITEM_QNTD) + ", request=" + Convert.ToString(_qntd) + "] de item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "]. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
-                        var iff_item = sIff.getInstance().findItem(_typeid);
+                        var iff_item = sIff.Instance.findItem(_typeid);
 
                         if (iff_item == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5735,7 +5735,7 @@ namespace Pangya_GameServer.Manager
 
                         if (_qntd > 1)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem duplicata de ClubSet[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem duplicata de ClubSet[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5744,7 +5744,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5753,16 +5753,16 @@ namespace Pangya_GameServer.Manager
                             || (pWi.flag & 0x40) == 0x40
                             || (pWi.flag & 0x60) == 0x60)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar ClubSet no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar ClubSet no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
-                        var clubset = sIff.getInstance().findClubSet(_typeid);
+                        var clubset = sIff.Instance.findClubSet(_typeid);
 
                         if (clubset == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o ClubSet[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5781,11 +5781,11 @@ namespace Pangya_GameServer.Manager
                     }
                 case IFF_GROUP.PART:
                     {
-                        var part = sIff.getInstance().findPart(_typeid);
+                        var part = sIff.Instance.findPart(_typeid);
 
                         if (part == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5796,7 +5796,7 @@ namespace Pangya_GameServer.Manager
 
                             if (pWi_all.Count() < _qntd)
                             {
-                                _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[resq=" + Convert.ToString(_qntd) + ", value=" + Convert.ToString(pWi_all.Count()) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Part no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] quantidade[resq=" + Convert.ToString(_qntd) + ", value=" + Convert.ToString(pWi_all.Count()) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 return new List<stItem>();
                             }
@@ -5807,7 +5807,7 @@ namespace Pangya_GameServer.Manager
 
                                 if (pWi == null)
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                     return new List<stItem>();
                                 }
@@ -5816,7 +5816,7 @@ namespace Pangya_GameServer.Manager
                                     || (pWi.flag & 0x20) == 0x20
                                     || (pWi.flag & 0x40) == 0x40)
                                 {
-                                    _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode trocar Part Rental[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no Tiki Shop. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                    _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao pode trocar Part Rental[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no Tiki Shop. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                     return new List<stItem>();
                                 }
@@ -5854,7 +5854,7 @@ namespace Pangya_GameServer.Manager
                     {
                         if (_qntd > 1)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem duplicata de Skin[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem duplicata de Skin[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5863,7 +5863,7 @@ namespace Pangya_GameServer.Manager
 
                         if (pWi == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Skin no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Skin no Warehouse Item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] para trocar. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5872,16 +5872,16 @@ namespace Pangya_GameServer.Manager
                             || (pWi.flag & 0x40) == 0x40
                             || (pWi.flag & 0x60) == 0x60)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Skin no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar Skin no Tiki Shop mais nao pode trocar item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] de tempo. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
 
-                        var skin = sIff.getInstance().findSkin(_typeid);
+                        var skin = sIff.Instance.findSkin(_typeid);
 
                         if (skin == null)
                         {
-                            _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Skin[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] nao tem o Skin[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] no IFF_STRUCT do server. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             return new List<stItem>();
                         }
@@ -5900,7 +5900,7 @@ namespace Pangya_GameServer.Manager
                     } // End Warehouse Item
                 default:
                     {
-                        _smp.message_pool.getInstance().push(new message("[ItemManager::exchangeTikiShop][Error] PLAYER[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que nao pode no CadieCauldron. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[ItemManager::exchangeTikiShop][Error] Normal[UID=" + Convert.ToString(_session.Inventory.uid) + "] tentou trocar um item[TYPEID=" + Convert.ToString(_typeid) + ", ID=" + Convert.ToString(_id) + "] que nao pode no CadieCauldron. Hacker ou Bug", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         break;
                     } // End Default
             } // End Switch
@@ -5910,7 +5910,7 @@ namespace Pangya_GameServer.Manager
          
         public static bool isSetItem(uint _typeid)
         {
-            return sIff.getInstance().getItemGroupIdentify(_typeid) == IFF_GROUP.SET_ITEM;
+            return sIff.Instance.getItemGroupIdentify(_typeid) == IFF_GROUP.SET_ITEM;
         }
 
         public static bool isTimeItem(stItem.stDate _date)
@@ -5929,13 +5929,13 @@ namespace Pangya_GameServer.Manager
             bool ret = false;
 
             // Procura primeiro no Dolfini Locker o item, se for diferente de SetItem
-            if (sIff.getInstance().getItemGroupIdentify(_typeid) != IFF_GROUP.SET_ITEM)
+            if (sIff.Instance.getItemGroupIdentify(_typeid) != IFF_GROUP.SET_ITEM)
             {
 
                 var cmd_dli = new CmdFindDolfiniLockerItem(_uid, // Waiter
                     _typeid);
 
-                NormalManagerDB.getInstance().add(0,
+                NormalManagerDB.Instance.add(0,
                       cmd_dli);
 
                 if (cmd_dli.getException().getCodeError() != 0)
@@ -5950,14 +5950,14 @@ namespace Pangya_GameServer.Manager
             }
             // Find de busca em dolfini locker
 
-            switch (sIff.getInstance().getItemGroupIdentify(_typeid))
+            switch (sIff.Instance.getItemGroupIdentify(_typeid))
             {
                 case IFF_GROUP.CHARACTER:
                     {
                         var cmd_fc = new CmdFindCharacter(_uid, // Waiter
                             _typeid);
 
-                        NormalManagerDB.getInstance().add(0,
+                        NormalManagerDB.Instance.add(0,
                               cmd_fc);
 
                         if (cmd_fc.getException().getCodeError() != 0)
@@ -5974,7 +5974,7 @@ namespace Pangya_GameServer.Manager
                         var cmd_fc = new CmdFindCaddie(_uid, // Waiter
                             _typeid);
 
-                        NormalManagerDB.getInstance().add(0,
+                        NormalManagerDB.Instance.add(0,
                               cmd_fc);
 
                         if (cmd_fc.getException().getCodeError() != 0)
@@ -6007,7 +6007,7 @@ namespace Pangya_GameServer.Manager
                         var cmd_ff = new CmdFindFurniture(_uid, // Waiter
                             _typeid);
 
-                        NormalManagerDB.getInstance().add(0,
+                        NormalManagerDB.Instance.add(0,
                               cmd_ff);
 
                         if (cmd_ff.getException().getCodeError() != 0)
@@ -6065,7 +6065,7 @@ namespace Pangya_GameServer.Manager
         public static bool ownerSetItem(uint _uid, uint _typeid)
         {
 
-            var set = sIff.getInstance().findSetItem(_typeid);
+            var set = sIff.Instance.findSetItem(_typeid);
 
             if (set != null)
             {
@@ -6073,7 +6073,7 @@ namespace Pangya_GameServer.Manager
                 {
                     // Eleminar a verificação do character que ele só inclui se o player não tiver ele
                     // se ele tiver não faz diferença não anula o verificação do set
-                    if (set.packege.item_typeid[i] != 0 && sIff.getInstance().getItemGroupIdentify(set.packege.item_typeid[i]) != IFF_GROUP.CHARACTER)
+                    if (set.packege.item_typeid[i] != 0 && sIff.Instance.getItemGroupIdentify(set.packege.item_typeid[i]) != IFF_GROUP.CHARACTER)
                     {
                         if ( ownerItem(_uid, set.packege.item_typeid[i])) // se tiver 1 item que seja não pode ganhar o set se não vai duplicar os itens, que ele tem
                         {
@@ -6106,9 +6106,9 @@ namespace Pangya_GameServer.Manager
         {
 
             var cmd_fc = new CmdFindCaddie(_uid, // Waiter
-                (uint)(sIff.getInstance().CADDIE << 26) | sIff.getInstance().getCaddieIdentify(_typeid));
+                (uint)(sIff.Instance.CADDIE << 26) | sIff.Instance.getCaddieIdentify(_typeid));
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_fc);
 
             if (cmd_fc.getException().getCodeError() != 0)
@@ -6122,15 +6122,15 @@ namespace Pangya_GameServer.Manager
         public static CharacterInfo _ownerHairStyle(uint _uid, uint _typeid)
         {
 
-            var hair = sIff.getInstance().findHairStyle(_typeid);
+            var hair = sIff.Instance.findHairStyle(_typeid);
 
             if (hair != null)
             {
 
                 var cmd_fc = new CmdFindCharacter(_uid, // Waiter
-                    (uint)(sIff.getInstance().CHARACTER << 26) | hair.Character);
+                    (uint)(sIff.Instance.CHARACTER << 26) | hair.Character);
 
-                NormalManagerDB.getInstance().add(0,
+                NormalManagerDB.Instance.add(0,
                       cmd_fc);
 
                 if (cmd_fc.getException().getCodeError() != 0)
@@ -6150,7 +6150,7 @@ namespace Pangya_GameServer.Manager
             var cmd_fm = new CmdFindMascot(_uid, // Waiter
                 _typeid);
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_fm);
 
             if (cmd_fm.getException().getCodeError() != 0)
@@ -6167,7 +6167,7 @@ namespace Pangya_GameServer.Manager
             var cmd_fwi = new CmdFindWarehouseItem(_uid, // Waiter
                 _typeid);
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_fwi);
 
             if (cmd_fwi.getException().getCodeError() != 0)
@@ -6184,7 +6184,7 @@ namespace Pangya_GameServer.Manager
             var cmd_fc = new CmdFindCard(_uid, // Waiter
                 _typeid);
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_fc);
 
             if (cmd_fc.getException().getCodeError() != 0)
@@ -6201,7 +6201,7 @@ namespace Pangya_GameServer.Manager
             CmdFindWarehouseItem cmd_fwi = new CmdFindWarehouseItem(_uid, // Waiter
                 _typeid);
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_fwi);
 
             if (cmd_fwi.getException().getCodeError() != 0)
@@ -6218,7 +6218,7 @@ namespace Pangya_GameServer.Manager
             CmdFindWarehouseItem cmd_fwi = new CmdFindWarehouseItem(_uid, // Waiter
                 _typeid);
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_fwi);
 
             if (cmd_fwi.getException().getCodeError() != 0)
@@ -6232,7 +6232,7 @@ namespace Pangya_GameServer.Manager
         public static TrophySpecialInfo _ownerTrofelEspecial(uint _uid, uint _typeid)
         {
 
-            var type_trofel = sIff.getInstance().getItemSubGroupIdentify24(_typeid);
+            var type_trofel = sIff.Instance.getItemSubGroupIdentify24(_typeid);
 
             CmdFindTrofelEspecial.eTYPE type = CmdFindTrofelEspecial.eTYPE.ESPECIAL;
 
@@ -6248,7 +6248,7 @@ namespace Pangya_GameServer.Manager
             CmdFindTrofelEspecial cmd_fts = new CmdFindTrofelEspecial(_uid, // Waiter
                 _typeid, type);
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_fts);
 
             if (cmd_fts.getException().getCodeError() != 0)
@@ -6262,7 +6262,7 @@ namespace Pangya_GameServer.Manager
         public static bool ownerHairStyle(uint _uid, uint _typeid)
         {
 
-            var hair = sIff.getInstance().findHairStyle(_typeid);
+            var hair = sIff.Instance.findHairStyle(_typeid);
 
             if (hair != null)
             {
@@ -6288,7 +6288,7 @@ namespace Pangya_GameServer.Manager
             CmdFindMailBoxItem cmd_fmbi = new CmdFindMailBoxItem(_uid, // Waiter
                 _typeid);
 
-            NormalManagerDB.getInstance().add(0,
+            NormalManagerDB.Instance.add(0,
                   cmd_fmbi);
 
             if (cmd_fmbi.getException().getCodeError() != 0)
@@ -6378,10 +6378,10 @@ namespace Pangya_GameServer.Manager
                 return;
             }
 
-            // Por Hora só sai, depois faço outro tipo de tratamento se precisar
+            // Por Hora só sai, depois faço outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
             {
-                _smp.message_pool.getInstance().push(new message("[ItemManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ItemManager::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
@@ -6534,8 +6534,8 @@ namespace Pangya_GameServer.Manager
 
             if (clientRequested > hardLimit)
             {
-                _smp.message_pool.getInstance().push(
-                    new message(
+                _smp.LogManager.Instance.push(
+                    new AppMessage(
                         $"[WARN] UID={session.Inventory.uid} limitado de {clientRequested} para {hardLimit}",
                         type_msg.CL_FILE_LOG_AND_CONSOLE
                     )
@@ -6549,7 +6549,7 @@ namespace Pangya_GameServer.Manager
 
         public static uint getItemQuantity(Player session, uint typeid, int itemId)
         {
-            var type = sIff.getInstance().getItemGroupIdentify(typeid);
+            var type = sIff.Instance.getItemGroupIdentify(typeid);
             switch (type)
             {
                 case IFF_GROUP.CARD:

@@ -29,7 +29,7 @@ namespace Pangya_GameServer.Handles
 
                 if (item_id <= 0)
                 {
-                    throw new exception("[Lobby::RequestExtendRental][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou extend rental, mas o item[ID=" + (item_id) + "] is invalid. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestExtendRental][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou extend rental, mas o item[ID=" + (item_id) + "] is invalid. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         350, 5200351));
                 }
 
@@ -37,27 +37,27 @@ namespace Pangya_GameServer.Handles
 
                 if (pWi == null)
                 {
-                    throw new exception("[Lobby::RequestExtendRental][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou extend rental, mas o Player nao tem o item[ID=" + (item_id) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestExtendRental][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou extend rental, mas o Player nao tem o item[ID=" + (item_id) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         351, 5200352));
                 }
 
-                if (sIff.getInstance().getItemGroupIdentify(pWi._typeid) != IFF_GROUP.PART)
+                if (sIff.Instance.getItemGroupIdentify(pWi._typeid) != IFF_GROUP.PART)
                 {
-                    throw new exception("[Lobby::RequestExtendRental][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou extend rental, mas o item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + "] nao é um Part. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestExtendRental][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou extend rental, mas o item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + "] nao é um Part. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         352, 5200353));
                 }
 
-                var part = sIff.getInstance().findPart(pWi._typeid);
+                var part = sIff.Instance.findPart(pWi._typeid);
 
                 if (part == null)
                 {
-                    throw new exception("[Lobby::RequestExtendRental][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou extender um rental Item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + "] que nao esta no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestExtendRental][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou extender um rental Item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + "] que nao esta no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         353, 5200354));
                 }
 
                 if (part.valor_rental <= 0)
                 {
-                    throw new exception("[Lobby::RequestExtendRental][Error] PLAYER [UID=" + Player.UserInfo.uid + "] tentou extender um rental Item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + "] que nao é um rental no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestExtendRental][Error] Normal [UID=" + Player.UserInfo.UID + "] tentou extender um rental Item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + "] que nao é um rental no IFF_STRUCT do server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         354, 5200355));
                 }
 
@@ -69,7 +69,7 @@ namespace Pangya_GameServer.Handles
                 var end_date = UtilTime.FormatDateLocal(pWi.end_date_unix_local);
 
                 // Cmd Extend Rental + 7 dias no DB
-                NormalManagerDB.getInstance().add(5, new CmdExtendRental(Player.UserInfo.uid, pWi.id, end_date), null, null);
+                NormalManagerDB.Instance.add(5, new CmdExtendRental(Player.UserInfo.UID, pWi.id, end_date), null, null);
 
                 // Tira os pangs do valor de renovar o Rental Item
                 Player.UserInfo.consomePang(part.valor_rental);
@@ -90,9 +90,9 @@ namespace Pangya_GameServer.Handles
                 }
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[Rental::Extend][Sucess] PLAYER [UID=" + Player.UserInfo.uid + "] extendeu o Rental Item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Rental::Extend][Sucess] Normal [UID=" + Player.UserInfo.UID + "] extendeu o Rental Item[TYPEID=" + (pWi._typeid) + ", ID=" + (pWi.id) + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-                // Att pang no Jogo
+                // Att Pang no Jogo
                 p.init_plain(0xC8);
 
                 p.WriteUInt64(Player.UserInfo.Statistics.pang);
@@ -112,7 +112,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestExtendRental][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestExtendRental][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x18F);
 

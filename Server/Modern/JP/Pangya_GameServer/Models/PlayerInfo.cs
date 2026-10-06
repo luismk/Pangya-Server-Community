@@ -1,4 +1,5 @@
 ﻿using Pangya_GameServer.Manager;
+using Pangya_GameServer.Models;
 using Pangya_GameServer.Repository;
 using PangyaAPI.DataBase;
 using PangyaAPI.Network;
@@ -11,17 +12,17 @@ namespace Pangya_GameServer.Models
 {
     public partial class PlayerInfo : PlayerInfoBase
     {
-        /// <summary> Sinaliza se o modo de assistência (mira/guia) está ativado. </summary>
+        /// <summary> Sinaliza se o HoleMode de assistência (mira/guia) está ativado. </summary>
         public bool AssistFlag { get; set; }
 
         /// <summary> Quantidade de Cookies do jogador. </summary>
         public ulong Cookie { get; set; }
 
         /// <summary> Informações básicas de conta e nível de acesso do membro. </summary>
-        public MemberInfo Member { get; set; }
+        public PlayerMemberInfo Member { get; set; }
 
         /// <summary> Estatísticas gerais de jogo (Pang, experiência, vitórias, derrotas, etc). </summary>
-        public UserInfo Statistics { get; set; }
+        public PlayerUserStatistics Statistics { get; set; }
 
         /// <summary> Estado atual do tutorial para o jogador. </summary>
         public TutorialInfo Tutorial { get; set; }
@@ -31,22 +32,22 @@ namespace Pangya_GameServer.Models
 
         #region Estatísticas de Mapas (Temporada Atual)
 
-        /// <summary> Estatísticas de mapas no modo Normal (Temporada Atual). </summary>
+        /// <summary> Estatísticas de mapas no HoleMode Normal (Temporada Atual). </summary>
         public List<MapStatisticsEx> NormalMapStatistics { get; set; } = new List<MapStatisticsEx>(MS_NUM_MAPS);
 
-        /// <summary> Estatísticas acumuladas de mapas no modo Normal com Assistência. </summary>
+        /// <summary> Estatísticas acumuladas de mapas no HoleMode Normal com Assistência. </summary>
         public List<MapStatisticsEx> NormalMapStatisticsAll { get; set; } = new List<MapStatisticsEx>(MS_NUM_MAPS);
 
-        /// <summary> Estatísticas de mapas no modo Natural (Temporada Atual). </summary>
+        /// <summary> Estatísticas de mapas no HoleMode Natural (Temporada Atual). </summary>
         public List<MapStatisticsEx> NaturalMapStatistics { get; set; } = new List<MapStatisticsEx>(MS_NUM_MAPS);
 
-        /// <summary> Estatísticas acumuladas de mapas no modo Natural com Assistência. </summary>
+        /// <summary> Estatísticas acumuladas de mapas no HoleMode Natural com Assistência. </summary>
         public List<MapStatisticsEx> NaturalMapStatisticsAll { get; set; } = new List<MapStatisticsEx>(MS_NUM_MAPS);
 
-        /// <summary> Estatísticas de mapas no modo Grand Prix (Temporada Atual). </summary>
+        /// <summary> Estatísticas de mapas no HoleMode Grand Prix (Temporada Atual). </summary>
         public List<MapStatisticsEx> GrandPrixMapStatistics { get; set; } = new List<MapStatisticsEx>(MS_NUM_MAPS);
 
-        /// <summary> Estatísticas acumuladas de mapas no modo Grand Prix com Assistência. </summary>
+        /// <summary> Estatísticas acumuladas de mapas no HoleMode Grand Prix com Assistência. </summary>
         public List<MapStatisticsEx> GrandPrixMapStatisticsAll { get; set; } = new List<MapStatisticsEx>(MS_NUM_MAPS);
 
         /// <summary> Matriz de estatísticas históricas de todas as temporadas [Season, MapId]. </summary>
@@ -106,9 +107,9 @@ namespace Pangya_GameServer.Models
         #endregion
 
         /// <summary> Flags de capacidades e permissões especiais do usuário (Ex: GM, VIP). </summary>
-        public uCapability UserCapabilities { get; set; }
+        public PlayerCapability UserCapabilities { get; set; }
 
-        /// <summary> Pontos acumulados no modo Grand Zodiac. </summary>
+        /// <summary> Pontos acumulados no HoleMode Grand Zodiac. </summary>
         public ulong GrandZodiacPoints { get; set; }
 
         /// <summary> Moeda da loja de pontos Tiki (Sistema de troca antigo). </summary>
@@ -135,16 +136,16 @@ namespace Pangya_GameServer.Models
         public PlayerInfo()
         {
             CurrentLocation = new stLocation();
-            block_flag = new BlockFlag();
+            BlockFlag = new PlayerBlockFlag();
             LocationDB = new stPlayerLocationDB();
             SyncPangDB = new stSyncUpdateDB();
             SyncCookieDB = new stSyncUpdateDB();
-            UserCapabilities = new uCapability();
-            Member = new MemberInfo();
-            Statistics = new UserInfo();
+            UserCapabilities = new PlayerCapability();
+            Member = new PlayerMemberInfo();
+            Statistics = new PlayerUserStatistics();
             Tutorial = new TutorialInfo();
             ChatMacro = new ChatMacroUser();
-            uid = 0;
+            UID = 0;
             for (sbyte i = 0; i < MS_NUM_MAPS; i++)
             {
                 var map = new MapStatisticsEx();
@@ -202,30 +203,30 @@ namespace Pangya_GameServer.Models
             try
             {
                 // Carregamento de Dados Básicos
-                Statistics = CommandDB.LoadUserInfo(uid);
-                Cookie = CommandDB.LoadCookie(uid);
-                MailBox = new(CommandDB.LoadMailBox(uid), uid);
-                ChatMacro = CommandDB.LoadChatMacro(uid);
-                Friends = CommandDB.LoadFriends(uid);
-                Attendance = CommandDB.LoadAttendanceReward(uid);
-                DailyQuests = CommandDB.LoadDailyQuest(uid);
-                GameHistory = CommandDB.LoadLastPlayerGame(uid);
+                Statistics = CommandDB.LoadUserInfo(UID);
+                Cookie = CommandDB.LoadCookie(UID);
+                MailBox = new(CommandDB.LoadMailBox(UID), UID);
+                ChatMacro = CommandDB.LoadChatMacro(UID);
+                Friends = CommandDB.LoadFriends(UID);
+                Attendance = CommandDB.LoadAttendanceReward(UID);
+                DailyQuests = CommandDB.LoadDailyQuest(UID);
+                GameHistory = CommandDB.LoadLastPlayerGame(UID);
 
                 // Pontos e Progressão
-                GrandPrixHistory = CommandDB.LoadGrandPrixClear(uid);
-                GrandZodiacPoints = CommandDB.LoadGrandZodiacPoints(uid);
-                PointShopLegacy = CommandDB.LoadLegacyTikiShopInfo(uid);
-                PointShopWeb = CommandDB.LoadWebPoints(uid);
+                GrandPrixHistory = CommandDB.LoadGrandPrixClear(UID);
+                GrandZodiacPoints = CommandDB.LoadGrandZodiacPoints(UID);
+                PointShopLegacy = CommandDB.LoadLegacyTikiShopInfo(UID);
+                PointShopWeb = CommandDB.LoadWebPoints(UID);
 
                 // Carregamento de Estatísticas de Mapas (Temporários)
-                var normalStats = CommandDB.LoadMapStats(uid, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.NORMAL, CmdMapStatistics.TYPE_MODO.M_NORMAL);
-                var normalStatsAll = CommandDB.LoadMapStats(uid, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.ASSIST, CmdMapStatistics.TYPE_MODO.M_NORMAL);
+                var normalStats = CommandDB.LoadMapStats(UID, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.NORMAL, CmdMapStatistics.TYPE_MODO.M_NORMAL);
+                var normalStatsAll = CommandDB.LoadMapStats(UID, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.ASSIST, CmdMapStatistics.TYPE_MODO.M_NORMAL);
 
-                var naturalStats = CommandDB.LoadMapStats(uid, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.NORMAL, CmdMapStatistics.TYPE_MODO.M_NATURAL);
-                var naturalStatsAll = CommandDB.LoadMapStats(uid, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.ASSIST, CmdMapStatistics.TYPE_MODO.M_NATURAL);
+                var naturalStats = CommandDB.LoadMapStats(UID, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.NORMAL, CmdMapStatistics.TYPE_MODO.M_NATURAL);
+                var naturalStatsAll = CommandDB.LoadMapStats(UID, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.ASSIST, CmdMapStatistics.TYPE_MODO.M_NATURAL);
 
-                var gpStats = CommandDB.LoadMapStats(uid, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.NORMAL, CmdMapStatistics.TYPE_MODO.M_GRAND_PRIX);
-                var gpStatsAll = CommandDB.LoadMapStats(uid, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.ASSIST, CmdMapStatistics.TYPE_MODO.M_GRAND_PRIX);
+                var gpStats = CommandDB.LoadMapStats(UID, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.NORMAL, CmdMapStatistics.TYPE_MODO.M_GRAND_PRIX);
+                var gpStatsAll = CommandDB.LoadMapStats(UID, CmdMapStatistics.TYPE_SEASON.CURRENT, CmdMapStatistics.TYPE.ASSIST, CmdMapStatistics.TYPE_MODO.M_GRAND_PRIX);
 
                 // Mapeamento das Estatísticas para os Arrays/Listas
                 normalStats?.ForEach(s => NormalMapStatistics[s.course] = s);
@@ -236,23 +237,23 @@ namespace Pangya_GameServer.Models
                 gpStatsAll?.ForEach(s => GrandPrixMapStatisticsAll[s.course] = s);
 
                 // Sistema de Achievements (Conquistas)
-                bool hasAchievements = CommandDB.CheckAchievement(uid);
+                bool hasAchievements = CommandDB.CheckAchievement(UID);
                 if (!hasAchievements)
                 {
-                    Achievements.initAchievement(uid, true);
+                    Achievements.initAchievement(UID, true);
                 }
                 else
                 {
-                    var achievementData = CommandDB.LoadAchievementInfo(uid);
-                    Achievements.initAchievement(uid, achievementData);
+                    var achievementData = CommandDB.LoadAchievementInfo(UID);
+                    Achievements.initAchievement(UID, achievementData);
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
-                    $"[PlayerInfo::Load][Error] UID {uid}: {ex.Message}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[PlayerInfo::Load][Error] UID {UID}: {ex.Message}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 return false;
@@ -323,26 +324,26 @@ namespace Pangya_GameServer.Models
             try
             {
                 // Trava para nível máximo (Índice 69 do seu array de 70 elementos)
-                if (level >= 69)
+                if (Level >= 69)
                 {
-                    _smp.message_pool.getInstance().push(new message($"[AddExp][MaxLevel] PLAYER[UID={uid}] já é Level Máximo (70). Ignorando {expGain} EXP.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[AddExp][MaxLevel] Normal[UID={UID}] já é Level Máximo (70). Ignorando {expGain} EXP.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     return -1;
                 }
 
                 // Soma a EXP ganha ao que o player já tinha
                 Statistics.exp += expGain;
-                byte oldLevel = (byte)level;
+                byte oldLevel = (byte)Level;
 
                 // Loop de processamento de Level Up
-                while (level < 69)
+                while (Level < 69)
                 {
                     // Pega quanto custa para sair do nível atual (Ex: Level 0 precisa de 30)
-                    int costToLevelUp = Convert.ToInt32(ExpByLevel[(byte)level]);
+                    int costToLevelUp = Convert.ToInt32(ExpByLevel[(byte)Level]);
 
                     // Se encontrar o 0 no final do seu array, para.
                     if (costToLevelUp <= 0)
                     {
-                        _smp.message_pool.getInstance().push(new message($"[AddExp][Info] PLAYER[UID={uid}] atingiu o limite da tabela de EXP no Level {level}.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[AddExp][Info] Normal[UID={UID}] atingiu o limite da tabela de EXP no Level {Level}.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         break;
                     }
 
@@ -350,30 +351,30 @@ namespace Pangya_GameServer.Models
                     if (Statistics.exp >= costToLevelUp)
                     {
                         Statistics.exp -= costToLevelUp; // Subtrai o custo (Ex: 32 - 30 = 2)
-                        level++;                       // Sobe o nível
+                        Level++;                       // Sobe o nível
                         levelsGained++;
 
                         // Atualiza as estruturas
-                        Member.level = (byte)level;
-                        Statistics.level = (byte)level;
+                        Member.GameLevel = (byte)Level;
+                        Statistics.level = (byte)Level;
                     }
                     else
                     {
-                        // Se a sobra (Ex: 2) for menor que o custo do próximo level (Ex: 40), para aqui.
+                        // Se a sobra (Ex: 2) for menor que o custo do próximo Level (Ex: 40), para aqui.
                         break;
                     }
                 }
 
                 // Envia para o Banco de Dados
-                NormalManagerDB.getInstance().add(
-                    3, new CmdUpdateLevelAndExp(uid, (byte)level, Statistics.exp),
+                NormalManagerDB.Instance.add(
+                    3, new CmdUpdateLevelAndExp(UID, (byte)Level, Statistics.exp),
                     SQLDBResponse,
                     this
                 );
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[AddExp][CriticalError] PLAYER[UID={uid}]: {e.Message} | Stack: {e.StackTrace}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[AddExp][CriticalError] Normal[UID={UID}]: {e.Message} | Stack: {e.StackTrace}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             return levelsGained;
@@ -387,7 +388,7 @@ namespace Pangya_GameServer.Models
             GrandZodiacPoints += _pontos;
 
             // Update no Banco de dados
-            NormalManagerDB.getInstance().add(8, new CmdGrandZodiacPontos(uid, (uint)GrandZodiacPoints, CmdGrandZodiacPontos.eCMD_GRAND_ZODIAC_TYPE.CGZT_UPDATE), SQLDBResponse, this);
+            NormalManagerDB.Instance.add(8, new CmdGrandZodiacPontos(UID, (uint)GrandZodiacPoints, CmdGrandZodiacPontos.eCMD_GRAND_ZODIAC_TYPE.CGZT_UPDATE), SQLDBResponse, this);
         }
 
         public void consomeMoeda(ulong _pang, ulong _cookie)
@@ -411,21 +412,21 @@ namespace Pangya_GameServer.Models
 
                 // Check alteration on cookie of DB
                 if (checkAlterationCookieOnDB())
-                    throw new exception("[PlayerInfo::consomeCookie][Error] PLAYER[UID=" + (uid) + "] cookie on db is different of server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 200, 0));
+                    throw new exception("[PlayerInfo::consomeCookie][Error] Normal[UID=" + (UID) + "] cookie on db is different of server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 200, 0));
 
                 if ((Cookie - _cookie) < 0)
-                    throw new exception("[PlayerInfo::consomeCookie][Error] O PLAYER[UID=" + (uid) + "] nao tem cookies suficiente para consumir", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 20, 0));
+                    throw new exception("[PlayerInfo::consomeCookie][Error] O Normal[UID=" + (UID) + "] nao tem cookies suficiente para consumir", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 20, 0));
 
                 Cookie -= _cookie;
 
                 SyncCookieDB.requestUpdateOnDB();
 
-                NormalManagerDB.getInstance().add(2, new CmdUpdateCookie(uid, _cookie, CmdUpdateCookie.T_UPDATE_COOKIE.DECREASE), SQLDBResponse, this);
+                NormalManagerDB.Instance.add(2, new CmdUpdateCookie(UID, _cookie, CmdUpdateCookie.T_UPDATE_COOKIE.DECREASE), SQLDBResponse, this);
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::consomeCookie][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::consomeCookie][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 throw;
             }
@@ -440,13 +441,13 @@ namespace Pangya_GameServer.Models
             try
             {
 
-                // Check alteration on pang of DB
+                // Check alteration on Pang of DB
                 if (checkAlterationPangOnDB())
-                    throw new exception("[PlayerInfo::consomePang][Error] PLAYER[UID=" + (uid) + "] pang on db is different of server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 200, 0));
+                    throw new exception("[PlayerInfo::consomePang][Error] Normal[UID=" + (UID) + "] Pang on db is different of server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 200, 0));
                 // 3. CORREÇÃO AQUI: Comparação direta antes da subtração
                 if (Statistics.pang < _pang)
                 {
-                    throw new exception($"[PlayerInfo::consomePang] PLAYER[UID={uid}] saldo insuficiente (Saldo: {Statistics.pang}, Custo: {_pang})",
+                    throw new exception($"[PlayerInfo::consomePang] Normal[UID={UID}] saldo insuficiente (Saldo: {Statistics.pang}, Custo: {_pang})",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 20, 0));
                 }
 
@@ -454,12 +455,12 @@ namespace Pangya_GameServer.Models
 
                 SyncPangDB.requestUpdateOnDB();
 
-                NormalManagerDB.getInstance().add(1, new CmdUpdatePang(uid, _pang, CmdUpdatePang.T_UPDATE_PANG.DECREASE), SQLDBResponse, this);
+                NormalManagerDB.Instance.add(1, new CmdUpdatePang(UID, _pang, CmdUpdatePang.T_UPDATE_PANG.DECREASE), SQLDBResponse, this);
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::consomePang][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::consomePang][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 throw;
             }
@@ -487,19 +488,19 @@ namespace Pangya_GameServer.Models
 
                 // Check alteration on cookie of DB 
                 if (checkAlterationCookieOnDB())
-                    throw new exception("[PlayerInfo::addCookie][Error] PLAYER[UID=" + (uid) + "] cookie on db is different of server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 200, 0));
+                    throw new exception("[PlayerInfo::addCookie][Error] Normal[UID=" + (UID) + "] cookie on db is different of server.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 200, 0));
 
                 Cookie += _cookie;
 
                 SyncCookieDB.requestUpdateOnDB();
 
-                NormalManagerDB.getInstance().add(2, new CmdUpdateCookie(uid, _cookie, CmdUpdateCookie.T_UPDATE_COOKIE.INCREASE), SQLDBResponse, this);
+                NormalManagerDB.Instance.add(2, new CmdUpdateCookie(UID, _cookie, CmdUpdateCookie.T_UPDATE_COOKIE.INCREASE), SQLDBResponse, this);
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::addCookie][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::addCookie][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 throw;
             }
@@ -514,26 +515,26 @@ namespace Pangya_GameServer.Models
             try
             {
 
-                // Check alteration on pang of DB 
+                // Check alteration on Pang of DB 
                 if (checkAlterationPangOnDB())
                 {
                     var old_pang = Statistics.pang;
 
-                    // Atualiza o valor do pang do server com o do banco de dados
+                    // Atualiza o valor do Pang do server com o do banco de dados
                     updatePang();
                 }
 
-                // Add o pang para o player
+                // Add o Pang para o player
                 Statistics.pang += _pang;
 
                 SyncPangDB.requestUpdateOnDB();
 
-                NormalManagerDB.getInstance().add(1, new CmdUpdatePang(uid, _pang, CmdUpdatePang.T_UPDATE_PANG.INCREASE), SQLDBResponse, this);
+                NormalManagerDB.Instance.add(1, new CmdUpdatePang(UID, _pang, CmdUpdatePang.T_UPDATE_PANG.INCREASE), SQLDBResponse, this);
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::addPang][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::addPang][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 throw;
             }
@@ -553,9 +554,9 @@ namespace Pangya_GameServer.Models
             try
             {
 
-                var cmd_cp = new CmdCookie(uid);    // Waiter
+                var cmd_cp = new CmdCookie(UID);    // Waiter
 
-                NormalManagerDB.getInstance().add(0, cmd_cp);
+                NormalManagerDB.Instance.add(0, cmd_cp);
 
                 if (cmd_cp.getException().getCodeError() != 0)
                     throw cmd_cp.getException();
@@ -566,7 +567,7 @@ namespace Pangya_GameServer.Models
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::updateCookie][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::updateCookie][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Relanção por que essa função não tem retorno para verifica, então a exception garante que o código não vai continua
                 throw;
@@ -578,9 +579,9 @@ namespace Pangya_GameServer.Models
             try
             {
 
-                var cmd_pang = new CmdPang(uid);    // Waiter
+                var cmd_pang = new CmdPang(UID);    // Waiter
 
-                NormalManagerDB.getInstance().add(0, cmd_pang);
+                NormalManagerDB.Instance.add(0, cmd_pang);
 
                 if (cmd_pang.getException().getCodeError() != 0)
                     throw cmd_pang.getException();
@@ -591,7 +592,7 @@ namespace Pangya_GameServer.Models
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::updatePang][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::updatePang][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Relanção por que essa função não tem retorno para verifica, então a exception garante que o código não vai continua
                 throw;
@@ -604,7 +605,7 @@ namespace Pangya_GameServer.Models
             if ((long)_pang <= 0)
                 throw new exception("[PlayerInfo::addPang][Error] _pang valor invalido: " + ((long)_pang), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 21, 0));
 
-            NormalManagerDB.getInstance().add(1, new CmdUpdatePang(_uid, _pang, CmdUpdatePang.T_UPDATE_PANG.INCREASE), SQLDBResponse, null);
+            NormalManagerDB.Instance.add(1, new CmdUpdatePang(_uid, _pang, CmdUpdatePang.T_UPDATE_PANG.INCREASE), SQLDBResponse, null);
         }
 
         // Adiciona Cookie Point(CP) Estático
@@ -614,10 +615,10 @@ namespace Pangya_GameServer.Models
             if ((long)_cookie <= 0)
                 throw new exception("[PlayerInfo::addCookie][Error] _cookie valor invalido: " + ((long)_cookie), ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 21, 0));
 
-            NormalManagerDB.getInstance().add(2, new CmdUpdateCookie(_uid, _cookie, CmdUpdateCookie.T_UPDATE_COOKIE.INCREASE), SQLDBResponse, null);
+            NormalManagerDB.Instance.add(2, new CmdUpdateCookie(_uid, _cookie, CmdUpdateCookie.T_UPDATE_COOKIE.INCREASE), SQLDBResponse, null);
         }
 
-        public void addUserInfo(UserInfo _ui, ulong _total_pang_win_game = 0)
+        public void addUserInfo(PlayerUserStatistics _ui, ulong _total_pang_win_game = 0)
         {
             Statistics.add(_ui, (uint)_total_pang_win_game);
 
@@ -627,9 +628,9 @@ namespace Pangya_GameServer.Models
 
         public bool checkAlterationCookieOnDB()
         {
-            var cmd_cp = new CmdCookie(uid);    // Waiter
+            var cmd_cp = new CmdCookie(UID);    // Waiter
 
-            NormalManagerDB.getInstance().add(0, cmd_cp);
+            NormalManagerDB.Instance.add(0, cmd_cp);
 
             if (cmd_cp.getException().getCodeError() != 0)
                 throw cmd_cp.getException();
@@ -639,9 +640,9 @@ namespace Pangya_GameServer.Models
 
         public bool checkAlterationPangOnDB()
         {
-            var cmd_pang = new CmdPang(uid);    // Waiter
+            var cmd_pang = new CmdPang(UID);    // Waiter
 
-            NormalManagerDB.getInstance().add(0, cmd_pang);
+            NormalManagerDB.Instance.add(0, cmd_pang);
 
             if (cmd_pang.getException().getCodeError() != 0)
                 throw cmd_pang.getException();
@@ -690,7 +691,7 @@ namespace Pangya_GameServer.Models
         {
             if (_uid == 0u)
             {
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::isFriend][Error] _uid is invalid(0)", 0));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::isFriend][Error] _uid is invalid(0)", 0));
 
                 return false;
             }
@@ -737,7 +738,7 @@ namespace Pangya_GameServer.Models
                 GrandPrixHistory.Add(gp);
 
                 // Insere no banco de dados
-                NormalManagerDB.getInstance().add(6, new CmdInsertGrandPrixClear(uid, gp), SQLDBResponse, this);
+                NormalManagerDB.Instance.add(6, new CmdInsertGrandPrixClear(UID, gp), SQLDBResponse, this);
 
                 // Atualiza no cliente
                 uptClient = true;
@@ -750,7 +751,7 @@ namespace Pangya_GameServer.Models
                     gp.position = (uint)_position;
 
                     // Update no DB
-                    NormalManagerDB.getInstance().add(7, new CmdUpdateGrandPrixClear(uid, gp), SQLDBResponse, this);
+                    NormalManagerDB.Instance.add(7, new CmdUpdateGrandPrixClear(UID, gp), SQLDBResponse, this);
 
                     // Update no cliente
                     uptClient = true;
@@ -767,18 +768,18 @@ namespace Pangya_GameServer.Models
 
                 LocationDB.channel = Channel;
                 LocationDB.lobby = Lobby;
-                LocationDB.room = Member.sala_numero;
+                LocationDB.room = Member.RoomID;
                 LocationDB.place.ulPlace = (byte)Place;
 
                 //// Sincroniza para não ter valores inseridos errados no banco de dados
                 LocationDB.requestUpdateOnDB();
 
-                NormalManagerDB.getInstance().add(5, new CmdUpdatePlayerLocation(uid, LocationDB), SQLDBResponse, this);
+                NormalManagerDB.Instance.add(5, new CmdUpdatePlayerLocation(UID, LocationDB), SQLDBResponse, this);
 
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::updateLocationDB][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::updateLocationDB][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -786,7 +787,7 @@ namespace Pangya_GameServer.Models
         public void updateMedal(uMedalWin _medal_win)
         {
             if (_medal_win.ucMedal == 0u)
-                throw new exception("[PlayerInfo::updateMedal][Error] PLAYER[UID=" + uid
+                throw new exception("[PlayerInfo::updateMedal][Error] Normal[UID=" + UID
                         + "] tentou atualizar medalhas, mas passou nenhuma medalha para atualizar. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 600, 0));
 
             // Update medal info player
@@ -800,17 +801,17 @@ namespace Pangya_GameServer.Models
         public static void updateMedal(uint _uid, uMedalWin _medal_win)
         {
             if (_uid == 0u)
-                throw new exception("[PlayerInfo::updateMedal][Error] PLAYER[UID=" + (_uid) + "] tentou atualizar medalhas, mas o uid do player é invalido(zero). Hacker ou Bug.",
+                throw new exception("[PlayerInfo::updateMedal][Error] Normal[UID=" + (_uid) + "] tentou atualizar medalhas, mas o UID do player é invalido(zero). Hacker ou Bug.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 601, 0));
 
             if (_medal_win.ucMedal == 0u)
-                throw new exception("[PlayerInfo::updateMedal][Error] PLAYER[UID=" + (_uid)
+                throw new exception("[PlayerInfo::updateMedal][Error] Normal[UID=" + (_uid)
                         + "] tentou atualizar medalhas, mas passou nenhuma medalha para atualizar. Hacker ou Bug.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 600, 0));
 
             // Pega o Info do player para atualizar
             var cmd_ui = new CmdUserInfo(_uid);     // Waiter
 
-            NormalManagerDB.getInstance().add(0, cmd_ui);
+            NormalManagerDB.Instance.add(0, cmd_ui);
 
             if (cmd_ui.getException().getCodeError() != 0)
                 throw cmd_ui.getException();
@@ -827,16 +828,16 @@ namespace Pangya_GameServer.Models
 
         public void updateUserInfo()
         {
-            NormalManagerDB.getInstance().add(3, new CmdUpdateUserInfo(uid, Statistics), SQLDBResponse, this);
+            NormalManagerDB.Instance.add(3, new CmdUpdateUserInfo(UID, Statistics), SQLDBResponse, this);
         }
 
         // Update User Info ON DB Estático 
-        public static void updateUserInfo(uint _uid, UserInfo _ui)
+        public static void updateUserInfo(uint _uid, PlayerUserStatistics _ui)
         {
             if (_uid == 0)
                 throw new exception("[PlayerInfo::updateUserInfo][Error] _uid is invalid(zero)", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.PLAYER_INFO, 300, 0));
 
-            NormalManagerDB.getInstance().add(3, new CmdUpdateUserInfo(_uid, _ui), SQLDBResponse, null);
+            NormalManagerDB.Instance.add(3, new CmdUpdateUserInfo(_uid, _ui), SQLDBResponse, null);
         }
 
 
@@ -844,16 +845,16 @@ namespace Pangya_GameServer.Models
         /// Size = 263 Bytes
         /// </summary>
         /// <returns></returns>
-        public byte[] getLoginInfo()
+        public byte[] GetLoginInfo()
         {
-            return Member.ToArrayEx();
+            return Member.ToArray(IncludeRoomID :true);
         }
 
         /// <summary>
         /// Size = 235 Bytes
         /// </summary>
         /// <returns></returns>
-        public byte[] getUserInfo()
+        public byte[] GetUserStatisticInfo()
         {
             return Statistics.ToArray();
         }
@@ -863,28 +864,26 @@ namespace Pangya_GameServer.Models
         /// Natural = 903,                           
         /// </summary>
         /// <returns>Bytes Write -> 1806 Size</returns>
-        public byte[] GetMapStatistic()
+        public byte[] GetMapStatisticInfo()
         {
-            using (var p = new Packet())
-            {
-                for (byte st_i = 0; st_i < MS_NUM_MAPS; st_i++)
-                    p.WriteBytes(NormalMapStatistics[st_i].ToArray());
+            using var p = new Packet();
+            for (byte st_i = 0; st_i < MS_NUM_MAPS; st_i++)
+                p.WriteBytes(NormalMapStatistics[st_i].ToArray());
 
-                // Map Statistics Natural
-                for (byte st_i = 0; st_i < MS_NUM_MAPS; st_i++)
-                    p.WriteBytes(NaturalMapStatistics[st_i].ToArray());
+            // Map Statistics Natural
+            for (byte st_i = 0; st_i < MS_NUM_MAPS; st_i++)
+                p.WriteBytes(NaturalMapStatistics[st_i].ToArray());
 
-                // Map Statistics Grand Prix
-                for (byte st_i = 0; st_i < MS_NUM_MAPS; st_i++)
-                    p.WriteBytes(GrandPrixMapStatistics[st_i].ToArray());
+            // Map Statistics Grand Prix
+            for (byte st_i = 0; st_i < MS_NUM_MAPS; st_i++)
+                p.WriteBytes(GrandPrixMapStatistics[st_i].ToArray());
 
-                // Map Statistics Normal for all seasons
-                for (int j = 0; j < 9; j++)
-                    for (var st_i = 0; st_i < MS_NUM_MAPS; st_i++)
-                        p.WriteBytes(AllSeasonsMapStatistics[j, st_i].ToArray());
+            // Map Statistics Normal for all seasons
+            for (int j = 0; j < 9; j++)
+                for (var st_i = 0; st_i < MS_NUM_MAPS; st_i++)
+                    p.WriteBytes(AllSeasonsMapStatistics[j, st_i].ToArray());
 
-                return p.GetBytes;
-            }
+            return p.GetBytes;
         }
 
 
@@ -892,7 +891,7 @@ namespace Pangya_GameServer.Models
         {
             if (_arg == null)
             {
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::SQLDBResponse][Warning] _arg is null na msg_id = " + (_msg_id), 0));
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::SQLDBResponse][Warning] _arg is null na msg_id = " + (_msg_id), 0));
                 return;
             }
 
@@ -901,11 +900,11 @@ namespace Pangya_GameServer.Models
                 var pi = (PlayerInfo)_arg;
 
 
-                // Por Hora só sai, depois faço outro tipo de tratamento se precisar
+                // Por Hora só sai, depois faço outro Type de tratamento se precisar
                 if (_pangya_db.getException().getCodeError() != 0)
                 {
 
-                    // Trata alguns tipo aqui, que são necessários
+                    // Trata alguns Type aqui, que são necessários
                     switch (_msg_id)
                     {
                         case 1: // Update Pang
@@ -931,14 +930,14 @@ namespace Pangya_GameServer.Models
                             }
                     }
 
-                    _smp.message_pool.getInstance().push(new message("[PlayerInfo::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), 0));
+                    _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::SQLDBResponse][Error] " + _pangya_db.getException().getFullMessageError(), 0));
 
                     return;
                 }
 
                 switch (_msg_id)
                 {
-                    case 1: // UPDATE pang
+                    case 1: // UPDATE Pang
                         {
 
                             // Success update on DB
@@ -993,7 +992,7 @@ namespace Pangya_GameServer.Models
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[PlayerInfo::SQLDBResponse][Error] QUERY_MSG[ID=" + (_msg_id)
+                _smp.LogManager.Instance.push(new AppMessage("[PlayerInfo::SQLDBResponse][Error] QUERY_MSG[ID=" + (_msg_id)
                         + "]" + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }  

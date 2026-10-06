@@ -42,13 +42,13 @@ namespace Pangya_GameServer.Handles
 
                     if (pCi == null)
                     {
-                        throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[ID=" + (cwup.clubset_id) + "], mas ele nao tem o Card[TYPEID=" + (cwup.item_typeid) + "] para upar o rank. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[ID=" + (cwup.clubset_id) + "], mas ele nao tem o Card[TYPEID=" + (cwup.item_typeid) + "] para upar o RankPosition. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             350, 0x5300351));
                     }
 
                     if (pCi.qntd < (int)cwup.qntd)
                     {
-                        throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[ID=" + (cwup.clubset_id) + "], mas ele nao tem quantidade suficiente de Card[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + ", QNTD=" + (pCi.qntd) + ", Request=" + (cwup.qntd) + "] para upar o rank. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[ID=" + (cwup.clubset_id) + "], mas ele nao tem quantidade suficiente de Card[TYPEID=" + (pCi._typeid) + ", ID=" + (pCi.id) + ", QNTD=" + (pCi.qntd) + ", Request=" + (cwup.qntd) + "] para upar o RankPosition. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             351, 0x5300532));
                     }
 
@@ -66,30 +66,30 @@ namespace Pangya_GameServer.Handles
 
                 if (pClub == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[ID=" + (cwup.clubset_id) + "], mas ele nao tem esse ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[ID=" + (cwup.clubset_id) + "], mas ele nao tem esse ClubSet. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         352, 0x5300353));
                 }
 
-                var clubset = sIff.getInstance().findClubSet(pClub._typeid);
+                var clubset = sIff.Instance.findClubSet(pClub._typeid);
 
                 if (clubset == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas esse ClubSet nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas esse ClubSet nao existe no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         353, 0x5300354));
                 }
 
                 if (clubset.work_shop.tipo == -1)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas esse ClubSet nao é permitido upar de rank. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas esse ClubSet nao é permitido upar de RankPosition. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         354, 0x5300355));
                 }
 
                 // Stat Up
-                var level_up_limit = sIff.getInstance().findClubSetWorkShopLevelUpLimit(clubset.work_shop.tipo);
+                var level_up_limit = sIff.Instance.findClubSetWorkShopLevelUpLimit(clubset.work_shop.tipo);
 
                 if (level_up_limit.Count == 0)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], IFF_STRUCT level_up_limit not found. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], IFF_STRUCT level_up_limit not found. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         208, 0x5300209));
                 }
 
@@ -101,13 +101,13 @@ namespace Pangya_GameServer.Handles
 
                 if (limit == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], nao encontrou o level para upar no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], nao encontrou o Level para upar no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         210, 0x5300211));
                 }
 
                 if (cwup.qntd > 4)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas a quantidade de card[TYPEID=" + (cwup.item_typeid) + ", QNTD=" + (cwup.qntd) + "] é desconhecida", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas a quantidade de card[TYPEID=" + (cwup.item_typeid) + ", QNTD=" + (cwup.qntd) + "] é desconhecida", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         355, 0x5300356));
                 }
 
@@ -116,15 +116,15 @@ namespace Pangya_GameServer.Handles
 
                 if (limit.c[stat] <= (pClub.clubset_workshop.c[stat] + clubset.SlotStats.getSlot[stat]))
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas o Player nao pode mais upar esse stat[value=" + (stat) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas o Player nao pode mais upar esse stat[value=" + (stat) + "]. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         357, 0x5300358));
                 }
 
-                var rank_up_exp = sIff.getInstance().findClubSetWorkShopRankExp(clubset.work_shop.tipo_rank_s);
+                var rank_up_exp = sIff.Instance.findClubSetWorkShopRankExp(clubset.work_shop.tipo_rank_s);
 
                 if (rank_up_exp == null)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas nao encontrou o Rank Up Exp no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas nao encontrou o Rank Up Exp no IFF_STRUCT do Server. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         358, 0x5300359));
                 }
 
@@ -133,13 +133,13 @@ namespace Pangya_GameServer.Handles
 
                 if (rank == -1)
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas pegou um rank desconhecido, System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas pegou um RankPosition desconhecido, System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         360, 0x5300361));
                 }
 
                 if ((uint)pClub.clubset_workshop.mastery < rank_up_exp.rank[(uint)rank])
                 {
-                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID=" + Player.Inventory.uid + "] tentou upar rank[rank=" + (rank) + "] do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas ele nao tem mastery[value=" + (pClub.clubset_workshop.mastery) + ", Request=" + (rank_up_exp.rank[(uint)rank]) + "] suficiente para upar o rank. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                    throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID=" + Player.Inventory.uid + "] tentou upar RankPosition[RankPosition=" + (rank) + "] do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "], mas ele nao tem mastery[value=" + (pClub.clubset_workshop.mastery) + ", Request=" + (rank_up_exp.rank[(uint)rank]) + "] suficiente para upar o RankPosition. Hacker ou Bug", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                         359, 0x5300360));
                 }
 
@@ -148,7 +148,7 @@ namespace Pangya_GameServer.Handles
                 {
                     if (ItemManager.removeItem(item, Player) <= 0)
                     {
-                        throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID = " + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], mas nao conseguiu remover Card[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + ", QNTD=" + (item.qntd) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID = " + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], mas nao conseguiu remover Card[TYPEID=" + (item._typeid) + ", ID=" + (item.id) + ", QNTD=" + (item.qntd) + "]", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             356, 0x5300357));
                     }
 
@@ -157,12 +157,12 @@ namespace Pangya_GameServer.Handles
 
                 // UPDATE ON SERVER
 
-                // Upa Stat do rank S, que da 1 de bonus
+                // Upa Stat do RankPosition S, que da 1 de bonus
                 if (rank == 5)
                 {
                     if (clubset.work_shop.rank_s_stat > 4)
                     {
-                        throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID = " + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], mas o ClubSet Stat[value=" + (clubset.work_shop.rank_s_stat) + "] Rank S do IFF_STRUCT do Server é invalido. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                        throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID = " + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], mas o ClubSet Stat[value=" + (clubset.work_shop.rank_s_stat) + "] Rank S do IFF_STRUCT do Server é invalido. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                             361, 0x5300362));
                     }
 
@@ -192,7 +192,7 @@ namespace Pangya_GameServer.Handles
                 v_item.Add(new stItemEx(item));
 
                 // UPDATE ON DB
-                NormalManagerDB.getInstance().add(12,
+                NormalManagerDB.Instance.add(12,
                      new CmdUpdateClubSetWorkshop(Player.Inventory.uid,
                          pClub,
                          CmdUpdateClubSetWorkshop.FLAG.F_UP_RANK),
@@ -235,17 +235,17 @@ namespace Pangya_GameServer.Handles
 
                     if (lc != null && Convert.ToInt32(lc.Value) != 0)
                     { // Transformou
-                        var clubset_original = sIff.getInstance().findClubSetOriginal((uint)lc.Value);
+                        var clubset_original = sIff.Instance.findClubSetOriginal((uint)lc.Value);
 
                         if (clubset_original.Count == 0)
                         {
-                            throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID = " + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], nao encontrou o Special ClubSet Original no IFF_STRUCT do Server. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID = " + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], nao encontrou o Special ClubSet Original no IFF_STRUCT do Server. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 362, 0x5300363));
                         }
 
                         if (clubset_original.Count <= (uint)(rank - 1))
                         {
-                            throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID = " + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], nao tem o Rank[value=" + (rank) + "] do Special ClubSet Original no IFF_STRUCT do Server. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID = " + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], nao tem o Rank[value=" + (rank) + "] do Special ClubSet Original no IFF_STRUCT do Server. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 363, 0x5300364));
                         }
 
@@ -257,7 +257,7 @@ namespace Pangya_GameServer.Handles
 
                         if (it == null)
                         {
-                            throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] PLAYER [UID = " + Player.Inventory.uid + "] tentou upar rank do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], nao encontrou o Rank[value=" + (rank) + "] no IFF_STRUCT do Server. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
+                            throw new exception("[Lobby::RequestClubSetWorkShopUpRank][Error] Normal [UID = " + Player.Inventory.uid + "] tentou upar RankPosition do ClubSet[TYPEID = " + (pClub._typeid) + ", ID = " + (pClub.id) + "], nao encontrou o Rank[value=" + (rank) + "] no IFF_STRUCT do Server. System Error", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL,
                                 364, 0x5300365));
                         }
 
@@ -270,7 +270,7 @@ namespace Pangya_GameServer.Handles
                             Player.Inventory.WorkshopTransform.transform_typeid = it.ID;
 
                             // Log
-                            _smp.message_pool.getInstance().push(new message("[ClubSetWorkshop::UpRank][Sucess] PLAYER [UID=" + Player.Inventory.uid + "] transformou o ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "] no ClubSet[TYPEID=" + (it.ID) + "] Special, aguardando confirmacao do cliente.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[ClubSetWorkshop::UpRank][Sucess] Normal [UID=" + Player.Inventory.uid + "] transformou o ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "] no ClubSet[TYPEID=" + (it.ID) + "] Special, aguardando confirmacao do cliente.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             // Dialog de Transformação do ClubSet
                             p.init_plain(0x241);
@@ -284,7 +284,7 @@ namespace Pangya_GameServer.Handles
                 // Fim do Check Transform ClubSet
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[ClubSetWorkshop::UpRank][Sucess] PLAYER [UID=" + Player.Inventory.uid + "] upou Rank[value=" + (rank) + "] do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "] Stat[value=" + (stat) + "" + ((rank == 5) ? (", Rank S bonus=" + (clubset.work_shop.rank_s_stat) + "") : "") + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[ClubSetWorkshop::UpRank][Sucess] Normal [UID=" + Player.Inventory.uid + "] upou Rank[value=" + (rank) + "] do ClubSet[TYPEID=" + (pClub._typeid) + ", ID=" + (pClub.id) + "] Stat[value=" + (stat) + "" + ((rank == 5) ? (", Rank S bonus=" + (clubset.work_shop.rank_s_stat) + "") : "") + "]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // Resposta para o ClubSet Workshop Up Rank
                 p.init_plain(0x240);
@@ -310,7 +310,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[Lobby::RequestClubSetWorkShopUpRank][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Lobby::RequestClubSetWorkShopUpRank][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x240);
 

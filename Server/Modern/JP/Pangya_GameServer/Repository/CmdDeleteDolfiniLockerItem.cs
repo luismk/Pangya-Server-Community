@@ -33,7 +33,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_index));
 
-            checkResponse(r, "nao conseguiu deletar Dolfini Locker item[index=" + Convert.ToString(m_index) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu deletar Dolfini Locker item[index=" + Convert.ToString(m_index) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

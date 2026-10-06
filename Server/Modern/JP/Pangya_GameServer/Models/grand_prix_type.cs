@@ -125,7 +125,7 @@ namespace Pangya_GameServer.Models
         public int med_shot_per_hole = new int();
         public eTYPE_SCORE type_score = new eTYPE_SCORE();
 
-        // Player Game Info do Bot para usar na hora de classificação do rank
+        // Player Game Info do Bot para usar na hora de classificação do RankPosition
         public PlayerGameInfo pi = new PlayerGameInfo();
 
         public List<Hole> hole = new List<Hole>();

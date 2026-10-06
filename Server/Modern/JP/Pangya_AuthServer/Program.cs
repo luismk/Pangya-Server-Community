@@ -17,7 +17,7 @@ ShowBanner();
 try
 {
     // 2. Instanciação Única 
-    await AuthServer.getInstance().StartAsync();
+    await AuthServer.Instance.StartAsync();
 
     LogMessage("Digite 'exit' para fechar ou 'status' para informações.");
 
@@ -29,7 +29,7 @@ try
         if (input == "exit" || input == "quit")
         {
             LogMessage("Desligando servidor...");
-            AuthServer.getInstance().Stop();
+            AuthServer.Instance.Stop();
             break;
         }
 
@@ -39,7 +39,7 @@ try
             var memoryUsage = process.PrivateMemorySize64 / 1024 / 1024; // MB
 
             LogMessage($"--- Auth Status ---");
-            LogMessage($"Players Online: {AuthServer.getInstance()?.SessionsManager.Count ?? 0}");
+            LogMessage($"Players Online: {AuthServer.Instance?.SessionsManager.Count ?? 0}");
             LogMessage($"Memória em uso: {memoryUsage} MB");
             LogMessage($"Uptime: {DateTime.Now - process.StartTime}");
         }
@@ -63,5 +63,5 @@ void ShowBanner()
 
 void LogMessage(string text)
 {
-    _smp.message_pool.getInstance().push(new message($"[System] {text}", 0));
+    _smp.LogManager.Instance.push(new AppMessage($"[System] {text}", 0));
 }

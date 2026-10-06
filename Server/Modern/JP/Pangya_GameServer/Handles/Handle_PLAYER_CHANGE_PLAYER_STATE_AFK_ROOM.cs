@@ -25,7 +25,7 @@ namespace Pangya_GameServer.Handles
                 if (room == null)
                 {
                     throw new exception(
-                        $"[AFK][Error] Player[UID={Player.UserInfo.uid}] tentou mudar estado AFK mas não está em uma sala.",
+                        $"[AFK][Error] Player[UID={Player.UserInfo.UID}] tentou mudar estado AFK mas não está em uma sala.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 10, 0));
                 }
 
@@ -37,12 +37,12 @@ namespace Pangya_GameServer.Handles
                 if (pri == null || pci == null)
                 {
                     throw new exception(
-                        $"[AFK][Error] Falha ao localizar Info de Sala ou Lobby para UID={Player.UserInfo.uid}.",
+                        $"[AFK][Error] Falha ao localizar Info de Sala ou Lobby para UID={Player.UserInfo.UID}.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 11, 0));
                 }
 
                 //Atualização dos Flags
-                pci.state_flag.away = pri.state_flag.away = state;
+                pci.State.Sleep = pri.State.Sleep = state;
 
                 _channel?.UpdatePlayerInfo(Player);
                 room?.UpdatePlayerInfo(Player);
@@ -63,7 +63,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_CHANGE_AFK_STATE][ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
             }

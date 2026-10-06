@@ -30,7 +30,7 @@ namespace Pangya_GameServer.Handles
                 }
 
 
-                var quest = GameServer.getInstance().DailyQuestsInfo;
+                var quest = GameServer.Instance.DailyQuestsInfo;
                 if (DailyQuestManager.CheckCurrentQuestUser(quest, Player))
                 {
                     // Get Old Quest do Player
@@ -55,7 +55,7 @@ namespace Pangya_GameServer.Handles
                         foreach (var el in v_ai)
                         {
                             p.WriteByte(2);
-                            p.WriteUInt32(el._typeid);//ta vindo id repetido
+                            p.WriteUInt32(el._typeid);//ta vindo Login repetido
                             p.WriteInt32(el.id);//tá vindo idex repedito
                             p.WriteUInt32(0); // type
                             p.WriteInt32(0); // Qntd antes
@@ -89,7 +89,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[Handle_PLAYER_DAILY_QUEST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[Handle_PLAYER_DAILY_QUEST][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
             await Task.CompletedTask;

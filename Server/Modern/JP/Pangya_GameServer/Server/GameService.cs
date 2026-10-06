@@ -3,7 +3,7 @@ using Pangya_GameServer.Feature;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Handles;
 using Pangya_GameServer.Manager;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Repository;
 using Pangya_GameServer.Roms;
@@ -33,10 +33,10 @@ namespace Pangya_GameServer.Server
         public int SameLoginDup { get; private set; }
         public DailyQuestInfo DailyQuestsInfo;
         protected List<Channel> Channels = new();
-        public BroadcastManager SendTicker = new(30/*30 segundos para o ticker*/);
+        public BroadcastManager SendTicker = new(30/*30 segundos para o TIcker*/);
         public BroadcastManager SendNotice = new(60/*60 segundos 1 minuto para o notice*/);
         public bool SaveRoomLog { get; private set; }
-        public GameService() : base(new PlayerManager(500), new PacketDispatcher<Player, PacketIDClient>(), TypeServer.GameServer)
+        public GameService() : base(new PlayerManager(500), new PacketDispatcher<Player, PacketIDClient>(), ServerType.GameServer)
         {
             // Fazemos o cast do sessionManager para o seu PlayerManager
             _playerManager = (PlayerManager)SessionsManager;
@@ -47,8 +47,8 @@ namespace Pangya_GameServer.Server
             //inicia os canais do pangya
             InitializeChannels();
             // Carrega IFF_STRUCT
-            if (!sIff.getInstance().isLoad())
-                sIff.getInstance().Init();
+            if (!sIff.Instance.isLoad())
+                sIff.Instance.Init();
 
             //inicia os sistemas do pangya
             InitializeSystems();
@@ -122,7 +122,7 @@ namespace Pangya_GameServer.Server
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_NOTICE, new Handle_PLAYER_NOTICE_GM());//noticias do gm
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_SERVER_TIME, new Handle_REQUEST_SERVER_TIME());//tempo para sicronizar entre o server, projectg(client)
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_DESTROY_ROOM, new Handle_PLAYER_EXEC_CCG_DESTROY());
-            _dispatcher.Register(PacketIDClient.PLAYER_REQ_KICK, new Handle_PLAYER_KICK_FROM_ROOM());//kick diretamente, modo GM
+            _dispatcher.Register(PacketIDClient.PLAYER_REQ_KICK, new Handle_PLAYER_KICK_FROM_ROOM());//kick diretamente, HoleMode GM
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_SYNC_ACTIVITY, new Handle_PLAYER_SYNC_ACTION_GAME());
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_DELETE_ITEM, new Handle_PLAYER_DELETE_ACTIVE_ITEM());
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_SPEED_RATE, new Handle_PLAYER_ACTIVE_BOOSTER());
@@ -191,7 +191,7 @@ namespace Pangya_GameServer.Server
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_USE_NEW_RANDOMBOX, new Handle_PLAYER_OPEN_BOX_MAIL());
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_HEARTBEAT, new Handle_PLAYER_HEARTBEAT());//PACKET F4
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_WEB_AUTH_KEY, new Handle_PLAYER_WEB_AUTH_KEY());//isso e enviado talvez quando troca de srv
-            _dispatcher.Register(PacketIDClient.PLAYER_REQ_ALL_UCC_FROM_ALL_PLAYER, new Handle_PLAYER_LOAD_UCC());//CARREGA TODOS AS UCC DO PLAYER
+            _dispatcher.Register(PacketIDClient.PLAYER_REQ_ALL_UCC_FROM_ALL_PLAYER, new Handle_PLAYER_LOAD_UCC());//CARREGA TODOS AS UCC DO Normal
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_CHANGE_GAME_SERVER, new Handle_PLAYER_CHANGE_SERVER());//MUDA DE SERVER
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_POINT_SHOP_OPEN, new Handle_PLAYER_OPEN_LEGACY_TIKI_SHOP());
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_POINT_SHOP_POINT, new Handle_PLAYER_POINT_LEGACY_TIKI_SHOP());
@@ -219,7 +219,7 @@ namespace Pangya_GameServer.Server
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_DAILYQUEST_FORFEIT, new Handle_PLAYER_LEAVE_DAILY_QUEST());
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_LOLO_CARD_COMPOSE, new Handle_PLAYER_LOLO_CARD_COMPOSE());
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_AUTO_COMMAND, new Handle_PLAYER_ACTIVE_AUTO_COMMAND());
-            _dispatcher.Register(PacketIDClient.PLAYER_REQ_ACHIEVEMENT_OPEN, new Handle_PLAYER_ACHIEVEMENT_OPEN());//CHAMA O ACHIEVEMENT DO PLAYER ou de outros...
+            _dispatcher.Register(PacketIDClient.PLAYER_REQ_ACHIEVEMENT_OPEN, new Handle_PLAYER_ACHIEVEMENT_OPEN());//CHAMA O ACHIEVEMENT DO Normal ou de outros...
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_CADIE_MAGICBOX_EXCHANGE_ITEM, new Handle_PLAYER_CADIE_CAULDRON_EXCHANGE());
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_PAWS_EFFECT, new Handle_PLAYER_ACTIVE_PAWS());
             _dispatcher.Register(PacketIDClient.PLAYER_REQ_RING_EFFECT, new Handle_PLAYER_ACTIVE_RING());
@@ -287,15 +287,15 @@ namespace Pangya_GameServer.Server
                     }
                     catch (Exception e)
                     {
-                        _smp.message_pool.getInstance().push(new message("[GameService::InitializeChannels][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage("[GameService::InitializeChannels][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
 
-                    Channels.Add(new Channel(ci, m_si.propriedade));
+                    Channels.Add(new Channel(ci, m_si.Property));
                 }
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameService::InitializeChannels][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::InitializeChannels][ErrorSystem] " + e.Message, type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -305,7 +305,7 @@ namespace Pangya_GameServer.Server
 
             if (_command.Count == 0)
             {
-                _smp.message_pool.getInstance().push(new message("[GameService::CheckCommand][Error] Missing parameter", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::CheckCommand][Error] Missing parameter", type_msg.CL_ONLY_CONSOLE));
                 return true;
             }
 
@@ -315,7 +315,7 @@ namespace Pangya_GameServer.Server
             {
                 var process = Process.GetCurrentProcess();
                 var memoryUsage = process.PrivateMemorySize64 / 1024 / 1024; // MB  
-                _smp.message_pool.getInstance().push(new message($"[GameService::CheckCommand][Debug] STATUS[USERS: {Sessions?.Count() ?? 0}, MEMORY: {memoryUsage}, UPTIME: {DateTime.Now - process.StartTime}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[GameService::CheckCommand][Debug] STATUS[USERS: {Sessions?.Count() ?? 0}, MEMORY: {memoryUsage}, UPTIME: {DateTime.Now - process.StartTime}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return true;
             }
             else if (!string.IsNullOrEmpty(s) && s == "reload_files")
@@ -323,7 +323,7 @@ namespace Pangya_GameServer.Server
                 ReloadFiles();
                 return true;
             }
-            else if (!string.IsNullOrEmpty(s) && s == "rate")
+            else if (!string.IsNullOrEmpty(s) && s == "Rate")
             {
                 string sTipo = _command.Dequeue();
                 int tipo = -1;
@@ -332,23 +332,23 @@ namespace Pangya_GameServer.Server
                 {
                     switch (sTipo)
                     {
-                        case "pang": tipo = 0; break;
-                        case "exp": tipo = 1; break;
+                        case "Pang": tipo = 0; break;
+                        case "Experience": tipo = 1; break;
                         case "club": tipo = 2; break;
-                        case "chuva": tipo = 3; break;
-                        case "treasure": tipo = 4; break;
-                        case "scratchy": tipo = 5; break;
+                        case "Rain": tipo = 3; break;
+                        case "Treasure": tipo = 4; break;
+                        case "Scratchy": tipo = 5; break;
                         case "pprareitem": tipo = 6; break;
                         case "ppcookieitem": tipo = 7; break;
                         case "memorial": tipo = 8; break;
                         default:
-                            _smp.message_pool.getInstance().push(new message($"[GameService::checkCommand][Error] Unknown Command: \"rate {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[GameService::checkCommand][Error] Unknown Command: \"Rate {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             break;
                     }
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message($"[GameService::checkCommand][Error] Unknown Command: \"rate {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[GameService::checkCommand][Error] Unknown Command: \"Rate {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 if (tipo != -1 && tipo >= 0 && tipo <= 8)
@@ -359,7 +359,7 @@ namespace Pangya_GameServer.Server
                     }
                     else
                     {
-                        _smp.message_pool.getInstance().push(new message($"[GameService::checkCommand][Error] Unknown value, Command: \"rate {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                        _smp.LogManager.Instance.push(new AppMessage($"[GameService::checkCommand][Error] Unknown value, Command: \"Rate {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
                     }
                 }
                 return true;
@@ -378,10 +378,10 @@ namespace Pangya_GameServer.Server
                         case "grand_zodiac_event":
                             UpdateRateAndEvent(9, qntd);
                             break;
-                        case "angel_event":
+                        case "AngelEvent":
                             UpdateRateAndEvent(10, qntd);
                             break;
-                        case "grand_prix":
+                        case "GrandPrixMode":
                             UpdateRateAndEvent(11, qntd);
                             break;
                         case "golden_time":
@@ -390,14 +390,14 @@ namespace Pangya_GameServer.Server
                         case "login_reward":
                             UpdateRateAndEvent(13, qntd);
                             break;
-                        case "bot_gm_event":
+                        case "GMEventBot":
                             UpdateRateAndEvent(14, qntd);
                             break;
                         case "smart_calc":
                             UpdateRateAndEvent(15, qntd);
                             break;
                         default:
-                            _smp.message_pool.getInstance().push(new message($"[GameService::checkCommand][Error] Unknown Comamnd: \"Event {s}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[GameService::checkCommand][Error] Unknown Comamnd: \"Event {s}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             break;
                     }
                 }
@@ -416,9 +416,9 @@ namespace Pangya_GameServer.Server
                         case "iff": tipo = 1; break;
                         case "card": tipo = 2; break;
                         case "comet_refill": tipo = 3; break;
-                        case "papel_shop": tipo = 4; break;
+                        case "PapelShop": tipo = 4; break;
                         case "box": tipo = 5; break;
-                        case "memorial_shop": tipo = 6; break;
+                        case "MemorialShop": tipo = 6; break;
                         case "cube_coin": tipo = 7; break;
                         case "treasure_hunter": tipo = 8; break;
                         case "drop": tipo = 9; break;
@@ -429,16 +429,16 @@ namespace Pangya_GameServer.Server
                         case "coin_cube_location": tipo = 14; break;
                         case "golden_time": tipo = 15; break;
                         case "login_reward": tipo = 16; break;
-                        case "bot_gm_event": tipo = 17; break;
+                        case "GMEventBot": tipo = 17; break;
                         case "smart_calc": tipo = 18; break;
                         default:
-                            _smp.message_pool.getInstance().push(new message($"[GameService::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[GameService::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             break;
                     }
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message($"[GameService::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage($"[GameService::checkCommand][Error] Unknown Command: \"reload_system {sTipo}\"", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 if (tipo != -1 && tipo >= 0 && tipo <= 18)
@@ -467,7 +467,7 @@ namespace Pangya_GameServer.Server
             }
             else if (s == "upt_coin_cube_location")		// !@ Teste
             {
-                sCoinCubeLocationUpdateSystem.getInstance().forceUpdate();
+                sCoinCubeLocationUpdateSystem.Instance.forceUpdate();
                 return true;
             }
             else if (s == "cls" || s == "clear")
@@ -478,18 +478,18 @@ namespace Pangya_GameServer.Server
             }
             else if (s.Equals("help", StringComparison.OrdinalIgnoreCase))
             {
-                var msg = _smp.message_pool.getInstance();
-                msg.push(new message("======= COMMAND LIST =======", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("status                      - Mostra uso de memória, usuários e uptime.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("clear / cls                 - Limpa o console.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("reload_files                - Recarrega arquivos básicos do servidor.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("upt_coin_cube_location      - Força atualização do Coin Cube.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("notice [msg]                - Envia uma mensagem global para todos os canais.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("---------------------------------------------------", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("rate [tipo] [valor]         - Tipos: pang, exp, club, chuva, treasure, scratchy, pprareitem, ppcookieitem, memorial", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("event [nome] [valor]        - Nomes: grand_zodiac_event, angel_event, grand_prix, golden_time, login_reward, bot_gm_event, smart_calc", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("reload_system [tipo]        - Tipos: all, iff, card, papel_shop, box, memorial_shop, cube_coin, drop, etc.", type_msg.CL_ONLY_CONSOLE));
-                msg.push(new message("===================================================", type_msg.CL_ONLY_CONSOLE));
+                var msg = _smp.LogManager.Instance;
+                msg.push(new AppMessage("======= COMMAND LIST =======", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("status                      - Mostra uso de memória, usuários e uptime.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("clear / cls                 - Limpa o console.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("reload_files                - Recarrega arquivos básicos do servidor.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("upt_coin_cube_location      - Força atualização do Coin Cube.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("notice [msg]                - Envia uma mensagem global para todos os canais.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("---------------------------------------------------", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("Rate [Type] [valor]         - Tipos: Pang, Experience, club, Rain, Treasure, Scratchy, pprareitem, ppcookieitem, memorial", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("event [Name] [valor]        - Nomes: grand_zodiac_event, AngelEvent, GrandPrixMode, golden_time, login_reward, GMEventBot, smart_calc", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("reload_system [Type]        - Tipos: all, iff, card, PapelShop, box, MemorialShop, cube_coin, drop, etc.", type_msg.CL_ONLY_CONSOLE));
+                msg.push(new AppMessage("===================================================", type_msg.CL_ONLY_CONSOLE));
                 return true;
             } 
             return false;
@@ -499,7 +499,7 @@ namespace Pangya_GameServer.Server
         {
             if (session is not Player player)
             {
-                Console.WriteLine($"[Erro] A sessão conectada não é do tipo Player! Tipo real: {session.GetType().Name}");
+                Console.WriteLine($"[Erro] A sessão conectada não é do Type Player! Tipo real: {session.GetType().Name}");
                 return;
             }
 
@@ -511,11 +511,11 @@ namespace Pangya_GameServer.Server
                 packet.WriteInt32(player._ParseKey);
                 packet.WriteString(session.GetIP());
                 player.Send(packet, true);
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::OnClientConnected][Sucess] PLAYER[IP: {player.GetIP()}, OID: {player.ConnectionID}", 0));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::OnClientConnected][Sucess] Normal[IP: {player.GetIP()}, OID: {player.ConnectionID}", 0));
             }
             catch (exception ex)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
               $"[GameService.OnClientConnected][ErrorSt]: {ex.getFullMessageError()}",
               type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
@@ -528,9 +528,9 @@ namespace Pangya_GameServer.Server
 
             Player p = (Player)session;
 
-            _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::OnClientDisconnected][Warning] PLAYER[ID: {p.UserInfo?.id} UID: {p.UserInfo.uid}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::OnClientDisconnected][Warning] Normal[ID: {p.UserInfo?.Login} UID: {p.UserInfo.UID}]", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
-            NormalManagerDB.getInstance().add(5, new CmdRegisterLogon(p.UserInfo.uid, 1/*Logout*/), DBResponse, this);
+            NormalManagerDB.Instance.add(5, new CmdRegisterLogon(p.UserInfo.UID, 1/*Logout*/), DBResponse, this);
 
             var _channel = p.GetChannel();
 
@@ -541,7 +541,7 @@ namespace Pangya_GameServer.Server
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameService::OnClientDisconnecteded][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::OnClientDisconnecteded][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
 
         }
@@ -555,7 +555,7 @@ namespace Pangya_GameServer.Server
             var player = (Player)session;
 
             if (Type != PacketIDClient.PLAYER_REQ_HEARTBEAT)
-                _smp.message_pool.getInstance().push(new message($"[{GetType().Name}::CheckPacket][Debug] PLAYER[UID: " + (player.UserInfo.uid == 0 ? player._IpAddress : player.UserInfo.uid.ToString()) + ", PID: " + Type + "]", type_msg.CL_ONLY_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[{GetType().Name}::CheckPacket][Debug] Normal[UID: " + (player.UserInfo.UID == 0 ? player._IpAddress : player.UserInfo.UID.ToString()) + ", PID: " + Type + "]", type_msg.CL_ONLY_CONSOLE));
 
             if (Type == PacketIDClient.PLAYER_REQ_LOGIN)
             {
@@ -1244,101 +1244,101 @@ namespace Pangya_GameServer.Server
 
                 // Begin Check System Singleton Static
                 // Carrega IFF_STRUCT
-                if (!sIff.getInstance().isLoad())
-                    sIff.getInstance().Init();
+                if (!sIff.Instance.isLoad())
+                    sIff.Instance.Init();
 
                 //// Map Dados Estáticos
-                if (!MapSystem.getInstance().isLoad())
-                    MapSystem.getInstance().load();
+                if (!MapSystem.Instance.isLoad())
+                    MapSystem.Instance.load();
 
                 // Carrega Card System
-                if (!sCardSystem.getInstance().isLoad())
-                    sCardSystem.getInstance().load();
+                if (!sCardSystem.Instance.isLoad())
+                    sCardSystem.Instance.load();
 
                 //// Carrega Comet Refill System
-                if (!sCometRefillSystem.getInstance().isLoad())
-                    sCometRefillSystem.getInstance().load();
+                if (!sCometRefillSystem.Instance.isLoad())
+                    sCometRefillSystem.Instance.load();
 
                 // Carrega Papel Shop System
-                if (!sPapelShopSystem.getInstance().isLoad())
-                    sPapelShopSystem.getInstance().load();
+                if (!sPapelShopSystem.Instance.isLoad())
+                    sPapelShopSystem.Instance.load();
 
                 //// Carrega Box System
-                if (!sBoxSystem.getInstance().isLoad())
-                    sBoxSystem.getInstance().load();
+                if (!sBoxSystem.Instance.isLoad())
+                    sBoxSystem.Instance.load();
 
                 //// Carrega Memorial System
-                if (!sMemorialSystem.getInstance().isLoad())
-                    sMemorialSystem.getInstance().load();
+                if (!sMemorialSystem.Instance.isLoad())
+                    sMemorialSystem.Instance.load();
 
                 //// Carrega Cube Coin System(SobreCarga)
-                if (!sCubeCoinSystem.getInstance().isLoad())
-                    sCubeCoinSystem.getInstance().load();
+                if (!sCubeCoinSystem.Instance.isLoad())
+                    sCubeCoinSystem.Instance.load();
 
                 //// Treasure Hunter System
-                if (!sTreasureHunterSystem.getInstance().isLoad())
-                    sTreasureHunterSystem.getInstance().load();
+                if (!sTreasureHunterSystem.Instance.isLoad())
+                    sTreasureHunterSystem.Instance.load();
 
                 //// Drop System
-                if (!sDropSystem.getInstance().isLoad())
-                    sDropSystem.getInstance().load();
+                if (!sDropSystem.Instance.isLoad())
+                    sDropSystem.Instance.load();
 
                 // Attendance Reward System
-                if (!sAttendanceRewardSystem.getInstance().isLoad())
-                    sAttendanceRewardSystem.getInstance().load();
+                if (!sAttendanceRewardSystem.Instance.isLoad())
+                    sAttendanceRewardSystem.Instance.load();
 
                 //// Approach Mission
-                if (!sApproachMissionSystem.getInstance().isLoad())
-                    sApproachMissionSystem.getInstance().load();
+                if (!sApproachMissionSystem.Instance.isLoad())
+                    sApproachMissionSystem.Instance.load();
 
                 //// Grand Zodiac Event
-                if (!sGrandZodiacEvent.getInstance().isLoad())
-                    sGrandZodiacEvent.getInstance().load();
+                if (!sGrandZodiacEvent.Instance.isLoad())
+                    sGrandZodiacEvent.Instance.load();
 
                 //// Coin Cube Location System
-                if (!sCoinCubeLocationUpdateSystem.getInstance().isLoad())
-                    sCoinCubeLocationUpdateSystem.getInstance().load();
+                if (!sCoinCubeLocationUpdateSystem.Instance.isLoad())
+                    sCoinCubeLocationUpdateSystem.Instance.load();
 
                 //// Golden Time System
-                if (!sGoldenTimeSystem.getInstance().isLoad())
-                    sGoldenTimeSystem.getInstance().load();
+                if (!sGoldenTimeSystem.Instance.isLoad())
+                    sGoldenTimeSystem.Instance.load();
 
                 //// Login Reward System
-                if (!sLoginRewardSystem.getInstance().isLoad())
-                    sLoginRewardSystem.getInstance().load();
+                if (!sLoginRewardSystem.Instance.isLoad())
+                    sLoginRewardSystem.Instance.load();
                  
                 //// check Grand Zodiac Event Time
-                //if (m_si.rate.grand_zodiac_event_time == 1 && sGrandZodiacEvent.getInstance().CheckTimeToMakeRoom())
+                //if (m_si.Rate.GrandZodiacEventTime == 1 && sGrandZodiacEvent.Instance.CheckTimeToMakeRoom())
                 //    makeGrandZodiacEventRoom();
 
                 //////// check Bot GM Event Time
-                //if (m_si.rate.bot_gm_event == 1 && sBotGMEvent.getInstance().CheckTimeToMakeRoom())
+                //if (m_si.Rate.GMEventBot == 1 && sBotGMEvent.Instance.CheckTimeToMakeRoom())
                 //    makeBotGMEventRoom();
 
 
                 ////// check Golden Time Round Update
-                //if (m_si.rate.golden_time_event == 1 && sGoldenTimeSystem.getInstance().CheckRound())
+                //if (m_si.Rate.GoldenTimeEvent == 1 && sGoldenTimeSystem.Instance.CheckRound())
                 //    makeListOfPlayersToGoldenTime();
 
                 //// update Login Reward
-                if (/*m_si.rate.login_reward_event == 1 && */sLoginRewardSystem.getInstance().isLoad())
-                    sLoginRewardSystem.getInstance().UpdateLoginReward();
+                if (/*m_si.Rate.LoginRewardEvent == 1 && */sLoginRewardSystem.Instance.isLoad())
+                    sLoginRewardSystem.Instance.UpdateLoginReward();
 
                 //// Check Daily Quest
                 if (DailyQuestManager.CheckCurrentQuest(DailyQuestsInfo))
                     DailyQuestManager.UpdateDailyQuest(ref DailyQuestsInfo);  // Atualiza daily quest
 
                 //// Check Update Dia do Papel Shop System
-                if (sPapelShopSystem.getInstance().isLoad())
-                    sPapelShopSystem.getInstance().UpdateDay();
+                if (sPapelShopSystem.Instance.isLoad())
+                    sPapelShopSystem.Instance.UpdateDay();
 
-                if (!sShopGiftSystem.getInstance().isLoad())
-                    sShopGiftSystem.getInstance().UpdateItemList();
+                if (!sShopGiftSystem.Instance.isLoad())
+                    sShopGiftSystem.Instance.UpdateItemList();
 
-                //if (!sWorldTourSystem.getInstance().isLoad())
-                //    sWorldTourSystem.getInstance().CheckEventFinish();
+                //if (!sWorldTourSystem.Instance.isLoad())
+                //    sWorldTourSystem.Instance.CheckEventFinish();
 
-                if (sTreasureHunterSystem.getInstance().CheckUpdateTimePointCourse())
+                if (sTreasureHunterSystem.Instance.CheckUpdateTimePointCourse())
                 {
                     Channels.SendBroadCast(Handle_PACKET_RESPONSE.pacote131());
                 }
@@ -1387,13 +1387,13 @@ namespace Pangya_GameServer.Server
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameService::onHeartBeat][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::onHeartBeat][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
         protected override void OnStart()
         {
-            Console.Title = $"Game Service - P: {m_si.curr_user}, Auth: {(m_unit_connect != null && m_unit_connect.isLive()? "ON": "OFF")}";
+            Console.Title = $"Game Service - P: {m_si.CurrentUsers}, Auth: {(m_unit_connect != null && m_unit_connect.isLive()? "ON": "OFF")}";
         }
 
         public override async void LoadConfig()
@@ -1401,72 +1401,72 @@ namespace Pangya_GameServer.Server
             base.LoadConfig();
 
             // Server Tipo
-            m_si.tipo = 1;
+            m_si.Type = ServerType.GameServer;
             using (var m_reader_ini = ServerConfig.GetLoadConfigIni(ServerType))
             {
                 try
                 {
 
-                    m_si.img_no = m_reader_ini.ReadInt16("SERVERINFO", "ICONINDEX");
-                    m_si.rate.exp = (short)m_reader_ini.readInt("SERVERINFO", "EXPRATE");
-                    m_si.rate.scratchy = (short)m_reader_ini.readInt("SERVERINFO", "SCRATCHY_RATE");
-                    m_si.rate.pang = (short)m_reader_ini.readInt("SERVERINFO", "PANGRATE");
-                    m_si.rate.club_mastery = (short)m_reader_ini.readInt("SERVERINFO", "CLUBMASTERYRATE");
-                    m_si.rate.papel_shop_rare_item = (short)m_reader_ini.readInt("SERVERINFO", "PAPEL_rate_RATE");
-                    m_si.rate.papel_shop_cookie_item = (short)m_reader_ini.readInt("SERVERINFO", "PAPEL_COOKIE_ITEM_RATE");
-                    m_si.rate.treasure = (short)m_reader_ini.readInt("SERVERINFO", "TREASURE_RATE");
-                    m_si.rate.memorial_shop = (short)m_reader_ini.readInt("SERVERINFO", "MEMORIAL_RATE");
-                    m_si.rate.chuva = (short)m_reader_ini.readInt("SERVERINFO", "CHUVA_RATE");
-                    m_si.rate.grand_zodiac_event_time = (short)(m_reader_ini.readInt("SERVERINFO", "GZ_EVENT") >= 1 ? 1 : 0);// Ativo por padrão
-                    m_si.rate.grand_prix_event = (short)(m_reader_ini.readInt("SERVERINFO", "GP_EVENT") >= 1 ? 1 : 0);// Ativo por padrão
-                    m_si.rate.golden_time_event = ((short)(m_reader_ini.readInt("SERVERINFO", "GOLDEN_TIME_EVENT") >= 1 ? 1 : 0));// Ativo por padrão
-                    m_si.rate.login_reward_event = ((short)(m_reader_ini.readInt("SERVERINFO", "LOGIN_REWARD") >= 1 ? 1 : 0));// Ativo por padrão
-                    m_si.rate.bot_gm_event = ((short)(m_reader_ini.readInt("SERVERINFO", "BOT_GM_EVENT") >= 1 ? 1 : 0));// Ativo por padrão
-                    m_si.rate.smart_calculator = (/*m_reader_ini.readInt("SERVERINFO", "SMART_CALC") >= 1 ? true :*/ 0);// Atibo por padrão
-                    m_si.rate.angel_event = ((short)(m_reader_ini.readInt("SERVERINFO", "ANGEL_EVENT") >= 1 ? 1 : 0));// Atibo por padrão
+                    m_si.ServerIcon = m_reader_ini.ReadInt16("SERVERINFO", "ICONINDEX");
+                    m_si.Rate.Experience = (short)m_reader_ini.readInt("SERVERINFO", "EXPRATE");
+                    m_si.Rate.Scratchy = (short)m_reader_ini.readInt("SERVERINFO", "SCRATCHY_RATE");
+                    m_si.Rate.Pang = (short)m_reader_ini.readInt("SERVERINFO", "PANGRATE");
+                    m_si.Rate.ClubMastery = (short)m_reader_ini.readInt("SERVERINFO", "CLUBMASTERYRATE");
+                    m_si.Rate.PapelShopRareItem = (short)m_reader_ini.readInt("SERVERINFO", "PAPEL_rate_RATE");
+                    m_si.Rate.PapelShopCookieItem = (short)m_reader_ini.readInt("SERVERINFO", "PAPEL_COOKIE_ITEM_RATE");
+                    m_si.Rate.Treasure = (short)m_reader_ini.readInt("SERVERINFO", "TREASURE_RATE");
+                    m_si.Rate.MemorialShop = (short)m_reader_ini.readInt("SERVERINFO", "MEMORIAL_RATE");
+                    m_si.Rate.Rain = (short)m_reader_ini.readInt("SERVERINFO", "CHUVA_RATE");
+                    m_si.Rate.GrandZodiacEventTime = (short)(m_reader_ini.readInt("SERVERINFO", "GZ_EVENT") >= 1 ? 1 : 0);// Ativo por padrão
+                    m_si.Rate.GrandPrixEvent = (short)(m_reader_ini.readInt("SERVERINFO", "GP_EVENT") >= 1 ? 1 : 0);// Ativo por padrão
+                    m_si.Rate.GoldenTimeEvent = ((short)(m_reader_ini.readInt("SERVERINFO", "GOLDEN_TIME_EVENT") >= 1 ? 1 : 0));// Ativo por padrão
+                    m_si.Rate.LoginRewardEvent = ((short)(m_reader_ini.readInt("SERVERINFO", "LOGIN_REWARD") >= 1 ? 1 : 0));// Ativo por padrão
+                    m_si.Rate.GMEventBot = ((short)(m_reader_ini.readInt("SERVERINFO", "BOT_GM_EVENT") >= 1 ? 1 : 0));// Ativo por padrão
+                    m_si.Rate.SmartCalculation = (/*m_reader_ini.readInt("SERVERINFO", "SMART_CALC") >= 1 ? true :*/ 0);// Atibo por padrão
+                    m_si.Rate.AngelEvent = ((short)(m_reader_ini.readInt("SERVERINFO", "ANGEL_EVENT") >= 1 ? 1 : 0));// Atibo por padrão
                     SaveRoomLog = (m_reader_ini.readInt("LOG", "ACTIVE_ROOM_LOG") >= 1 ? true : false);// Atibo por padrão
 
-                    m_si.flag.ullFlag = m_reader_ini.ReadUInt64("SERVERINFO", "FLAG");
+                    m_si.Flag.Value = m_reader_ini.ReadUInt64("SERVERINFO", "FLAG");
 
                     SaveRoomLog = (m_reader_ini.readInt("LOG", "ACTIVE_ROOM_LOG") >= 1 ? true : false);// Atibo por padrão
 
                 }
                 catch (exception e)
                 {
-                    _smp.message_pool.getInstance().push(new message("[GameService::config_init][ErrorSystem] Config.FLAG" + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameService::config_init][ErrorSystem] Config.FLAG" + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             }
 
 
-            // Recupera Valores de rate do gs do banco de dados
-            var cmd_rci = new CmdRateConfigInfo(m_si.uid);  // Waiter
+            // Recupera Valores de Rate do gs do banco de dados
+            var cmd_rci = new CmdRateConfigInfo(m_si.UID);  // Waiter
 
-            NormalManagerDB.getInstance().add(0, cmd_rci, DBResponse, this);
+            NormalManagerDB.Instance.add(0, cmd_rci, DBResponse, this);
 
 
             if (cmd_rci.getInfo() != null)
             {
 
                 if (cmd_rci.getException().getCodeError() != 0)
-                    _smp.message_pool.getInstance().push(new message("[GameService::config_init][ErrorSystem] " + cmd_rci.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GameService::config_init][ErrorSystem] " + cmd_rci.getException().getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
 
 
-                SetNewAngelEvent(m_si.rate.angel_event);
-                SetNewRatePang(m_si.rate.pang);
-                SetNewRateExp(m_si.rate.exp);
-                SetNewRateClubMastery(m_si.rate.club_mastery);
+                SetNewAngelEvent(m_si.Rate.AngelEvent);
+                SetNewRatePang(m_si.Rate.Pang);
+                SetNewRateExp(m_si.Rate.Experience);
+                SetNewRateClubMastery(m_si.Rate.ClubMastery);
 
-                NormalManagerDB.getInstance().add(8, new CmdUpdateRateConfigInfo(m_si.uid, m_si.rate), DBResponse, this);
+                NormalManagerDB.Instance.add(8, new CmdUpdateRateConfigInfo(m_si.UID, m_si.Rate), DBResponse, this);
             }
             else
             {   // Conseguiu recuperar com sucesso os valores do gs
 
-               SetNewAngelEvent(m_si.rate.angel_event);
-                SetNewRatePang(m_si.rate.pang);
-                SetNewRateExp(m_si.rate.exp);
-                SetNewRateClubMastery(m_si.rate.club_mastery);
+               SetNewAngelEvent(m_si.Rate.AngelEvent);
+                SetNewRatePang(m_si.Rate.Pang);
+                SetNewRateExp(m_si.Rate.Experience);
+                SetNewRateClubMastery(m_si.Rate.ClubMastery);
             }
-            m_si.app_rate = 100;    // Esse aqui nunca usei, deixei por que no DB do s4 tinha só cópiei
+            m_si.AppRate = 100;    // Esse aqui nunca usei, deixei por que no DB do s4 tinha só cópiei
         }
 
 
@@ -1477,7 +1477,7 @@ namespace Pangya_GameServer.Server
             // SINCRONAR por que se não alguem pode pegar lixo de memória se ele ainda nao estiver inicializado
             var cmd_dqi = new CmdDailyQuestInfo();
 
-            NormalManagerDB.getInstance().add(1, cmd_dqi, DBResponse, this);
+            NormalManagerDB.Instance.add(1, cmd_dqi, DBResponse, this);
 
             if (cmd_dqi.getException().getCodeError() != 0)
                 throw new exception("[GameService::InitializeSystems][Error] nao conseguiu pegar o Daily Quest Info[Exption: "
@@ -1485,143 +1485,143 @@ namespace Pangya_GameServer.Server
 
 
             //// Carrega Map Dados Estáticos
-            if (!MapSystem.getInstance().isLoad())
-                MapSystem.getInstance().load();
+            if (!MapSystem.Instance.isLoad())
+                MapSystem.Instance.load();
 
             //// Carrega Card System
-            if (!sCardSystem.getInstance().isLoad())
-                sCardSystem.getInstance().load();
+            if (!sCardSystem.Instance.isLoad())
+                sCardSystem.Instance.load();
 
             //// Carrega Comet Refill System
-            if (!sCometRefillSystem.getInstance().isLoad())
-                sCometRefillSystem.getInstance().load();
+            if (!sCometRefillSystem.Instance.isLoad())
+                sCometRefillSystem.Instance.load();
 
             // Carrega Papel Shop System
-            if (!sPapelShopSystem.getInstance().isLoad())
-                sPapelShopSystem.getInstance().load();
+            if (!sPapelShopSystem.Instance.isLoad())
+                sPapelShopSystem.Instance.load();
 
             //// Carrega Box System
-            if (!sBoxSystem.getInstance().isLoad())
-                sBoxSystem.getInstance().load();
+            if (!sBoxSystem.Instance.isLoad())
+                sBoxSystem.Instance.load();
 
             //// Carrega Memorial System
-            if (!sMemorialSystem.getInstance().isLoad())
-                sMemorialSystem.getInstance().load();
+            if (!sMemorialSystem.Instance.isLoad())
+                sMemorialSystem.Instance.load();
 
             //// Carrega Cube Coin System
-            if (!sCubeCoinSystem.getInstance().isLoad())
-                sCubeCoinSystem.getInstance().load();
+            if (!sCubeCoinSystem.Instance.isLoad())
+                sCubeCoinSystem.Instance.load();
 
             //// Carrega Treasure Hunter System
-            if (!sTreasureHunterSystem.getInstance().isLoad())
-                sTreasureHunterSystem.getInstance().load();
+            if (!sTreasureHunterSystem.Instance.isLoad())
+                sTreasureHunterSystem.Instance.load();
 
             //// Carrega Drop System
-            if (!sDropSystem.getInstance().isLoad())
-                sDropSystem.getInstance().load();
+            if (!sDropSystem.Instance.isLoad())
+                sDropSystem.Instance.load();
 
             // Carrega Attendance Reward System
-            if (!sAttendanceRewardSystem.getInstance().isLoad())
-                sAttendanceRewardSystem.getInstance().load();
+            if (!sAttendanceRewardSystem.Instance.isLoad())
+                sAttendanceRewardSystem.Instance.load();
 
             //// Carrega Approach Mission System
-            if (!sApproachMissionSystem.getInstance().isLoad())
-                sApproachMissionSystem.getInstance().load();
+            if (!sApproachMissionSystem.Instance.isLoad())
+                sApproachMissionSystem.Instance.load();
 
             //// Carrega Grand Zodiac Event System
-            if (!sGrandZodiacEvent.getInstance().isLoad())
-                sGrandZodiacEvent.getInstance().load();
+            if (!sGrandZodiacEvent.Instance.isLoad())
+                sGrandZodiacEvent.Instance.load();
 
             //// Carrega Coin Cube Location Update Syatem
-            if (!sCoinCubeLocationUpdateSystem.getInstance().isLoad())
-                sCoinCubeLocationUpdateSystem.getInstance().load();
+            if (!sCoinCubeLocationUpdateSystem.Instance.isLoad())
+                sCoinCubeLocationUpdateSystem.Instance.load();
 
             //// Carrega Golden Time System
-            if (!sGoldenTimeSystem.getInstance().isLoad())
-                sGoldenTimeSystem.getInstance().load();
+            if (!sGoldenTimeSystem.Instance.isLoad())
+                sGoldenTimeSystem.Instance.load();
 
             //// Carrega Login Reward System
-            if (!sLoginRewardSystem.getInstance().isLoad())
-                sLoginRewardSystem.getInstance().load();
+            if (!sLoginRewardSystem.Instance.isLoad())
+                sLoginRewardSystem.Instance.load();
 
             //// Carrega Bot GM Event
-            if (!sBotGMEvent.getInstance().isLoad())
-                sBotGMEvent.getInstance().load();
+            if (!sBotGMEvent.Instance.isLoad())
+                sBotGMEvent.Instance.load();
 
             // Carrega Shop Gift System
-            if (!sShopGiftSystem.getInstance().isLoad())
-                sShopGiftSystem.getInstance().load();
+            if (!sShopGiftSystem.Instance.isLoad())
+                sShopGiftSystem.Instance.load();
 
             // Carrega World Tour System
-            if (!sWorldTourSystem.getInstance().isLoad())
-                sWorldTourSystem.getInstance().load();
+            if (!sWorldTourSystem.Instance.isLoad())
+                sWorldTourSystem.Instance.load();
 
             // Coloca aqui para ele não dá erro na hora de destruir o Room Grand Prix static instance
             RoomGrandPrix.initFirstInstance();
 
             ////// Coloca aqui para ele não dá erro na hora de destruir o Room Grand Zodiac Event static instance
-            //RoomGrandZodiacEvent.initFirstInstance();
+            //RoomGrandZodiacEvent.initFirstInstance;
 
             ////// Coloca aqui para ele não dá erro na hora de destruir o Room Bot GM Event static instance
-            //RoomBotGMEvent.initFirstInstance();
+            //RoomBotGMEvent.initFirstInstance;
         }
 
         public void ReloadSystems()
         {
 
             // Recarrega IFF_STRUCT
-            sIff.getInstance().reload();
+            sIff.Instance.reload();
 
             // Recarrega Card System
-            sCardSystem.getInstance().load();
+            sCardSystem.Instance.load();
 
             // Recarrega Comet Refill System
-            sCometRefillSystem.getInstance().load();
+            sCometRefillSystem.Instance.load();
 
             // Recarrega Papel Shop System
-            sPapelShopSystem.getInstance().load();
+            sPapelShopSystem.Instance.load();
 
             // Recarrega Box System
-            sBoxSystem.getInstance().load();
+            sBoxSystem.Instance.load();
 
             // Recarrega Memorial System
-            sMemorialSystem.getInstance().load();
+            sMemorialSystem.Instance.load();
 
             // Recarrega Cube Coin System
-            sCubeCoinSystem.getInstance().load();
+            sCubeCoinSystem.Instance.load();
 
             // Recarrega Treasure Hunter System
-            sTreasureHunterSystem.getInstance().load();
+            sTreasureHunterSystem.Instance.load();
 
             // Recarrega Drop System
-            sDropSystem.getInstance().load();
+            sDropSystem.Instance.load();
 
             // Recarrega Attendance Reward System
-            sAttendanceRewardSystem.getInstance().load();
+            sAttendanceRewardSystem.Instance.load();
 
             // Recarrega Map Dados Estáticos
-            MapSystem.getInstance().load();
+            MapSystem.Instance.load();
 
             //// Recarrega Approach Mission System
-            sApproachMissionSystem.getInstance().load();
+            sApproachMissionSystem.Instance.load();
 
             //// Recarrega Grand Zodiac Event System
-            sGrandZodiacEvent.getInstance().load();
+            sGrandZodiacEvent.Instance.load();
 
             // Recarrega Coin Cube Location Update Syatem
-            sCoinCubeLocationUpdateSystem.getInstance().load();
+            sCoinCubeLocationUpdateSystem.Instance.load();
 
             // Recarrega Golden Time System
-            sGoldenTimeSystem.getInstance().load();
+            sGoldenTimeSystem.Instance.load();
 
             // Recarrega Login Reward System
-            sLoginRewardSystem.getInstance().load();
+            sLoginRewardSystem.Instance.load();
 
             // Recarrega Bot GM Event
-            sBotGMEvent.getInstance().load();
+            sBotGMEvent.Instance.load();
 
             // Recarrega Shop Gift Event			   
-            sShopGiftSystem.getInstance().load();
+            sShopGiftSystem.Instance.load();
         }
 
         private void ReloadFiles()
@@ -1632,7 +1632,7 @@ namespace Pangya_GameServer.Server
             // Reload All Globals Systems
             ReloadSystems();
 
-            _smp.message_pool.getInstance().push(new message("[GameService::ReloadFiles][Log] Reload System now sucess!", type_msg.CL_FILE_LOG_AND_CONSOLE));
+            _smp.LogManager.Instance.push(new AppMessage("[GameService::ReloadFiles][Log] Reload System now sucess!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             // UPDATE ON GAME
             var p = new Packet(0xF9); 
@@ -1658,7 +1658,7 @@ namespace Pangya_GameServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::authCmdBroadcastNotice][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdBroadcastNotice][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1671,7 +1671,7 @@ namespace Pangya_GameServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::authCmdBroadcastTicker][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdBroadcastTicker][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1685,7 +1685,7 @@ namespace Pangya_GameServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::authCmdBroadcastCubeWinRare][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdBroadcastCubeWinRare][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1712,11 +1712,11 @@ namespace Pangya_GameServer.Server
                 {
 
                     // Não encontrou o player no server, então desconecta no banco de dados
-                    snmdb.NormalManagerDB.getInstance().add(5, new CmdRegisterLogon(_player_uid, 1/*Logout*/), DBResponse, this);
+                    snmdb.NormalManagerDB.Instance.add(5, new CmdRegisterLogon(_player_uid, 1/*Logout*/), DBResponse, this);
 
                     // Log
-                    //_smp.message_pool.getInstance().push(new message("[GameService::authCmdDisconnectPlayer][Warning] Comando do Auth Server, Server[UID=" + (_req_server_uid)
-                    //        + "] pediu para desconectar o PLAYER[UID=" + (_player_uid) + "], mas nao encontrou ele no server, entao desconecta ele no banco de dados.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    //_smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdDisconnectPlayer][Warning] Comando do Auth Server, Server[UID=" + (_req_server_uid)
+                    //        + "] pediu para desconectar o Normal[UID=" + (_player_uid) + "], mas nao encontrou ele no server, entao desconecta ele no banco de dados.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
 
                 // UPDATE ON Auth Server
@@ -1726,7 +1726,7 @@ namespace Pangya_GameServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::authCmdDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdDisconnectPlayer][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1759,7 +1759,7 @@ namespace Pangya_GameServer.Server
 
                 if (v_mi.Count == 0)
                     throw new exception("[GameService::authCmdNewMailArrivedMailBox][Error] Auth Server Comando New Mail[ID=" + (_mail_id)
-                            + "] Arrived no Mailbox do PLAYER[UID=" + (_player_uid) + "], mas nao tem nenhum email nao lido no Mailbox dele.",
+                            + "] Arrived no Mailbox do Normal[UID=" + (_player_uid) + "], mas nao tem nenhum email nao lido no Mailbox dele.",
                            ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 131, 0));
 
                 // UPDATE ON GAME
@@ -1778,7 +1778,7 @@ namespace Pangya_GameServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::authCmdNewMailArrivedMailBox][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdNewMailArrivedMailBox][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1794,7 +1794,7 @@ namespace Pangya_GameServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::authCmdNewRate][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdNewRate][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1808,7 +1808,7 @@ namespace Pangya_GameServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::authCmdReloadGlobalSystem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdReloadGlobalSystem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1821,24 +1821,24 @@ namespace Pangya_GameServer.Server
 
                 if (s != null)
                 {
-                    _aspi.id = s.UserInfo.id;
+                    _aspi.id = s.UserInfo.Login;
                     _aspi.ip = s.GetIP();
                     _aspi.option = 1;
                     if (m_unit_connect != null)
                     {
-                        _smp.message_pool.getInstance().push(new message($"[GameService] Player[UID={_aspi.uid}] confirmado no Server[UID={_req_server_uid}]", type_msg.CL_ONLY_CONSOLE));
-                        m_unit_connect.SendInfoPlayerOnline((uint)m_si.uid, _aspi);
+                        _smp.LogManager.Instance.push(new AppMessage($"[GameService] Player[UID={_aspi.uid}] confirmado no Server[UID={_req_server_uid}]", type_msg.CL_ONLY_CONSOLE));
+                        m_unit_connect.SendInfoPlayerOnline((uint)m_si.UID, _aspi);
                     }
                 }
                 else
-                    _smp.message_pool.getInstance().push(new message("[GameService::authCmdConfirmSendInfoPlayerOnline][Warning] PLAYER[UID=" + (_aspi.uid)
+                    _smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdConfirmSendInfoPlayerOnline][Warning] Normal[UID=" + (_aspi.uid)
                             + "] retorno do confirma login com Auth Server do Server[UID=" + (_req_server_uid) + "], mas o palyer nao esta mais conectado.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
             }
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::authCmdConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::authCmdConfirmSendInfoPlayerOnline][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -1893,7 +1893,7 @@ namespace Pangya_GameServer.Server
             foreach (var channel in Channels)
             {
                 var foundRoom = channel.FindRoom(_room);
-                // If the channel found it, foundRoom is already the reference we need
+                // If the Channel found it, foundRoom is already the reference we need
                 if (foundRoom != null && foundRoom.GetRoomId() == _room.GetRoomId())
                     return foundRoom;
             }
@@ -1917,12 +1917,12 @@ namespace Pangya_GameServer.Server
             return null;
         }
         //aqui eu posso logar, ver dados e outras coisas...
-        public Room? MakeRoom(Channel _channel_owner, RoomInfo _ri, Player _session, int _option = 0)
+        public Room? MakeRoom(Channel _channel_owner, GameRoomInfoModel _ri, Player _session, int _option = 0)
         {
             return _channel_owner.MakeRoom(_ri, _session);
         }
         //aqui eu posso logar, ver dados e outras coisas...
-        public RoomGrandPrix? MakeRoomGrandPrix(Channel _channel_owner, RoomInfo _ri, Player _session, GrandPrixData _gp, int _option = 0)
+        public RoomGrandPrix? MakeRoomGrandPrix(Channel _channel_owner, GameRoomInfoModel _ri, Player _session, GrandPrixData _gp, int _option = 0)
         {
             return _channel_owner.MakeRoomGrandPrix(_ri, _session, _gp, _option);
         }
@@ -2028,44 +2028,44 @@ namespace Pangya_GameServer.Server
         // Set Event Server
         private void SetNewAngelEvent(short _angel_event)
         {
-            // Evento para reduzir o quit rate, diminui 1 quit a cada jogo concluído
-            m_si.event_flag.angel_wing = _angel_event > 0;
-            // Update rate Pang
-            m_si.rate.angel_event = _angel_event; //precisa fazer isso, pois pode querer desativar
+            // Evento para reduzir o quit Rate, diminui 1 quit a cada jogo concluído
+            m_si.EventFlag.ReduceQuitRate = _angel_event > 0;
+            // Update Rate Pang
+            m_si.Rate.AngelEvent = _angel_event; //precisa fazer isso, pois pode querer desativar
         }
 
         private void SetNewRatePang(short _pang)
         {
-            // Update Flag Event
-            m_si.event_flag.pang_x_plus = (_pang >= 200) ? true : false;
+            // Update ServerFlag Event
+            m_si.EventFlag.PangPlus = (_pang >= 200) ? true : false;
 
-            // Update rate Pang
-            m_si.rate.pang = _pang;
+            // Update Rate Pang
+            m_si.Rate.Pang = _pang;
         }
 
         private void SetNewRateExp(short _exp)
-        {// Reseta flag antes de atualizar ela 
-            m_si.event_flag.exp_x2 = m_si.event_flag.exp_x_plus = false;
+        {// Reseta ServerFlag antes de atualizar ela 
+            m_si.EventFlag.ExperienceDouble = m_si.EventFlag.ExperiencePlus = false;
 
-            // Update Flag Event
+            // Update ServerFlag Event
             if (_exp > 200)
-                m_si.event_flag.exp_x_plus = true;
+                m_si.EventFlag.ExperiencePlus = true;
             else if (_exp == 200)
-                m_si.event_flag.exp_x2 = true;
+                m_si.EventFlag.ExperienceDouble = true;
             else
-                m_si.event_flag.exp_x2 = m_si.event_flag.exp_x_plus = false;
+                m_si.EventFlag.ExperienceDouble = m_si.EventFlag.ExperiencePlus = false;
 
-            // Update rate Experiência
-            m_si.rate.exp = _exp;
+            // Update Rate Experiência
+            m_si.Rate.Experience = _exp;
         }
 
         private void SetNewRateClubMastery(short _club_mastery)
         {
-            // Update Flag Event
-            m_si.event_flag.club_mastery_x_plus = (_club_mastery >= 200) ? true : false;
+            // Update ServerFlag Event
+            m_si.EventFlag.ClubMasteryPlus = (_club_mastery >= 200) ? true : false;
 
-            // Update rate Club Mastery
-            m_si.rate.club_mastery = _club_mastery;
+            // Update Rate Club Mastery
+            m_si.Rate.ClubMastery = _club_mastery;
         }
 
 
@@ -2079,75 +2079,75 @@ namespace Pangya_GameServer.Server
                         ReloadSystems();
                         break; 
                     case 1:     // IFF 
-                        sIff.getInstance().reload();
+                        sIff.Instance.reload();
                         break; 
                     case 2:     // Card
-                        sCardSystem.getInstance().load();
+                        sCardSystem.Instance.load();
                         break; 
                     case 3:     // Comet Refill
-                        sCometRefillSystem.getInstance().load();
+                        sCometRefillSystem.Instance.load();
                         break; 
                     case 4:     // Papel Shop
-                        sPapelShopSystem.getInstance().load();
+                        sPapelShopSystem.Instance.load();
                         break; 
                     case 5:     // Box
-                        sBoxSystem.getInstance().load();
+                        sBoxSystem.Instance.load();
                         break;
                     case 6:     // Memorial Shop
-                        sMemorialSystem.getInstance().load();
+                        sMemorialSystem.Instance.load();
                         break;
                     case 7:     // Cube e Coin
-                        sCubeCoinSystem.getInstance().load();
+                        sCubeCoinSystem.Instance.load();
                         break; 
                     case 8:     // Treasure Hunter
-                        sTreasureHunterSystem.getInstance().load();
+                        sTreasureHunterSystem.Instance.load();
                         break;
                     case 9:     // Drop
-                        sDropSystem.getInstance().load();
+                        sDropSystem.Instance.load();
                         break;
                     case 10:    // Attendance Reward
-                        sAttendanceRewardSystem.getInstance().load();
+                        sAttendanceRewardSystem.Instance.load();
                         break; 
                     case 11:    // Map Course Dados
-                        MapSystem.getInstance().load();
+                        MapSystem.Instance.load();
                         break; 
                     case 12:    // Approach Mission
-                        sApproachMissionSystem.getInstance().load();
+                        sApproachMissionSystem.Instance.load();
                         break; 
                     case 13:    // Grand Zodiac Event
-                        sGrandZodiacEvent.getInstance().load();
+                        sGrandZodiacEvent.Instance.load();
                         break;
                     case 14:    // Coin Cube Location Update System
-                        sCoinCubeLocationUpdateSystem.getInstance().load();
+                        sCoinCubeLocationUpdateSystem.Instance.load();
                         break;
                     case 15:    // Golden Time System
-                        sGoldenTimeSystem.getInstance().load();
+                        sGoldenTimeSystem.Instance.load();
                         break; 
                     case 16:    // Login Reward System
-                        sLoginRewardSystem.getInstance().load();
+                        sLoginRewardSystem.Instance.load();
                         break; 
                     case 17:    // Bot GM Event
-                        sBotGMEvent.getInstance().load();
+                        sBotGMEvent.Instance.load();
                         break;  
                     default:
                         throw new Exception($"[GameService::ReloadGlobalSystem][Error] Tipo[VALUE={_tipo}] desconhecido.");
                 }
 
                 // Log
-                _smp.message_pool.getInstance().push(
-                     new message($"[GameService::ReloadGlobalSystem][Log] Recarregou o Sistema[Tipo={_tipo}] com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE)
+                _smp.LogManager.Instance.push(
+                     new AppMessage($"[GameService::ReloadGlobalSystem][Log] Recarregou o Sistema[Tipo={_tipo}] com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE)
                  );
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(
-                     new message($"[GameService::ReloadGlobalSystem][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE)
+                _smp.LogManager.Instance.push(
+                     new AppMessage($"[GameService::ReloadGlobalSystem][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE)
                  );
             }
         }
 
 
-        // Update rate e Event of Server
+        // Update Rate e Event of Server
 
         public void UpdateRateAndEvent(int _tipo, uint _qntd)
         {
@@ -2172,29 +2172,29 @@ namespace Pangya_GameServer.Server
                         SetNewRateClubMastery((short)_qntd);
                         break;
                     case 3: // Chuva
-                        m_si.rate.chuva = (short)_qntd;
+                        m_si.Rate.Rain = (short)_qntd;
                         break;
                     case 4: // Treasure Hunter
-                        m_si.rate.treasure = (short)_qntd;
+                        m_si.Rate.Treasure = (short)_qntd;
                         break;
                     case 5: // Scratchy
-                        m_si.rate.scratchy = (short)_qntd;
+                        m_si.Rate.Scratchy = (short)_qntd;
                         break;
                     case 6: // Papel Shop Rare Item
-                        m_si.rate.papel_shop_rare_item = (short)_qntd;
+                        m_si.Rate.PapelShopRareItem = (short)_qntd;
                         break;
                     case 7: // Papel Shop Cookie Item
-                        m_si.rate.papel_shop_cookie_item = (short)_qntd;
+                        m_si.Rate.PapelShopCookieItem = (short)_qntd;
                         break;
-                    case 8: // Memorial shop
-                        m_si.rate.memorial_shop = (short)_qntd;
+                    case 8: // Memorial ShopRoom
+                        m_si.Rate.MemorialShop = (short)_qntd;
                         break;
                     case 9: // Event Grand Zodiac Time Event [Active/Desactive]
                         {
-                            m_si.rate.grand_zodiac_event_time = (short)_qntd;
+                            m_si.Rate.GrandZodiacEventTime = (short)_qntd;
 
                             // Recarrega o Grand Zodiac Event se ele foi ativado
-                            if (m_si.rate.grand_zodiac_event_time == 1)
+                            if (m_si.Rate.GrandZodiacEventTime == 1)
                                 ReloadGlobalSystem(13/*Grand Zodiac Event*/);
 
                             break;
@@ -2203,58 +2203,58 @@ namespace Pangya_GameServer.Server
                         SetNewAngelEvent((short)_qntd);
                         break;
                     case 11: // Grand Prix Event
-                        m_si.rate.grand_prix_event = (short)_qntd;
+                        m_si.Rate.GrandPrixEvent = (short)_qntd;
                         break;
                     case 12: // Golden Time Event
                         {
-                            m_si.rate.golden_time_event = (short)_qntd;
+                            m_si.Rate.GoldenTimeEvent = (short)_qntd;
 
                             // Recarrega o Golden Time Event se ele foi ativado
-                            if (m_si.rate.golden_time_event == 1)
+                            if (m_si.Rate.GoldenTimeEvent == 1)
                                 ReloadGlobalSystem(15/*Golden Time Event*/);
 
                             break;
                         }
                     case 13: // Login Reward System Event
                         {
-                            m_si.rate.login_reward_event = (short)_qntd;
+                            m_si.Rate.LoginRewardEvent = (short)_qntd;
 
                             // Recarrega o Login Reward Event se ele foi ativado
-                            if (m_si.rate.login_reward_event == 1)
+                            if (m_si.Rate.LoginRewardEvent == 1)
                                 ReloadGlobalSystem(16/*Login Reward Event*/);
 
                             break;
                         }
                     case 14: // Bot GM Event
                         {
-                            m_si.rate.bot_gm_event = (short)_qntd;
+                            m_si.Rate.GMEventBot = (short)_qntd;
 
                             // Recarrega o Bot GM Event se ele foi ativado
-                            if (m_si.rate.bot_gm_event == 1)
+                            if (m_si.Rate.GMEventBot == 1)
                                 ReloadGlobalSystem(17/*Bot GM Event*/);
 
                             break;
                         }
                     case 15: // Smart Calculator
                         {
-                            m_si.rate.smart_calculator = (short)_qntd;
+                            m_si.Rate.SmartCalculation = (short)_qntd;
 
                             // Recarrega o Smart Calculator System se ele foi ativado
-                            if (m_si.rate.smart_calculator == 1)
+                            if (m_si.Rate.SmartCalculation == 1)
                                 ReloadGlobalSystem(18/*Smart Calculator*/);
 
                             break;
                         }
                     default:
                         throw new exception("[GameService::UpdateRateAndEvent][Error] troca Rate[TIPO=" + (_tipo) + ", QNTD="
-                                + (_qntd) + "], tipo desconhecido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 120, 0));
+                                + (_qntd) + "], Type desconhecido.", ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 120, 0));
                 }
 
                 // Update no DB os server do server que foram alterados
-                snmdb.NormalManagerDB.getInstance().add(8, new CmdUpdateRateConfigInfo(m_si.uid, m_si.rate), DBResponse, this);
+                snmdb.NormalManagerDB.Instance.add(8, new CmdUpdateRateConfigInfo(m_si.UID, m_si.Rate), DBResponse, this);
 
                 // Log
-                _smp.message_pool.getInstance().push(new message("[GameService::UpdateRateAndEvent][Error] New Rate[Tipo=" + (_tipo) + ", QNTD="
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::UpdateRateAndEvent][Error] New Rate[Tipo=" + (_tipo) + ", QNTD="
                         + (_qntd) + "] com sucesso!", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 // UPDATE ON GAME
@@ -2267,7 +2267,7 @@ namespace Pangya_GameServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::UpdateRateAndEvent][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::UpdateRateAndEvent][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -2276,7 +2276,7 @@ namespace Pangya_GameServer.Server
         {
             try
             {
-                //procura o canal pelo id dele
+                //procura o canal pelo Login dele
                 var c = FindChannel(r.GetChannelId());
 
                 if (c != null)//destroi a room
@@ -2289,7 +2289,7 @@ namespace Pangya_GameServer.Server
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message("[GameService::destroyRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::destroyRoom][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -2304,7 +2304,7 @@ namespace Pangya_GameServer.Server
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GameService::sendUpdateRoomInfo][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::sendUpdateRoomInfo][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -2331,11 +2331,11 @@ namespace Pangya_GameServer.Server
         {
             if (_arg == null)
             {
-                _smp.message_pool.getInstance().push(new message("[GameService::DBResponse][Error] _arg is null na msg_id = " + (_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GameService::DBResponse][Error] _arg is null na msg_id = " + (_msg_id), type_msg.CL_FILE_LOG_AND_CONSOLE));
                 return;
             }
 
-            // Por Hora só sai, depois faço outro tipo de tratamento se precisar
+            // Por Hora só sai, depois faço outro Type de tratamento se precisar
             if (_pangya_db.getException().getCodeError() != 0)
                 throw new exception("[GameService::DBResponse][Error] " + _pangya_db.getException().getFullMessageError());
 
@@ -2353,7 +2353,7 @@ namespace Pangya_GameServer.Server
                             DailyQuestManager.UpdateDailyQuest(ref dqi_db);
 
                             Thread.Sleep(100);  // Espera 100 milli segundo
-                            NormalManagerDB.getInstance().add(1, new CmdDailyQuestInfo(), DBResponse, _arg);
+                            NormalManagerDB.Instance.add(1, new CmdDailyQuestInfo(), DBResponse, _arg);
                         }
                         // Initialize Daily Quest of Server
                         DailyQuestsInfo = dqi_db;
@@ -2457,8 +2457,8 @@ namespace Pangya_GameServer.Server
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
-                    $"[Channel::Enter][Error] UID={session.UserInfo.uid}: {e.getFullMessageError()}",
+                _smp.LogManager.Instance.push(new AppMessage(
+                    $"[Channel::Enter][Error] UID={session.UserInfo.UID}: {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 session.Send(Handle_PACKET_RESPONSE.pacote04E(3)); // Erro genérico

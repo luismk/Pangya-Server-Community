@@ -1,5 +1,5 @@
 using Pangya_GameServer.Flags;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Roms;
 using Pangya_GameServer.Server;
@@ -25,22 +25,22 @@ namespace Pangya_GameServer.Handles
                 uint _typeid_gp = Packet.ReadUInt32();
 
                 // 1. Validações de Permissão (Flags)
-                var flag = Player.UserInfo.block_flag.m_flag;
+                var flag = Player.UserInfo.BlockFlag.Flag;
 
-                if (flag.all_game)
+                if (flag.AllGame)
                 {
-                    throw new exception($"[GP_Handler] PLAYER[UID={Player.UserInfo.uid}] tentou entrar no GP, mas possui flag 'all_game' bloqueada.",
+                    throw new exception($"[GP_Handler] Normal[UID={Player.UserInfo.UID}] tentou entrar no GP, mas possui ServerFlag 'AllGame' bloqueada.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 0x6700003, 0x6700003));
                 }
 
-                if (flag.grand_prix)
+                if (flag.GrandPrix)
                 {
-                    throw new exception($"[GP_Handler] PLAYER[UID={Player.UserInfo.uid}] bloqueado para Grand Prix.",
+                    throw new exception($"[GP_Handler] Normal[UID={Player.UserInfo.UID}] bloqueado para Grand Prix.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 0x6700004, 0x6700004));
                 }
 
                 // 2. Busca dados no IFF
-                var gp = sIff.getInstance().findGrandPrixData(_typeid_gp);
+                var gp = sIff.Instance.findGrandPrixData(_typeid_gp);
                 if (gp == null || !gp.Active)
                 {
                     throw new exception($"[GP_Handler] GP[TYPEID={_typeid_gp}] inexistente ou inativo.",
@@ -48,7 +48,7 @@ namespace Pangya_GameServer.Handles
                 }
 
                 // 3. Verificações de Requisitos (Level e Tickets)
-                if (Player.UserInfo.Member.level < gp.MinLevel || (gp.MaxLevel > 0 && Player.UserInfo.Member.level > gp.MaxLevel))
+                if (Player.UserInfo.Member.GameLevel < gp.MinLevel || (gp.MaxLevel > 0 && Player.UserInfo.Member.GameLevel > gp.MaxLevel))
                 {
                     throw new exception("Level incompatível para este Grand Prix.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.CHANNEL, 0x6700006, 0x6700006));
@@ -69,10 +69,10 @@ namespace Pangya_GameServer.Handles
                 var channel = Player.GetChannel();
 
                 // Regra: Rookie sempre cria instância nova, outros tentam achar sala existente
-                bool isRookie = sIff.getInstance().isGrandPrixNormal(gp.ID) &&
-                                sIff.getInstance().getGrandPrixAbaType(gp.ID) == GrandPrixData.GP_ABA.ROOKIE;
+                bool isRookie = sIff.Instance.isGrandPrixNormal(gp.ID) &&
+                                sIff.Instance.getGrandPrixAbaType(gp.ID) == GrandPrixData.GP_ABA.ROOKIE;
 
-                r = GameServer.getInstance().FindRoomGrandPrix(gp.ID);
+                r = GameServer.Instance.FindRoomGrandPrix(gp.ID);
 
                 if (isRookie || r == null)
                 {
@@ -80,7 +80,7 @@ namespace Pangya_GameServer.Handles
                     var ri = CreateGP_RoomInfo(gp);
                     channel.DeleteInviteTimeResquestByInvited(Player);
 
-                    r = GameServer.getInstance().MakeRoomGrandPrix(channel, ri, Player, gp, 1);
+                    r = GameServer.Instance.MakeRoomGrandPrix(channel, ri, Player, gp, 1);
                     if (r == null) throw new Exception("Falha ao criar instância de sala GP.");
                 }
                 else
@@ -102,7 +102,7 @@ namespace Pangya_GameServer.Handles
                 r.SendMakeRoom(Player);
                 r.SendPlayerInfo(Player, 0);
 
-                if (r.GetTipo() != ROOM_INFO_TYPE.PRACTICE)
+                if (r.GetTipo() != RoomTypeFlags.PRACTICE)
                 {
                     channel.SendUpdatePlayerInfo(Player, 3);
                 }
@@ -116,7 +116,7 @@ namespace Pangya_GameServer.Handles
             catch (exception e)
             {
                 // Loga o erro e envia o pacote 0x253 de erro pro cliente
-                _smp.message_pool.getInstance().push(new message($"[Handle_GP][Error] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[Handle_GP][Error] {e.getFullMessageError()}", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                 p.init_plain(0x253);
                 uint errCode = ExceptionError.STDA_SOURCE_ERROR_DECODE_TYPE(e.getCodeError()) == STDA_ERROR_TYPE.CHANNEL
@@ -128,25 +128,25 @@ namespace Pangya_GameServer.Handles
             }
         }
 
-        // Helper para montar o RoomInfo do Grand Prix
-        private RoomInfo CreateGP_RoomInfo(GrandPrixData gp)
+        // Helper para montar o GameRoomInfoModel do Grand Prix
+        private GameRoomInfoModel CreateGP_RoomInfo(GrandPrixData gp)
         {
-            var ri = new RoomInfo
+            var ri = new GameRoomInfoModel
             {
-                max_player = 30,
-                tipo = (byte)ROOM_INFO_TYPE.GRAND_PRIX,
-                qntd_hole = gp.course_info.Qntd_hole,
-                course = (ROOM_INFO_COURSE)gp.course_info.Course,
-                modo = (byte)gp.course_info.Modo,
-                name = gp.Name
+                MaxUsers = 30,
+                RealRoomType = (byte)RoomTypeFlags.GRAND_PRIX,
+                HoleCount = gp.course_info.Qntd_hole,
+                CourseIndex = (RoomCourseFlags)gp.course_info.Course,
+                HoleMode = (byte)gp.course_info.Modo,
+                Name = gp.Name
             };
             ri.grand_prix.active = 1;
             ri.grand_prix.dados_typeid = gp.ID;
             ri.grand_prix.rank_typeid = gp.TypeID_Link;
             ri.grand_prix.tempo = (uint)(gp.TimeHole * 1000);
-            ri.typeid_artefatic = gp.rule;
-            ri.special_flag_mod.natural = gp.flag.Natural_Mode;
-            ri.special_flag_mod.short_game = gp.flag.Shot_Mode;
+            ri.ItemIDArtifact = gp.rule;
+            ri.SpecialModeRoom.IsNaturalMode = gp.flag.Natural_Mode;
+            ri.SpecialModeRoom.IsShotMode = gp.flag.Shot_Mode;
             return ri;
         }
     }

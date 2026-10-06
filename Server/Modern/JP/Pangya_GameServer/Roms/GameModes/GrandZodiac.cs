@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualBasic.FileIO;
 using Pangya_GameServer.Flags;
 using Pangya_GameServer.Manager;
-using Pangya_GameServer.Models;
+using Pangya_GameServer.Models.Game;
 using Pangya_GameServer.PacketFunc;
 using Pangya_GameServer.Roms.GameBase.Modes;
 using Pangya_GameServer.Session;
@@ -22,12 +22,12 @@ namespace Pangya_GameServer.Roms.GameModes
         #endregion
 
         #region Constructor & Destructor
-        public GrandZodiac(List<Player> players, RoomInfo roomInfo, RateValue rateValue)
+        public GrandZodiac(List<Player> players, GameRoomInfoModel roomInfo, RateValue rateValue)
             : base(players, roomInfo, rateValue)
         {
             _initGrandZodiacState = false;
 
-            // Inicializa conquistas específicas deste modo
+            // Inicializa conquistas específicas deste HoleMode
             InitAllAchievementPlayers(0x6C40003Cu /*/ *Grand Zodiac * /*/);
 
             State = InitRoomGame();
@@ -60,7 +60,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[GrandZodiac::ChangeHole][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiac::ChangeHole][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -80,7 +80,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 p.WriteInt32(session.ConnectionID);
                 p.WriteFloat(pgi.location.x);
                 p.WriteFloat(pgi.location.z);  
-                if (GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_INT)
+                if (GetTipo() == RoomTypeFlags.GRAND_ZODIAC_INT)
                 {
                     SendBroadCast(p);
                 }
@@ -91,7 +91,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[GrandZodiac::UpdateFinishHole][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiac::UpdateFinishHole][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
         #endregion
@@ -110,7 +110,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     {
                         // Envia pacote notificando que o tempo acabou
                         var p = new Packet(0x8D);
-                        p.WriteUInt32(RoomInfo.time_30s);
+                        p.WriteUInt32(RoomInfo.TimeMin);
                         session.Send(p);
                     }
                 }
@@ -130,11 +130,11 @@ namespace Pangya_GameServer.Roms.GameModes
                     if (Timer != null)
                     {
                         // Validação de integridade de tempo
-                        isHackerOrBug = ((int)(RoomInfo.time_30s - Timer.getElapsed()) / 60000) >= 1;
+                        isHackerOrBug = ((int)(RoomInfo.TimeMin - Timer.getElapsed()) / 60000) >= 1;
 
                         if (isHackerOrBug && option == 0x12C)
                         {
-                            _smp.message_pool.getInstance().push(new message($"[GrandZodiac::FinishGame][Warning] PLAYER[UID={session.UserInfo.uid}] Sala[{RoomInfo.numero}] Tempo inconsistente. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiac::FinishGame][Warning] Normal[UID={session.UserInfo.UID}] Sala[{RoomInfo.RoomID}] Tempo inconsistente. Hacker ou Bug.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
                     }
 
@@ -160,7 +160,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     // Calcula os pangs que o player ganhou
                     CalculePang(session);
 
-                    // Atualizar os pang do player se ele estiver com assist ligado, e for maior que beginner E
+                    // Atualizar os Pang do player se ele estiver com assist ligado, e for maior que beginner E
                     UpdatePlayerAssist(session);
 
                     if (GameInitState == 1 && option == 0)
@@ -245,7 +245,7 @@ namespace Pangya_GameServer.Roms.GameModes
 
             PlayerGrandZodiacInfo pgzi = null;
 
-            float pontos_base = (GetTipo() == ROOM_INFO_TYPE.GRAND_ZODIAC_INT ? 3.5f : 5.0f);
+            float pontos_base = (GetTipo() == RoomTypeFlags.GRAND_ZODIAC_INT ? 3.5f : 5.0f);
 
             foreach (var el in PlayerInfo)
             { 
@@ -286,7 +286,7 @@ namespace Pangya_GameServer.Roms.GameModes
                     exp = (int)(exp * TRANSF_SERVER_RATE_VALUE(el.Value.used_item.rate.exp) * TRANSF_SERVER_RATE_VALUE(RateValue.exp)); 
                 }
 
-                // Se não for level máximo, limpa para recalcular no addExp
+                // Se não for Level máximo, limpa para recalcular no addExp
                 if (pgi.level < 70) pgi.data.exp = exp;
             }
 
@@ -341,7 +341,7 @@ namespace Pangya_GameServer.Roms.GameModes
             }
             catch (Exception e)
             {
-                _smp.message_pool.getInstance().push(new message($"[GrandZodiac::ProcessRequestFinishData][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage($"[GrandZodiac::ProcessRequestFinishData][ErrorSystem] {e.Message}", type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
 
@@ -364,7 +364,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 {
 
                     // Adicionou o Trof u com sucesso para o player
-                    _smp.message_pool.getInstance().push(new message("[GrandZodiac::sendTrofel][Log] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] ganhou Grand Zodiac Trofeu[TYPEID=" + Convert.ToString(pgi.m_gz.trofeu) + "] na Posicao[RANK=" + Convert.ToString(pgi.m_gz.position) + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandZodiac::sendTrofel][Log] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] ganhou Grand Zodiac Trofeu[TYPEID=" + Convert.ToString(pgi.m_gz.trofeu) + "] na Posicao[RANK=" + Convert.ToString(pgi.m_gz.position) + "].", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // Update Trof u on Game
                     var p = new Packet(0x1FA); 
@@ -375,7 +375,7 @@ namespace Pangya_GameServer.Roms.GameModes
                 }
                 else
                 {
-                    _smp.message_pool.getInstance().push(new message("[GrandZodiac::sendTrofel][Error] PLAYER[UID=" + Convert.ToString(_session.UserInfo.uid) + "] tentou adicionar Grand Zodiac Trofeu[TYPEID=" + Convert.ToString(item._typeid) + "] na Posicao[RANK=" + Convert.ToString(pgi.m_gz.position) + "], mas nao conseguiu adicionar o item.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                    _smp.LogManager.Instance.push(new AppMessage("[GrandZodiac::sendTrofel][Error] Normal[UID=" + Convert.ToString(_session.UserInfo.UID) + "] tentou adicionar Grand Zodiac Trofeu[TYPEID=" + Convert.ToString(item._typeid) + "] na Posicao[RANK=" + Convert.ToString(pgi.m_gz.position) + "], mas nao conseguiu adicionar o item.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                 }
             } 
         }
@@ -434,13 +434,13 @@ namespace Pangya_GameServer.Roms.GameModes
                         if (pgi.flag != PlayerGameInfo.eFLAG_GAME.QUIT)
                         { 
                             // Log
-                            _smp.message_pool.getInstance().push(new message("[GrandZodiac::endGoldenBeam][Log] PLAYER[UID=" + Convert.ToString(it.session.UserInfo.uid) + "] ganhou jackpot(" + Convert.ToString(jackpot) + ") sozinho.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[GrandZodiac::endGoldenBeam][Log] Normal[UID=" + Convert.ToString(it.session.UserInfo.UID) + "] ganhou jackpot(" + Convert.ToString(jackpot) + ") sozinho.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                             pgi.m_gz.jackpot = jackpot;
 
                             var p = new Packet(0x40); 
                             p.WriteByte(13); // 1 Ganhou sozinho o jackpot no Grand Zodiac 
-                            p.WriteString(it.session.UserInfo.nickname);
+                            p.WriteString(it.session.UserInfo.NickName);
                             p.WriteUInt16(0); // Msg empty 
                             p.WriteUInt32(0x1A000010); // Jackpot Pangs Pouch
                             p.WriteUInt64(jackpot);
@@ -448,7 +448,7 @@ namespace Pangya_GameServer.Roms.GameModes
                         }
                         else
                         {
-                            _smp.message_pool.getInstance().push(new message("[GrandZodiac::endGoldenBeam][Log][Warning] PLAYER[UID=" + Convert.ToString(pgi.uid) + "] ganhou jackpot, mas ele nao esta mais no jogo, para receber o jackpot.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                            _smp.LogManager.Instance.push(new AppMessage("[GrandZodiac::endGoldenBeam][Log][Warning] Normal[UID=" + Convert.ToString(pgi.uid) + "] ganhou jackpot, mas ele nao esta mais no jogo, para receber o jackpot.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                         }
 
                     }
@@ -468,13 +468,13 @@ namespace Pangya_GameServer.Roms.GameModes
                             {
 
                                 // Log
-                                _smp.message_pool.getInstance().push(new message("[GrandZodiac::endGoldenBeam][Log] PLAYER[UID=" + Convert.ToString(el.session.UserInfo.uid) + "] ganhou jackpot(" + Convert.ToString(jackpot) + ") igual ao de todo mundo.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiac::endGoldenBeam][Log] Normal[UID=" + Convert.ToString(el.session.UserInfo.UID) + "] ganhou jackpot(" + Convert.ToString(jackpot) + ") igual ao de todo mundo.", type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                                 pgi.m_gz.jackpot = (ulong)equal_jackpot;
 
                                 var p = new Packet(0x40);
                                 p.WriteByte(14); // Todos que fizeram hio no golden beam garanham o jackpot 
-                                p.WriteString(el.session.UserInfo.nickname);
+                                p.WriteString(el.session.UserInfo.NickName);
                                 p.WriteUInt16(0); // Msg Empty 
                                 p.WriteUInt32(0x1A000010); // Jackpot Pangs Pouch
                                 p.WriteInt64(equal_jackpot);
@@ -482,7 +482,7 @@ namespace Pangya_GameServer.Roms.GameModes
                             }
                             else
                             {
-                                _smp.message_pool.getInstance().push(new message("[GrandZodiac::endGoldenBeam][Log][Warning] PLAYER[UID=" + Convert.ToString(pgi.uid) + "] ganhou jackpot, mas ele nao esta mais no jogo, para receber o jackpot.", type_msg.CL_FILE_LOG_AND_CONSOLE));
+                                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiac::endGoldenBeam][Log][Warning] Normal[UID=" + Convert.ToString(pgi.uid) + "] ganhou jackpot, mas ele nao esta mais no jogo, para receber o jackpot.", type_msg.CL_FILE_LOG_AND_CONSOLE));
                             }
                         }
                     }
@@ -492,7 +492,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiac::endGoldenBeam][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiac::endGoldenBeam][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
        
@@ -537,7 +537,7 @@ namespace Pangya_GameServer.Roms.GameModes
                         // Update item game, show msg
                         var p = new Packet(0x40); 
                         p.WriteByte(15); // Dropou item 
-                        p.WriteString(session.UserInfo.nickname);
+                        p.WriteString(session.UserInfo.NickName);
                         p.WriteUInt16(0); // Message empty 
                         p.WriteUInt32(di._typeid);
                         p.WriteUInt32((uint)di.qntd); 
@@ -551,7 +551,7 @@ namespace Pangya_GameServer.Roms.GameModes
             catch (exception e)
             {
 
-                _smp.message_pool.getInstance().push(new message("[GrandZodiac::drawDropItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
+                _smp.LogManager.Instance.push(new AppMessage("[GrandZodiac::drawDropItem][ErrorSystem] " + e.getFullMessageError(), type_msg.CL_FILE_LOG_AND_CONSOLE));
             }
         }
         #endregion

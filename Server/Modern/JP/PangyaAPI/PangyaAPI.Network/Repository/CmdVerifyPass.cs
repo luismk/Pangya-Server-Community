@@ -39,7 +39,7 @@ namespace PangyaAPI.Network.Repository
 
             var r = procedure("pangya.ProcVerifyPass", $"{m_uid}, {this.makeText(m_pass)}");
 
-            checkResponse(r, "nao conseguiu pegar a uid do player pela senha: " + m_pass);
+            checkResponse(r, "nao conseguiu pegar a UID do player pela senha: " + m_pass);
 
             return r;
 

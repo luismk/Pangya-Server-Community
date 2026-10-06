@@ -15,10 +15,10 @@ namespace Pangya_GameServer.Handles
         {
             try
             {
-                if (Player.UserInfo.block_flag.m_flag.ticker)
+                if (Player.UserInfo.BlockFlag.Flag.TIcker)
                 {
                     throw new exception(
-                        $"[Handle_PLAYER_SEND_TICKER][Error] PLAYER[UID={Player.UserInfo.uid}] está com ticker bloqueado.",
+                        $"[Handle_PLAYER_SEND_TICKER][Error] Normal[UID={Player.UserInfo.UID}] está com TIcker bloqueado.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 10, 1));
                 }
 
@@ -28,14 +28,14 @@ namespace Pangya_GameServer.Handles
                 if (string.IsNullOrEmpty(msg))
                 {
                     throw new exception(
-                        $"[Handle_PLAYER_SEND_TICKER][Error] PLAYER[UID={Player.UserInfo.uid}] enviou ticker vazio.",
+                        $"[Handle_PLAYER_SEND_TICKER][Error] Normal[UID={Player.UserInfo.UID}] enviou TIcker vazio.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 1));
                 }
 
                 if (!Tools.Sanitize(msg))
                 {
                     throw new exception(
-                        $"[Handle_PLAYER_SEND_TICKER][Security] PLAYER[UID={Player.UserInfo.uid}] tentou Injection no ticker.",
+                        $"[Handle_PLAYER_SEND_TICKER][Security] Normal[UID={Player.UserInfo.UID}] tentou Injection no TIcker.",
                         ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 1));
                 }
 
@@ -54,18 +54,18 @@ namespace Pangya_GameServer.Handles
                     // Tempo de expiração: Agora + 3 segundos
                     int expireTime = (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 3;
 
-                    GameServer.getInstance().SendTicker.push_back(expireTime, Player.UserInfo.nickname, msg, Manager.BroadcastManager.TYPE.TICKER);
+                    GameServer.Instance.SendTicker.push_back(expireTime, Player.UserInfo.NickName, msg, Manager.BroadcastManager.TYPE.TICKER);
 
                     // 5. Persistência e Sincronização Global
-                    // Comando 6: Insere o ticker no DB para o Auth/outros GameServers lerem
+                    // Comando 6: Insere o TIcker no DB para o Auth/outros GameServers lerem
 
-                    CommandDB.InsertTicker(Player.UserInfo.uid, GameServer.getInstance().getUID(), msg);
+                    CommandDB.InsertTicker(Player.UserInfo.UID, GameServer.Instance.getUID(), msg);
                     // Salva o log de gastos
                     Player.saveCPLog(cp_log);
 
                     // Log de Sucesso no Console
-                    _smp.message_pool.getInstance().push(new message(
-                        $"[Ticker::Success] PLAYER[UID={Player.UserInfo.uid}] enviou: {msg}",
+                    _smp.LogManager.Instance.push(new AppMessage(
+                        $"[Ticker::Success] Normal[UID={Player.UserInfo.UID}] enviou: {msg}",
                         type_msg.CL_FILE_LOG_AND_CONSOLE));
 
                     // 6. Resposta ao Cliente (0x96 - Atualiza saldo de Cookies)
@@ -81,7 +81,7 @@ namespace Pangya_GameServer.Handles
                     // Tratamento específico de erros de Cookie
                     if (ExceptionError.STDA_ERROR_CHECK_SOURCE_AND_ERROR_TYPE(e.getCodeError(), STDA_ERROR_TYPE.PLAYER_INFO, 20))
                     {
-                        throw new exception($"[Ticker][Error] UID={Player.UserInfo.uid} sem saldo suficiente.",
+                        throw new exception($"[Ticker][Error] UID={Player.UserInfo.UID} sem saldo suficiente.",
                             ExceptionError.STDA_MAKE_ERROR_TYPE(STDA_ERROR_TYPE.GAME_SERVER, 1, 4));
                     }
 
@@ -92,7 +92,7 @@ namespace Pangya_GameServer.Handles
             }
             catch (exception e)
             {
-                _smp.message_pool.getInstance().push(new message(
+                _smp.LogManager.Instance.push(new AppMessage(
                     $"[Handle_PLAYER_SEND_TICKER][ErrorSystem] {e.getFullMessageError()}",
                     type_msg.CL_FILE_LOG_AND_CONSOLE));
 

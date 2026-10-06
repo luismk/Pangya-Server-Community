@@ -74,9 +74,9 @@ namespace Pangya_GameServer.Repository
             }
 
             var r = procedure(m_szConsulta,
-                Convert.ToString(m_uid) + ", " + Convert.ToString(m_ppsi.current_count) + ", " + Convert.ToString(m_ppsi.remain_count) + ", " + Convert.ToString(m_ppsi.limit_count) + ", " + last_update_dt);
+                Convert.ToString(m_uid) + ", " + Convert.ToString(m_ppsi.CurrentCount) + ", " + Convert.ToString(m_ppsi.RemainCount) + ", " + Convert.ToString(m_ppsi.LimitCount) + ", " + last_update_dt);
 
-            checkResponse(r, "nao conseguiu atualizar o Papel Shop Info[current_cnt=" + Convert.ToString(m_ppsi.current_count) + ", remain_cnt=" + Convert.ToString(m_ppsi.remain_count) + ", limit_cnt=" + Convert.ToString(m_ppsi.limit_count) + ", last_update=" + last_update_dt + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu atualizar o Papel Shop Info[current_cnt=" + Convert.ToString(m_ppsi.CurrentCount) + ", remain_cnt=" + Convert.ToString(m_ppsi.RemainCount) + ", limit_cnt=" + Convert.ToString(m_ppsi.LimitCount) + ", last_update=" + last_update_dt + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }

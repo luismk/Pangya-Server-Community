@@ -82,7 +82,7 @@ namespace Pangya_GameServer.Repository
             var r = procedure(m_szConsulta,
                 Convert.ToString(m_uid) + ", " + Convert.ToString(m_wi.id) + ", " + Convert.ToString(m_pang) + ", " + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_POWER]) + ", " + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_CONTROL]) + ", " + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_ACCURACY]) + ", " + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_SPIN]) + ", " + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_CURVE]));
 
-            checkResponse(r, "nao conseguiu Atualizar ClubSet[ID=" + Convert.ToString(m_wi.id) + "] Stats[C0=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_POWER]) + ", C1=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_CONTROL]) + ", C2=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_ACCURACY]) + ", C3=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_SPIN]) + ", C4=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_CURVE]) + "] do PLAYER[UID=" + Convert.ToString(m_uid) + "]");
+            checkResponse(r, "nao conseguiu Atualizar ClubSet[ID=" + Convert.ToString(m_wi.id) + "] Stats[C0=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_POWER]) + ", C1=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_CONTROL]) + ", C2=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_ACCURACY]) + ", C3=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_SPIN]) + ", C4=" + Convert.ToString(m_wi.c[(int)CharacterInfo.Stats.S_CURVE]) + "] do Normal[UID=" + Convert.ToString(m_uid) + "]");
 
             return r;
         }
